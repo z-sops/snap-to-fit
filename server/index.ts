@@ -1,3 +1,4 @@
+import { findGyms } from "./gyms.ts";
 import { join } from "node:path";
 import { AccountDatabase, ServiceError } from "./database.ts";
 import { validatedBackup } from "./validate-state.ts";
@@ -186,6 +187,7 @@ export const server = createServer(async (req, res) => {
   if (
     req.method !== "POST" ||
     ![
+      "/gyms/search",
       "/auth/register",
       "/auth/login",
       "/auth/refresh",
@@ -207,6 +209,7 @@ export const server = createServer(async (req, res) => {
     return;
   }
   const publicRoute = [
+    "/gyms/search",
     "/auth/register",
     "/auth/login",
     "/auth/refresh",
@@ -248,6 +251,10 @@ export const server = createServer(async (req, res) => {
       chunks.push(chunk);
     }
     const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
+    if (req.url === "/gyms/search") {
+      send(200, await findGyms(body, process.env.GOOGLE_PLACES_API_KEY || ""));
+      return;
+    }
     const access = (req.headers.authorization || "").replace(/^Bearer /, "");
     if (req.url === "/auth/register") {
       send(201, await db.register(body.username, body.password));

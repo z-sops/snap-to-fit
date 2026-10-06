@@ -3,6 +3,8 @@ import {
   progressionSuggestion,
   isRestricted,
 } from "../core/schedule";
+import { router } from "expo-router";
+import { MusicControls } from "../components/MusicControls";
 import React, { useState, useEffect } from "react";
 import {
   Screen,
@@ -58,6 +60,8 @@ export default function Move() {
       title="Make time to move."
       subtitle={`${p.days} preferred sessions per week · ${p.experience}`}
     >
+      <Button secondary title="Choose workout music" onPress={() => router.push("/music")} />
+      <MusicControls />
       <Chips
         values={[
           { value: "gym", label: "Gym" },

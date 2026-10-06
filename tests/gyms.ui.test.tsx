@@ -1,0 +1,30 @@
+import React from 'react';
+import { test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+vi.mock('expo-router', () => ({ Link: ({children,href}: React.PropsWithChildren<{href:string}>) => <a href={href}>{children}</a>, usePathname: () => '/gyms' }));
+vi.mock('@expo/vector-icons', () => ({Ionicons: () => null}));
+vi.mock('expo-location', () => ({requestForegroundPermissionsAsync: vi.fn(async () => ({granted:false})), getCurrentPositionAsync: vi.fn(), Accuracy: {Balanced:3}}));
+vi.mock('../src/services/api', () => ({publicAPI: vi.fn(async () => ({gyms:[],mode:'area'}))}));
+import Gyms from '../src/app/gyms';
+import * as Location from 'expo-location';
+import { publicAPI } from '../src/services/api';
+beforeEach(() => vi.clearAllMocks());
+afterEach(cleanup);
+test('no location or provider request before consent and explicit action', () => {
+ render(<Gyms/>);
+ fireEvent.click(screen.getByRole('button',{name:'Use my current location'}));
+ expect(Location.requestForegroundPermissionsAsync).not.toHaveBeenCalled();
+ expect(publicAPI).not.toHaveBeenCalled();
+});
+test('denied location permission supports manual area instead', async () => {
+ render(<Gyms/>);
+ fireEvent.click(screen.getByRole('checkbox',{name:/Allow my search/}));
+ fireEvent.click(screen.getByRole('button',{name:'Use my current location'}));
+ await screen.findByText(/permission was declined/);
+ expect(publicAPI).not.toHaveBeenCalled();
+ expect(Location.getCurrentPositionAsync).not.toHaveBeenCalled();
+ fireEvent.change(screen.getByLabelText('Area, city and country'),{target:{value:'Karachi, Pakistan'}});
+ fireEvent.click(screen.getByRole('button',{name:'Search this area'}));
+ await screen.findByText(/No listed gyms found/);
+ expect(publicAPI).toHaveBeenCalledWith('/gyms/search',{area:'Karachi, Pakistan'});
+});

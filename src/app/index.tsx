@@ -107,6 +107,15 @@ export default function Today() {
         </Card>
       ) : null}
       <Card>
+        <H>Your workout soundtrack</H>
+        <Button secondary title="Music for my workout" onPress={() => router.push("/music")} />
+      </Card>
+      <Card>
+        <H>Find a gym nearby</H>
+        <P>Search your current location or an area anywhere in the world.</P>
+        <Button title="Find nearby gyms" onPress={() => router.push("/gyms")} />
+      </Card>
+      <Card>
         <H>Check in</H>
         <Row>
           <Metric label="BMI estimate" value={targets.bmi} />

@@ -29,3 +29,11 @@ Accounts, recoverable sessions, encrypted persistent backups/provider tokens, ex
 Photos and waist-to-height ratio track progress, not visceral fat or DEXA accuracy. Medical contexts pause automated nutrition/intensity prescriptions. Prescribed medicine reminders are one-time entries. Cloud backups are explicit and conflict-protected, not continuous sync. Progress photos stay on-device; restored reminders require re-enabling on that device. Web preview data is ephemeral. Logical deletion is not a forensic erasure guarantee.
 
 Core offline modules are free; Pro is currently wired to configurable AI allowance. No consumer price or active premium subscription is simulated. Competitor claims from the brief were not verified and must not be published as established facts.
+
+## Nearby gyms addition
+
+Mobile/web `/gyms` page, optional foreground location consent, manual global area search, radius selection, Google Places server adapter, nearest-first GPS listings and external directions added. Locations/listings are not saved to profile or backup. Live listings await Google Places credentials, billing and deployed backend; native permissions and browser geolocation await device testing. The external Google Maps search does not require our Places key.
+
+## Workout music addition
+
+External Spotify/Apple Music/YouTube Music launchers and session-local audio-file playback with workout controls added. Native background/lock-screen capability is configured; playback, interruptions, Bluetooth and picker behavior await real-device tests. Provider account linking and direct streaming controls are not implemented.

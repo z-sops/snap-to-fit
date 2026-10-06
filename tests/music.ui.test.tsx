@@ -1,0 +1,33 @@
+import React from 'react';
+import { test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+const mocks = vi.hoisted(() => ({ player: {pause:vi.fn(), play:vi.fn(),replace:vi.fn(),seekTo:vi.fn(),setActiveForLockScreen:vi.fn(),loop:false}, status:{isLoaded:true,playing:false,currentTime:0,duration:120,error:null,didJustFinish:false}, pick:vi.fn(), mode:vi.fn(), namespace:'guest' }));
+vi.mock('expo-audio', () => ({ useAudioPlayer:()=>mocks.player, useAudioPlayerStatus:()=>mocks.status, setAudioModeAsync:mocks.mode }));
+vi.mock('expo-document-picker', () => ({getDocumentAsync:mocks.pick}));
+vi.mock('../src/services/store',()=>({useStore:()=>({namespace:mocks.namespace})}));
+vi.mock('expo-router', () => ({ Link: ({children,href}: React.PropsWithChildren<{href:string}>) => <a href={href}>{children}</a>, usePathname: () => '/music' }));
+vi.mock('@expo/vector-icons', () => ({Ionicons: () => null}));
+import Music from '../src/app/music';
+import {MusicProvider} from '../src/services/music';
+beforeEach(() => {vi.clearAllMocks(); mocks.namespace='guest'; mocks.pick.mockResolvedValue({canceled:false,assets:[{name:'My song.mp3',uri:'file:test.mp3',mimeType:'audio/mpeg',size:1000}]});});
+afterEach(cleanup);
+const App = () => <MusicProvider><Music/></MusicProvider>;
+test('local track stays user-initiated and supports play and clear', async () => {
+ render(<App/>); expect(mocks.pick).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:'Choose my audio file'}));
+ await screen.findByText('My song.mp3'); expect(mocks.player.replace).toHaveBeenCalledWith({uri:'file:test.mp3'});
+ expect(mocks.player.play).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:'Play my music'}));
+ await waitFor(()=>expect(mocks.player.play).toHaveBeenCalled());
+ fireEvent.click(screen.getByRole('button',{name:'Stop and clear selected track'}));
+ await waitFor(()=>expect(screen.queryByText('My song.mp3')).toBeNull());
+});
+test('account switch drops selected music and a cancelled picker does not replace audio', async () => {
+ const view=render(<App/>);
+ fireEvent.click(screen.getByRole('button',{name:'Choose my audio file'})); await screen.findByText('My song.mp3');
+ mocks.namespace='second-account'; view.rerender(<App/>);
+ await waitFor(()=>expect(screen.queryByText('My song.mp3')).toBeNull());
+ mocks.pick.mockResolvedValue({canceled:true}); mocks.player.replace.mockClear();
+ fireEvent.click(screen.getByRole('button',{name:'Choose my audio file'}));
+ await waitFor(()=>expect(mocks.pick).toHaveBeenCalledTimes(2)); expect(mocks.player.replace).not.toHaveBeenCalled();
+});

@@ -66,6 +66,24 @@
           "resizeMode": "contain",
           "backgroundColor": "#DDF3A4"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Find nearby gyms when you choose to share your location.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundRecording": false,
+          "enableBackgroundPlayback": true
+        }
       ]
     ],
     "scheme": "snaptofit"

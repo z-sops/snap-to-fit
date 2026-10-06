@@ -98,3 +98,13 @@ Progress photos do not measure visceral fat. Medical contexts pause autonomous t
 Canonical source: https://github.com/z-sops/snap-to-fit. Every push and pull request runs type checking, lint, tests and Android/iOS/web bundle exports in GitHub Actions. Secrets and local health databases are excluded from Git.
 
 Clone this repository for a fresh checkout; use `git pull --ff-only` for later updates, followed by `npm ci` if dependencies change. Commit and push reviewed source changes to keep GitHub current. Git does not automatically upload unsaved local edits or update installed mobile apps. Store releases and Expo OTA updates require separately configured signing, builds and release channels.
+
+## Nearby gyms (mobile and web)
+
+`/gyms` is accessible without onboarding. Today links to this page. Users opt in before a one-time location request or an explicit area search. GPS results use selectable 1/5/10/25 km circles and nearest-first straight-line distances; area results use provider relevance. Gym cards show name/address and open directions/details in Google Maps. No background location collection, saved location or sponsored ranking is added.
+
+Set `GOOGLE_PLACES_API_KEY` on the server, enable Places API (New) and billing, restrict the key to the provider API/server IPs and configure quotas. Use the existing `EXPO_PUBLIC_API_URL` and exact `WEB_ORIGIN`. The public search endpoint has the existing IP rate limit; apply gateway abuse controls and project quotas before public launch. Web location requires HTTPS (localhost for development). Without a key/server, the external Search Google Maps button remains usable, while in-app listings report configuration errors. Coverage depends on provider availability and listings. No live provider or real-device location test has been performed. Include location/provider processing in published policies.
+
+## Workout music
+
+Music opens Spotify, Apple Music or YouTube Music with official web links; platform app-link handling may open their installed apps. These are external-service launchers, not OAuth account connectors or embedded streaming SDKs. Direct in-app provider playback/library access needs separate approved provider SDK integrations and credentials. The local player uses `expo-audio` and `expo-document-picker`: one selected audio file, play/pause, seek, repeat and workout-screen controls. Native background/lock-screen playback is configured but requires physical-device testing. No microphone access or music uploads. Selection is session-only and file-picker copies may remain in the OS-managed cache; music is excluded from health backups. Protected service downloads cannot be played by this importer.
