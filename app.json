@@ -1,0 +1,73 @@
+{
+  "expo": {
+    "name": "Snap to Fit",
+    "slug": "snap-to-fit",
+    "version": "0.3.0",
+    "orientation": "portrait",
+    "icon": "./assets/snap-icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zunitech.snaptofit",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "Read steps, weight and heart rate that you choose to share with Snap to Fit.",
+        "NSHealthUpdateUsageDescription": "Snap to Fit does not write health data."
+      }
+    },
+    "android": {
+      "package": "com.zunitech.snaptofit",
+      "allowBackup": false,
+      "permissions": [
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_WEIGHT",
+        "android.permission.health.READ_HEART_RATE"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-sqlite",
+        {
+          "useSQLCipher": true
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose meal or private progress photos.",
+          "cameraPermission": "Take meal photos for nutrition estimates.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-notifications",
+      "react-native-health-connect",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Read steps, weight and heart rate that you choose to share.",
+          "NSHealthUpdateUsageDescription": "Snap to Fit does not write health data.",
+          "background": false
+        }
+      ],
+      "expo-background-task",
+      "expo-sharing",
+      "./plugins/purchases.js",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/snap-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#DDF3A4"
+        }
+      ]
+    ],
+    "scheme": "snaptofit"
+  }
+}
