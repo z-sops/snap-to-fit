@@ -3,9 +3,9 @@
 ## Verified in this workspace
 
 - TypeScript strict checks and ESLint.
-- 56 automated core/backend tests, including separate-account backup isolation, ciphertext owner binding, stale-backup conflicts, session rotation/revocation, concurrent recovery-code single-use, deletion cascades, quota limits, weekly calendars and provider token reload.
-- 11 interaction/notification-adapter tests: serialized state/account isolation, manual food entry, AI consent, medical photo acknowledgement, routine editing and check-ins, reminder permission/capacity handling, partial-failure cleanup and education opt-in. Native APIs in these adapter tests are mocked; real device behavior is not verified.
-- Android/iOS Hermes bundle compilation and static web export with 18 routes. No signed native installer is included.
+- 64 automated core/backend tests, including separate-account backup isolation, ciphertext owner binding, stale-backup conflicts, session rotation/revocation, concurrent recovery-code single-use, deletion cascades, quota limits, weekly calendars and provider token reload.
+- 15 interaction/notification-adapter tests: serialized state/account isolation, manual food entry, AI consent, medical photo acknowledgement, routine editing and check-ins, reminder permission/capacity handling, partial-failure cleanup and education opt-in. Native APIs in these adapter tests are mocked; real device behavior is not verified.
+- Android/iOS Hermes bundle compilation and static web export with 20 routes. No signed native installer is included.
 
 ## Added in v0.3
 
@@ -37,3 +37,7 @@ Mobile/web `/gyms` page, optional foreground location consent, manual global are
 ## Workout music addition
 
 External Spotify/Apple Music/YouTube Music launchers and session-local audio-file playback with workout controls added. Native background/lock-screen capability is configured; playback, interruptions, Bluetooth and picker behavior await real-device tests. Provider account linking and direct streaming controls are not implemented.
+
+## Release infrastructure work
+
+The current web bundle is deployed as an owner-private test site at https://snap-to-fit.zbaig-newacct.chatgpt.site. This is a snapshot of the verified bundle; GitHub pushes alone do not republish the Site. Web state remains session-only and online service credentials are not configured. The native Android prebuild completed successfully in this workspace. A GitHub Actions workflow builds standalone test-signed Android APKs on relevant main-branch pushes and offers a manual trigger. A successful native APK build and physical-device acceptance are separate checks; see the workflow’s current result. Detailed deployment/account requirements are in `docs/RELEASE.md`.
