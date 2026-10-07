@@ -1,4 +1,5 @@
 import { exercises, type Exercise } from "./workouts";
+import { exerciseRestricted } from "./safety";
 import { localDay, type Profile, type WorkoutLog, type Place } from "./model";
 export interface ScheduledDay {
   date: string;
@@ -19,12 +20,7 @@ const daysByCount: Record<number, number[]> = {
   5: [1, 2, 3, 5, 6],
 };
 export function isRestricted(p: Profile) {
-  return (
-    p.conditions.length > 0 ||
-    p.insulin ||
-    !!p.medicines.trim() ||
-    !!p.injuries.trim()
-  );
+  return exerciseRestricted(p);
 }
 export function weeklySchedule(
   p: Profile,

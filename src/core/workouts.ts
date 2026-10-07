@@ -1,4 +1,5 @@
 import { type Profile, type Place, type WorkoutLog } from "./model";
+import { exerciseRestricted } from "./safety";
 export interface Exercise {
   id: string;
   name: string;
@@ -294,11 +295,7 @@ const additional: {
 ];
 exercises.push(...additional);
 export function workoutPlan(p: Profile, place: Place, session: number) {
-  const restricted =
-    p.conditions.length > 0 ||
-    p.insulin ||
-    !!p.medicines.trim() ||
-    !!p.injuries.trim();
+  const restricted = exerciseRestricted(p);
   if (restricted)
     return {
       restricted: true,

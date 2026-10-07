@@ -13,7 +13,7 @@ import {
 import { useStore } from "../services/store";
 import { api } from "../services/api";
 import { nutritionTargets, todayTotals } from "../core/nutrition";
-import { urgentMessage, medicationRequest } from "../core/safety";
+import { urgentMessage, medicationRequest, restrictedHealthAdvice } from "../core/safety";
 import { uid, type Message } from "../core/model";
 export default function Coach() {
   const { state, update } = useStore();
@@ -28,7 +28,7 @@ export default function Coach() {
       const user: Message = { id: uid(), role: "user", text: question.trim() };
       try {
         await update((s) => ({ ...s, messages: [...s.messages, user] }));
-        let answer = urgentMessage(question);
+        let answer = urgentMessage(question) || restrictedHealthAdvice(question);
         if (!answer && medicationRequest(question))
           answer =
             "I can help you record your prescribed schedule and prepare questions for your prescriber. I cannot recommend doses, injection breaks, stopping, tapering, or insulin changes.";
@@ -52,6 +52,10 @@ export default function Coach() {
               medicines: p.medicines,
               allergies: p.allergies,
               diet: p.diet,
+              country: p.country,
+              dietType: p.dietType,
+              allergyFoods: p.allergyFoods,
+              familiarFoods: p.familiarFoods,
               injuries: p.injuries,
               experience: p.experience,
               targetWeight: p.targetWeight,
@@ -100,6 +104,11 @@ export default function Coach() {
           It explains estimates and can suggest meals; it does not diagnose or
           change medication. Selected profile details are sent only when you
           ask.
+        </P>
+        <P>
+          AI answers can be wrong. This chat does not monitor emergencies or
+          contact emergency services. It does not calculate fertile or safe
+          days, diagnose reproductive conditions or prescribe cycle-based training.
         </P>
         <Chips
           values={[

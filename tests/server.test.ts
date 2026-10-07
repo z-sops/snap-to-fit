@@ -56,6 +56,13 @@ test("injection break is not recommended", async () => {
   assert.equal(r.status, 200);
   assert.match((await r.json()).text, /prescriber/);
 });
+test("restricted steroid and reproductive requests do not call an AI provider", async () => {
+  for (const question of ["Give me a steroid stack and dose", "Predict my ovulation days", "Diagnose PCOS from my logs"]) {
+    const response = await post("/chat", { question });
+    assert.equal(response.status, 200);
+    assert.match((await response.json()).text, /cannot/);
+  }
+});
 test("invalid profile rejected before upstream call", async () => {
   const r = await post("/chat", {
     question: "My protein target",

@@ -308,8 +308,10 @@ export default function Health() {
       <Card>
         <H>Recent readings</H>
         <P>
-          Record-keeping only. A single reading cannot diagnose a condition or
-          set a medication dose.
+          Logs with limited notices for manually entered low glucose or very
+          high blood pressure. No notice does not establish safety. This is not
+          continuous monitoring; a single reading cannot diagnose a condition
+          or set a medication dose.
         </P>
         {[...state.readings]
           .reverse()

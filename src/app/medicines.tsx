@@ -126,7 +126,8 @@ export default function Medicines() {
         />
         <P>
           Reminders are one-time and do not advance your prescribed schedule.
-          Confirm and add the next date yourself.
+          They can be delayed or missed and are not a medication-adherence
+          guarantee. Confirm and add the next date yourself.
         </P>
       </Card>
       <Card>

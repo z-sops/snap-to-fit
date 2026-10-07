@@ -151,6 +151,10 @@ export default function Settings() {
             : "Health profiles, logs and progress photos use encrypted local storage. Cloud backups are optional and uploaded from Account."}
         </P>
         <P>
+          Photo originals and temporary processing files can remain outside the
+          encrypted database. Clearing this profile does not erase those copies.
+        </P>
+        <P>
           Health connections read daily steps, available weight and heart rate
           only. Revoke access in Apple Health or Android Health Connect. No
           advertising trackers are included.

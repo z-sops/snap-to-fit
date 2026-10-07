@@ -1,3 +1,21 @@
+import type { Profile } from "./model";
+
+// Product scope limits, not a clinical assessment or clearance to exercise.
+export function exerciseRestricted(p: Profile) {
+  return p.conditions.length > 0 || p.insulin || !!p.medicines.trim() ||
+    !!p.injuries.trim() || p.weight / (p.height / 100) ** 2 < 18.5 || p.age > 78;
+}
+
+export function restrictedHealthAdvice(text: string): string | null {
+  if (/\b(anabolic|steroids?|testosterone|trenbolone|anavar|dianabol|sarms?|post.?cycle|pct)\b/i.test(text) &&
+      /\b(dos(e|es|ing|age)|stack(s|ing)?|cycle(s|ing)?|protocol|mg|units|how (much|to use)|take|inject|taper)\b/i.test(text))
+    return "I cannot provide anabolic-steroid misuse doses, stacks, cycles or post-cycle protocols. Misuse can cause serious harm. Discuss your use with a clinician; do not stop or change prescribed steroid medicines on your own.";
+  if (/\b(ovulat\w*|fertil\w*|contracept\w*|safe days?|pregnan\w*|pcos)\b/i.test(text) &&
+      /\b(predict\w*|calculat\w*|diagnos\w*|detect\w*|am i|chance|risk|window|days?|avoid|prevent|confirm|when)\b/i.test(text))
+    return "Snap to Fit cannot determine ovulation, fertile or safe days, pregnancy probability or a PCOS diagnosis. Do not use its estimates for contraception or conception decisions. Ask a qualified clinician about reproductive health or testing.";
+  return null;
+}
+
 export function urgentMessage(text: string): string | null {
   if (
     /chest (pain|pressure|tightness)|cannot breathe|can.t breathe|faint(ed|ing)?|unconscious|stroke|severe abdominal pain|vomiting blood/i.test(

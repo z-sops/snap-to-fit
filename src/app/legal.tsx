@@ -8,9 +8,10 @@ export default function Legal() {
         <H>Fitness estimates and tracking</H>
         <P>
           Snap to Fit is for adults aged 18 or older. Food estimates, calorie
-          targets and movement demonstrations are general fitness information.
-          They do not diagnose conditions, measure visceral fat or prescribe
-          medication. Progress photos show visual changes only. Use your
+          targets and movement demonstrations are intended as general fitness
+          information, not diagnosis or treatment. AI estimates can be wrong;
+          animations have not received a complete professional form review.
+          Progress photos show visual changes only. Use your
           prescribed treatment plan and your sensor’s official app for glucose
           alerts.
         </P>
@@ -19,8 +20,10 @@ export default function Legal() {
         <H>Information you control</H>
         <P>
           On supported phones, profile details, health logs, meals, meal plans,
-          routine check-ins, chat and progress photos are stored in an encrypted
-          device database. The browser preview is temporary. Health permissions
+          routine check-ins, chat and saved progress-photo copies are stored in
+          an encrypted device database. Photo selection/processing can also
+          leave temporary files or originals in your photo library outside that
+          database. The browser preview is temporary. Health permissions
           are read-only and optional; revoke them in your device health
           settings. Progress photos remain on your device.
         </P>
@@ -34,7 +37,8 @@ export default function Legal() {
         <P>
           An optional account stores a username, salted password hash,
           recovery-code hash and session hashes. Manual backups are encrypted on
-          the service. Connecting Dexcom stores encrypted authorization tokens
+          the service using a server-held key; this is not end-to-end encryption.
+          Connecting Dexcom stores encrypted authorization tokens
           on that service. Usage counters enforce AI limits. No advertising
           trackers are included.
         </P>
@@ -49,9 +53,21 @@ export default function Legal() {
         <P>
           Settings exports your logs and clears your local profile. Account lets
           you upload or restore backups, sign out, recover access or permanently
-          delete server-side account records. Local clear does not delete a
+          delete records in the active service database. Logical deletion is
+          not guaranteed forensic erasure; operator backups and provider copies
+          need their own retention/deletion process. Local clear does not delete a
           cloud backup. Store subscriptions must be cancelled separately in
           Apple or Google subscription settings.
+        </P>
+      </Card>
+      <Card>
+        <H>Reading notices and reminders</H>
+        <P>
+          Manual glucose and blood-pressure entries can show limited threshold
+          notices. These are not continuous monitoring or a complete assessment:
+          no notice does not mean a reading or workout is safe. Notifications
+          can be delayed or missed. Follow your existing care plan and official
+          sensor alerts; this app does not contact emergency services.
         </P>
       </Card>
       <Card>

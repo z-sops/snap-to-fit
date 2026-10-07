@@ -255,6 +255,10 @@ export default function Account() {
               prevents silent overwrite. Photos and reminder identifiers are not
               uploaded.
             </P>
+            <P>
+              Backups are encrypted at rest with a server-held key. The service
+              can decrypt them for restore; this is not end-to-end encryption.
+            </P>
           </Card>
           <Card>
             <H>Delete my account permanently</H>
@@ -262,6 +266,11 @@ export default function Account() {
               This removes server-side sessions, backups, CGM tokens and usage
               records. It also removes this account’s local profile. Other
               accounts and the offline guest profile remain separate.
+            </P>
+            <P>
+              This is deletion from the active databases, not guaranteed forensic
+              erasure. Provider records, operator snapshots, store billing and
+              original or temporary photos have separate deletion processes.
             </P>
             <Field
               label="Confirm current password"

@@ -99,8 +99,10 @@ export default function Journey() {
       <Card>
         <H>Private progress photos</H>
         <P>
-          Optional belly/body photos stay in encrypted device storage in the
-          native app. They are never sent to the food-analysis service. We do
+          Saved belly/body-photo copies use the encrypted native device database.
+          Selection/processing may leave temporary files; originals can remain
+          in your photo library. Progress-photo records are excluded from cloud
+          backups and food-analysis requests. We do
           not estimate visceral fat or body-fat percentage from them.
         </P>
         <Button

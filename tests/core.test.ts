@@ -15,7 +15,8 @@ import {
 } from "../src/core/nutrition";
 import { workoutPlan, lastPerformance } from "../src/core/workouts";
 import { waistRatio, plateauReview } from "../src/core/trends";
-import { urgentMessage, medicationRequest } from "../src/core/safety";
+import { urgentMessage, medicationRequest, restrictedHealthAdvice } from "../src/core/safety";
+import { weeklySchedule } from "../src/core/schedule";
 import { checkQuestion, validatePhotoResult } from "../server/policy.mjs";
 const profile = {
   ...newProfile,
@@ -185,4 +186,31 @@ test("emergency symptoms bypass AI", () =>
 test("medication-break requests are blocked client and server", () => {
   assert.ok(medicationRequest("Should I stop my injection?"));
   assert.match(checkQuestion("Can I reduce insulin dose?") || "", /cannot/);
+});
+test("steroid protocols and reproductive predictions are refused by both paths", () => {
+  for (const question of [
+    "Give me an anabolic steroid cycle and dosing protocol",
+    "How much testosterone should I inject?",
+    "Calculate my safe days to avoid pregnancy",
+    "Predict my fertile window",
+    "Diagnose PCOS from my periods",
+  ]) {
+    const reply = restrictedHealthAdvice(question);
+    assert.ok(reply, question);
+    assert.equal(checkQuestion(question), reply);
+  }
+  for (const question of ["Explain steroid misuse risks", "What are period cramps?", "How can I record meals?"])
+    assert.equal(restrictedHealthAdvice(question), null);
+  assert.match(checkQuestion("I have chest pain; calculate my fertile days")!, /emergency/);
+});
+test("both exercise planners pause underweight and out-of-scope age intensity", () => {
+  for (const p of [
+    { ...profile, goal: "maintain" as const, weight: 45, targetWeight: 45 },
+    { ...profile, age: 79 },
+  ]) {
+    assert.ok(workoutPlan(p, "home", 0).restricted);
+    assert.ok(weeklySchedule(p, [], "home").every(d =>
+      d.restricted && d.sets === 0 && d.reps === 0 && d.duration === 0));
+  }
+  assert.equal(workoutPlan(profile, "home", 0).restricted, false);
 });
