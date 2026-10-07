@@ -3,7 +3,7 @@
 ## Verified in this workspace
 
 - TypeScript strict checks and ESLint.
-- 64 automated core/backend tests, including separate-account backup isolation, ciphertext owner binding, stale-backup conflicts, session rotation/revocation, concurrent recovery-code single-use, deletion cascades, quota limits, weekly calendars and provider token reload.
+- 66 automated core/backend tests, including separate-account backup isolation, ciphertext owner binding, stale-backup conflicts, session rotation/revocation, concurrent recovery-code single-use, deletion cascades, quota limits, weekly calendars and provider token reload.
 - 15 interaction/notification-adapter tests: serialized state/account isolation, manual food entry, AI consent, medical photo acknowledgement, routine editing and check-ins, reminder permission/capacity handling, partial-failure cleanup and education opt-in. Native APIs in these adapter tests are mocked; real device behavior is not verified.
 - Android/iOS Hermes bundle compilation and static web export with 20 routes. No signed native installer is included.
 
@@ -21,7 +21,7 @@ Accounts, recoverable sessions, encrypted persistent backups/provider tokens, ex
 - Live AI and Dexcom tests require credentials. Commercial Dexcom access and Abbott partner integration require provider approval. Abbott is not implemented; background CGM polling and emergency monitoring are not implemented.
 - Public privacy/terms URLs, operator contact, data-retention policy, store health-data declarations, regional availability and medical-claim review are operator launch work.
 - Pricing/products are undecided. Billing is disabled until configured; purchase/restore code is unverified against live store products.
-- Browser automation could not start. DOM tests are not a successful browser/device visual review.
+- Local browser launch is blocked by socket restrictions; the published private Site reaches a ChatGPT sign-in wall in the verification browser. DOM tests and asset checks are not a successful browser/device visual review.
 - Programmatic movement demonstrations are illustrations, not a comprehensive professionally reviewed exercise asset library. Generic variants may share demonstrations; equipment and form need review.
 
 ## Deliberate product boundaries
@@ -41,3 +41,25 @@ External Spotify/Apple Music/YouTube Music launchers and session-local audio-fil
 ## Release infrastructure work
 
 The current web bundle is deployed as an owner-private test site at https://snap-to-fit.zbaig-newacct.chatgpt.site. This is a snapshot of the verified bundle; GitHub pushes alone do not republish the Site. Web state remains session-only and online service credentials are not configured. The native Android prebuild completed successfully in this workspace. A GitHub Actions workflow builds standalone test-signed Android APKs on relevant main-branch pushes and offers a manual trigger. A successful native APK build and physical-device acceptance are separate checks; see the workflow’s current result. Detailed deployment/account requirements are in `docs/RELEASE.md`.
+
+## UI, human movement and wearable connection update
+
+Shared typography, navigation, inputs and cards now use the navy/blue visual system.
+The dashboard includes a finite animated hero and a seven-day activity bar chart.
+Health and Journey include interactive reading charts using actual logs, chronological
+date spacing, consistent units and explicit empty states. Reduced-motion preferences
+are respected. No illustrative health readings are presented as user data.
+
+The primitive capsule/cylinder person is replaced with a skinned CC0 MakeHuman
+anatomical human, fitness clothing, studio lighting and camera/playback/skin-tone
+controls. Walking and push-up use CC0 baked clips; other motions remain illustrative
+programmatic poses and need a professional form/equipment review. Embedded assets
+work without a third-party model request; see docs/licenses/HUMAN-MOVEMENT.md.
+
+Dedicated Apple Watch, Android health and Fitbit / Google Health setup cards now
+explain and trigger the existing native readers on supported platforms. Apple Watch
+uses Apple Health on iPhone; Fitbit uses data shared to Health Connect on Android.
+There is no standalone watchOS app, direct Fitbit cloud OAuth, or web watch access.
+Real tracker/device sync and permissions remain acceptance checks.
+
+Validation for this update: lint/typecheck, 66 core/backend tests, 15 UI tests, 20-route web export, native Android prebuild (minSdk 26), and 12 finite skinned poses each for the embedded walking and push-up clips. GPU rendering and physical-device wearable sync remain unverified.

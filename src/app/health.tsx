@@ -1,6 +1,11 @@
+import { Platform, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { TrendChart } from "../components/visuals";
+import { readingTrend } from "../core/chart-data";
 import React, { useState } from "react";
 import { router } from "expo-router";
 import {
+  colors,
   Screen,
   Card,
   H,
@@ -25,34 +30,100 @@ export default function Health() {
   const [context, setContext] = useState("");
   const [snapshot, setSnapshot] = useState<HealthSnapshot | null>(null);
   const [busy, setBusy] = useState(false);
+  async function refreshHealth() {
+    setBusy(true);
+    try {
+      setSnapshot(await connectHealth());
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <Screen
       title="Know your baseline."
       subtitle="A clear record for you—and your next care appointment."
     >
       <Card>
-        <H>Connected health</H>
+        <H>Your watches & trackers</H>
         <P>
-          With your permission, read daily steps, available weight and
-          heart-rate records from Apple Health or Health Connect. Glucose and BP
-          use manual logs in this build.
+          Choose your device. Read-only access keeps you in control of what you
+          share.
         </P>
-        <Button
-          disabled={busy}
-          title={
-            busy ? "Reading health data…" : "Connect & refresh health data"
-          }
-          onPress={() =>
-            act(async () => {
-              setBusy(true);
-              try {
-                setSnapshot(await connectHealth());
-              } finally {
-                setBusy(false);
+        {[
+          {
+            name: "Apple Watch",
+            icon: "watch-outline" as const,
+            platform: "ios",
+            route: "Via Apple Health on iPhone",
+            detail:
+              "Pair your watch with iPhone and let it sync to Apple Health. Then allow Snap to Fit to read steps, weight and heart rate. This is an iPhone connection, not a standalone watch app.",
+          },
+          {
+            name: "Android health",
+            icon: "heart-circle-outline" as const,
+            platform: "android",
+            route: "Via Health Connect",
+            detail:
+              "Enable Health Connect on your phone. Let your supported tracker app share steps, weight and heart rate, then grant Snap to Fit read access.",
+          },
+          {
+            name: "Fitbit / Google Health",
+            icon: "fitness-outline" as const,
+            platform: "android",
+            route: "Via Health Connect on Android",
+            detail:
+              "Sync your Fitbit to its companion app. In Fitbit / Google Health connections, enable sharing to Health Connect for the data you want. Then refresh here. This connection does not sign into your Fitbit cloud account.",
+          },
+        ].map((device) => (
+          <View
+            key={device.name}
+            style={{
+              borderWidth: 1,
+              borderColor: colors.line,
+              borderRadius: 18,
+              padding: 16,
+              marginBottom: 12,
+            }}
+          >
+            <Row>
+              <Ionicons name={device.icon} size={30} color={colors.green} />
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{ fontSize: 18, color: colors.ink, fontWeight: "700" }}
+                >
+                  {device.name}
+                </Text>
+                <Text
+                  style={{ fontSize: 12, color: colors.muted, marginTop: 4 }}
+                >
+                  {device.route}
+                </Text>
+              </View>
+            </Row>
+            <P>{device.detail}</P>
+            <Text
+              style={{ color: colors.green, fontSize: 12, fontWeight: "700" }}
+            >
+              {Platform.OS === device.platform
+                ? "Native reader available · device verification pending"
+                : `Connect in the ${device.platform === "ios" ? "iPhone" : "Android"} app`}
+            </Text>
+            <Button
+              disabled={busy || Platform.OS !== device.platform}
+              title={
+                busy
+                  ? "Reading health data…"
+                  : `Connect / refresh ${device.name}`
               }
-            })
-          }
-        />
+              onPress={() => act(refreshHealth)}
+            />
+          </View>
+        ))}
+        <P>
+          Website preview cannot read watch data. No samples can mean no
+          permission, no synced records, or an unsupported data type. We never
+          treat missing data as zero.
+        </P>
         {snapshot ? (
           <>
             <Row>
@@ -187,6 +258,50 @@ export default function Health() {
               setSecond("");
               setContext("");
             })
+          }
+        />
+      </Card>
+      <Card>
+        <H>Your reading trends</H>
+        <Chips
+          values={[
+            { value: "glucose", label: "Glucose" },
+            { value: "weight", label: "Weight" },
+            { value: "waist", label: "Waist" },
+            { value: "bp", label: "Blood pressure" },
+          ]}
+          selected={kind}
+          onChange={(v) => {
+            setKind(v);
+            setValue("");
+            setSecond("");
+          }}
+        />
+        <TrendChart
+          points={readingTrend(
+            state.readings,
+            kind,
+            kind === "glucose"
+              ? unit
+              : kind === "weight"
+                ? "kg"
+                : kind === "waist"
+                  ? "cm"
+                  : "mmHg",
+          )}
+          label={
+            kind === "bp"
+              ? "Systolic blood pressure"
+              : kind[0].toUpperCase() + kind.slice(1)
+          }
+          unit={
+            kind === "glucose"
+              ? unit
+              : kind === "weight"
+                ? "kg"
+                : kind === "waist"
+                  ? "cm"
+                  : "mmHg"
           }
         />
       </Card>

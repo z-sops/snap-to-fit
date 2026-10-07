@@ -1,3 +1,5 @@
+import { TrendChart } from "../components/visuals";
+import { readingTrend } from "../core/chart-data";
 import React from "react";
 import { Image } from "react-native";
 import { router } from "expo-router";
@@ -83,6 +85,11 @@ export default function Journey() {
       </Card>
       <Card>
         <H>Weight history</H>
+        <TrendChart
+          points={readingTrend(state.readings, "weight", "kg")}
+          label="Weight"
+          unit="kg"
+        />
         {weights.map((r) => (
           <P key={r.id}>
             {new Date(r.at).toLocaleDateString()} · {r.value} kg

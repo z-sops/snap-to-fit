@@ -1,3 +1,5 @@
+import { FitnessHero, BarChart } from "../components/visuals";
+import { weeklyActivity } from "../core/chart-data";
 import { effectiveProfile } from "../core/progress";
 import { educationCard } from "../core/routine";
 import { buildMealPlan } from "../core/meal-planning";
@@ -30,19 +32,27 @@ export default function Today() {
       title={`Let's move, ${p.name}.`}
       subtitle="Small steps. A stronger tomorrow."
     >
-      <Card tint>
-        <P>YOUR DAILY FOCUS</P>
-        <H>
-          {p.goal === "lose"
+      <FitnessHero
+        title={
+          p.goal === "lose"
             ? "Build habits that last."
             : p.goal === "gain"
               ? "Fuel your strength."
-              : "Find your balance."}
-        </H>
-        <P>Log a meal, make time to move, and check in with yourself.</P>
+              : "Find your balance."
+        }
+        detail="Log a meal. Make time to move. Build a routine that feels like you."
+      >
         <Button
           title="Open today’s workout"
           onPress={() => router.push("/move")}
+        />
+      </FitnessHero>
+      <Card>
+        <H>Your activity this week</H>
+        <BarChart
+          points={weeklyActivity(state.workouts)}
+          label="Exercise entries"
+          unit="entries"
         />
       </Card>
       <Card>
@@ -107,8 +117,19 @@ export default function Today() {
         </Card>
       ) : null}
       <Card>
-        <H>Your workout soundtrack</H>
-        <Button secondary title="Music for my workout" onPress={() => router.push("/music")} />
+        <H>Connected to your lifestyle</H>
+        <P>
+          Apple Watch, Fitbit and Android health data, with your permission.
+        </P>
+        <Button
+          title="Connect my watch or tracker"
+          onPress={() => router.push("/health")}
+        />
+        <Button
+          secondary
+          title="Music for my workout"
+          onPress={() => router.push("/music")}
+        />
       </Card>
       <Card>
         <H>Find a gym nearby</H>

@@ -14,13 +14,13 @@ import {
 import { Link, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 export const colors = {
-  ink: "#152D28",
-  muted: "#677D75",
-  green: "#157A55",
-  lime: "#DDF3A4",
-  bg: "#F5F7F3",
-  line: "#DEE7DF",
-  amber: "#FFF0D4",
+  ink: "#17213B",
+  muted: "#5D6880",
+  green: "#355AF4",
+  lime: "#EEF2FF",
+  bg: "#F4F6FA",
+  line: "#E2E7F0",
+  amber: "#FFF6E7",
 };
 export function notify(message: string) {
   if (Platform.OS === "web") window.alert(message);
@@ -60,7 +60,7 @@ export function Screen({
         <View style={s.brand}>
           <Text style={s.logo}>
             snap<Text style={{ color: colors.green }}> to fit</Text>
-            <Text style={{ fontSize: 12 }}> ●</Text>
+            <Text style={{ fontSize: 11, color: colors.green }}> ✦</Text>
           </Text>
           <Link href="/settings" accessibilityLabel="Open settings">
             <Ionicons name="settings-outline" size={24} color={colors.ink} />
@@ -75,18 +75,32 @@ export function Screen({
           <View
             accessibilityRole="summary"
             style={{
-              padding: 14,
-              borderRadius: 14,
+              padding: 12,
+              borderRadius: 12,
+              borderLeftWidth: 3,
+              borderLeftColor: "#D89D36",
               backgroundColor: colors.amber,
               marginBottom: 18,
             }}
           >
             <Text
-              style={{ color: colors.ink, fontSize: 13, fontWeight: "600" }}
+              style={{
+                color: colors.ink,
+                fontSize: 12,
+                lineHeight: 18,
+                fontWeight: "600",
+              }}
             >
               {doctorNotice}
             </Text>
-            <Text style={{ color: colors.ink, fontSize: 12, marginTop: 8 }}>
+            <Text
+              style={{
+                color: colors.ink,
+                fontSize: 11,
+                lineHeight: 17,
+                marginTop: 6,
+              }}
+            >
               {steroidNotice}
             </Text>
           </View>
@@ -97,7 +111,13 @@ export function Screen({
           {nav.map(([href, label, icon]) => (
             <Link key={href} href={href} asChild>
               <Pressable
-                style={s.navItem}
+                style={[
+                  s.navItem,
+                  path === href && {
+                    backgroundColor: colors.lime,
+                    borderRadius: 16,
+                  },
+                ]}
                 accessibilityRole="button"
                 accessibilityLabel={label}
               >
@@ -321,7 +341,7 @@ export function Progress({ value, total }: { value: number; total: number }) {
 }
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
-  shell: { flex: 1, width: "100%", maxWidth: 680, alignSelf: "center" },
+  shell: { flex: 1, width: "100%", maxWidth: 800, alignSelf: "center" },
   brand: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -331,10 +351,10 @@ const s = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.line,
   },
-  logo: { fontSize: 23, fontWeight: "800", letterSpacing: -1 },
-  content: { padding: 22, paddingBottom: 28 },
+  logo: { fontSize: 25, fontWeight: "800", letterSpacing: -1 },
+  content: { padding: 20, paddingBottom: 28 },
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: "800",
     letterSpacing: -1,
     color: colors.ink,
@@ -347,20 +367,20 @@ const s = StyleSheet.create({
     marginBottom: 24,
   },
   card: {
-    padding: 21,
-    borderRadius: 24,
+    padding: 22,
+    borderRadius: 22,
     backgroundColor: "white",
     borderWidth: 1,
     borderColor: colors.line,
     marginBottom: 16,
   },
   heading: {
-    fontSize: 19,
+    fontSize: 21,
     fontWeight: "700",
     color: colors.ink,
     marginBottom: 12,
   },
-  body: { fontSize: 14, lineHeight: 22, color: colors.muted, marginBottom: 10 },
+  body: { fontSize: 15, lineHeight: 24, color: colors.muted, marginBottom: 10 },
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -369,15 +389,15 @@ const s = StyleSheet.create({
   },
   button: {
     backgroundColor: colors.green,
-    borderRadius: 14,
-    minHeight: 48,
+    borderRadius: 15,
+    minHeight: 52,
     paddingHorizontal: 18,
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 10,
   },
-  buttonText: { color: "white", fontWeight: "700", fontSize: 14 },
+  buttonText: { color: "white", fontWeight: "700", fontSize: 15 },
   label: {
     fontSize: 12,
     fontWeight: "600",
@@ -403,15 +423,16 @@ const s = StyleSheet.create({
     paddingVertical: 11,
   },
   metric: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "800",
     color: colors.ink,
     marginBottom: 6,
   },
   nav: {
     flexDirection: "row",
-    paddingBottom: 12,
-    paddingTop: 12,
+    paddingBottom: 8,
+    paddingTop: 8,
+    paddingHorizontal: 8,
     backgroundColor: "white",
     borderTopWidth: 1,
     borderColor: colors.line,

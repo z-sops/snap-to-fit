@@ -24,3 +24,5 @@ Configure the mobile/web build with `EXPO_PUBLIC_API_URL` pointing to that HTTPS
 ## Acceptance before public launch
 
 Install on physical Android/iOS devices and check encrypted storage after restart, account switching/deletion, reminders across timezone changes, camera consent, health read permissions, gym permission denial, local audio and lock-screen/Bluetooth interruptions, purchases and accessibility. Review exercise form and every health claim. Finalize operator identity/contact, retention/deletion policy, regional availability and store disclosures. Publish reviewed privacy/terms pages; no operator/contact identity has been invented in this repository.
+
+Android minimum SDK is 26 (Android 8) to satisfy the bundled Health Connect library. The first APK workflow failed at manifest merge with minSdk 24; the config plugin now sets 26. Health Connect itself requires a supported device/OS and enabled sharing.

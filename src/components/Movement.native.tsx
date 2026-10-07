@@ -7,7 +7,7 @@ export function Movement({ motion }: { motion: Exercise["motion"] }) {
   return (
     <View
       style={{
-        height: 320,
+        height: 420,
         borderRadius: 20,
         overflow: "hidden",
         marginBottom: 16,
@@ -19,7 +19,7 @@ export function Movement({ motion }: { motion: Exercise["motion"] }) {
         javaScriptEnabled
         scrollEnabled={false}
         onShouldStartLoadWithRequest={(r) => r.url === "about:blank"}
-        accessibilityLabel="Illustrative 3D movement model"
+        accessibilityLabel="Human 3D exercise demonstration"
       />
     </View>
   );
