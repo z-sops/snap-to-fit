@@ -13,12 +13,6 @@ export interface ScheduledDay {
   duration: number;
   completed: boolean;
 }
-const daysByCount: Record<number, number[]> = {
-  2: [1, 4],
-  3: [1, 3, 5],
-  4: [1, 2, 4, 6],
-  5: [1, 2, 3, 5, 6],
-};
 export function isRestricted(p: Profile) {
   return exerciseRestricted(p);
 }
@@ -31,7 +25,7 @@ export function weeklySchedule(
   const monday = new Date(date);
   monday.setHours(12, 0, 0, 0);
   monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-  const selected = daysByCount[p.days] || daysByCount[3];
+  const selected = p.workoutDays || [];
   const split =
     p.experience === "beginner" || p.days <= 3
       ? "full"
@@ -103,7 +97,7 @@ export function weeklySchedule(
         ? "Follow your existing care plan"
         : active
           ? group.title
-          : "Recovery day",
+          : "No workout scheduled",
       rest: !active,
       restricted,
       items: active

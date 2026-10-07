@@ -1,6 +1,6 @@
 {
   "name": "snap-to-fit",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

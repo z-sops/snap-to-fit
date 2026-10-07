@@ -1,5 +1,5 @@
 import { doctorNotice, steroidNotice } from "../core/safety";
-import React from "react";
+import React, { useState } from "react";
 import {
   ScrollView,
   View,
@@ -43,14 +43,11 @@ export function Screen({
   subtitle?: string;
 }) {
   const path = usePathname();
+  const [more, setMore] = useState(false);
   const nav = [
-    ["/", "Today", "sunny-outline"],
-    ["/food", "Food", "camera-outline"],
-    ["/move", "Move", "barbell-outline"],
-    ["/metabolic", "Tracker", "time-outline"],
-    ["/health", "Health", "heart-outline"],
-    ["/coach", "Coach", "chatbubble-outline"],
+    ["/", "Today"], ["/food", "Food"], ["/move", "Move"], ["/health", "Health"],
   ] as const;
+  const moreRoute = !nav.some(([href]) => href === path);
   return (
     <KeyboardAvoidingView
       style={s.root}
@@ -107,8 +104,13 @@ export function Screen({
           {children}
           <Text style={s.footer}>Your pace. Your progress.</Text>
         </ScrollView>
+        {more ? <View style={{ backgroundColor: "white", padding: 12, flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+          {([["/metabolic", "Tracker"], ["/coach", "Coach"], ["/meal-plan", "Meal plan"], ["/gyms", "Gyms"], ["/music", "Music"], ["/settings", "Settings"]] as const).map(([href, label]) =>
+            <Link key={href} href={href} asChild><Pressable onPress={() => setMore(false)} accessibilityRole="button" accessibilityLabel={label}
+              style={{ minHeight: 48, minWidth: 88, padding: 14, borderRadius: 12, backgroundColor: colors.bg }}><Text style={{ color: colors.ink, fontWeight: "600" }}>{label}</Text></Pressable></Link>)}
+        </View> : null}
         <View style={s.nav}>
-          {nav.map(([href, label, icon]) => (
+          {nav.map(([href, label]) => (
             <Link key={href} href={href} asChild>
               <Pressable
                 style={[
@@ -120,15 +122,11 @@ export function Screen({
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel={label}
+                accessibilityState={{ selected: path === href }}
               >
-                <Ionicons
-                  name={icon}
-                  size={23}
-                  color={path === href ? colors.green : colors.muted}
-                />
                 <Text
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     color: path === href ? colors.green : colors.muted,
                     fontWeight: "600",
                   }}
@@ -138,6 +136,9 @@ export function Screen({
               </Pressable>
             </Link>
           ))}
+          <Pressable accessibilityRole="button" accessibilityLabel="More" accessibilityState={{ expanded: more, selected: moreRoute }} onPress={() => setMore(!more)} style={[s.navItem, (more || moreRoute) && { backgroundColor: colors.lime }]}>
+            <Text style={{ fontSize: 12, color: more || moreRoute ? colors.green : colors.muted, fontWeight: "700" }}>More</Text>
+          </Pressable>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -437,7 +438,7 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: colors.line,
   },
-  navItem: { flex: 1, alignItems: "center", gap: 5, paddingVertical: 7 },
+  navItem: { flex: 1, flexBasis: 0, minWidth: 0, minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 12, paddingHorizontal: 2 },
   footer: {
     textAlign: "center",
     fontSize: 12,

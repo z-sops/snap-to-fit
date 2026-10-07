@@ -8,7 +8,7 @@ import type {
   CarePlan,
 } from "./planning-types";
 import { nutritionTargets } from "./nutrition";
-import { mealIdeas, cuisineFor } from "./meal-catalog";
+import { mealIdeasForCuisine } from "./meal-catalog";
 export function weekStart(date = new Date()) {
   const d = new Date(date);
   d.setHours(12, 0, 0, 0);
@@ -28,6 +28,7 @@ export function planSignature(p: Profile, date = new Date()) {
   return JSON.stringify([
     weekStart(date),
     p.country || "",
+    p.cuisine || "american",
     dietaryType(p),
     p.allergyFoods || [],
     p.allergies,
@@ -68,9 +69,7 @@ export function buildMealPlan(p: Profile, date = new Date()): MealPlan {
     ? "care-plan"
     : hasOtherAllergy(p)
       ? "allergy-review"
-      : !cuisineFor(country)
-        ? "local-setup"
-        : "fitness";
+      : "fitness";
   const totals: MacroBudget = {
     calories: targets.calories,
     protein: targets.protein,
@@ -81,7 +80,7 @@ export function buildMealPlan(p: Profile, date = new Date()): MealPlan {
   const notes = [
     doctorNotice,
     "Meal targets are planning budgets, not measured nutrition for the pictured or suggested recipe. Portions and cooking ingredients need confirmation.",
-    "Use familiar, available ingredients. Country templates are starting ideas, not a rule about what people in that country eat.",
+    "Cuisine preferences are starting meal ideas, not a rule about nationality. Recipes, sauces and cross-contact need ingredient review.",
   ];
   if (mode === "care-plan")
     notes.push(
@@ -90,10 +89,6 @@ export function buildMealPlan(p: Profile, date = new Date()): MealPlan {
   if (mode === "allergy-review")
     notes.push(
       "Free-text allergies require individual ingredient review. Automatic meal suggestions are paused until those restrictions are clarified.",
-    );
-  if (mode === "local-setup")
-    notes.push(
-      "No reviewed local template is available for this country. Add your familiar meal names instead of receiving an unrelated foreign menu.",
     );
   if (diet === "vegan")
     notes.push(
@@ -117,7 +112,7 @@ export function buildMealPlan(p: Profile, date = new Date()): MealPlan {
       date: localDay(d),
       weekday: d.toLocaleDateString("en", { weekday: "long" }),
       meals: mealSlots.map((slot, j) => {
-        const options = mealIdeas(country, diet, slot).filter(
+        const options = mealIdeasForCuisine(p.cuisine || "american", diet, slot).filter(
           (x) => !x.allergens.some((a) => (p.allergyFoods || []).includes(a)),
         );
         const item =

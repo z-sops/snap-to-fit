@@ -1,5 +1,9 @@
 # Implementation status — v0.3.0, 2026-10-06
 
+## v0.3.1 usability update — 2026-10-07
+
+USA-focused cuisine picker, user-selected workout weekdays, five text navigation destinations and improved gym/Maps fallback are implemented locally. See `US-PREFERENCES.md` for research, compatibility and verification scope. The original country-template/default calendar descriptions below describe earlier development; v0.3.1 supersedes them. A fresh APK and native-device acceptance are required after this patch is pushed.
+
 ## Verified in this workspace
 
 - TypeScript strict checks and ESLint.

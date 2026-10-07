@@ -15,9 +15,9 @@ const profile = {
   consent: true,
 };
 test("weekly plan respects training days and starts on Monday across month boundaries", () => {
-  for (const count of [2, 3, 4, 5]) {
+  for (const count of [1, 2, 3, 4, 5, 6, 7]) {
     const week = weeklySchedule(
-      { ...profile, days: count },
+      { ...profile, days: count, workoutDays: [1,2,3,4,5,6,0].slice(0,count) },
       [],
       "gym",
       new Date(2026, 9, 1, 12),
@@ -29,7 +29,7 @@ test("weekly plan respects training days and starts on Monday across month bound
   }
 });
 test("walking plans use only walking and medical context pauses automatic prescriptions", () => {
-  const walk = weeklySchedule(profile, [], "walk");
+  const walk = weeklySchedule({ ...profile, workoutDays: [1,2,3] }, [], "walk");
   assert.ok(walk.flatMap((d) => d.items).every((e) => e.id === "walk"));
   for (const p of [
     { ...profile, insulin: true },
@@ -41,6 +41,13 @@ test("walking plans use only walking and medical context pauses automatic prescr
         (d) => d.restricted && d.sets === 0 && d.reps === 0,
       ),
     );
+});
+test("the calendar never assigns alternate days or moves a user's consecutive days", () => {
+  const date = new Date(2026, 9, 7, 12);
+  const week = weeklySchedule({ ...profile, workoutDays: [1,2,3] }, [], "gym", date);
+  assert.deepEqual(week.filter(d => !d.rest).map(d => d.weekday), ["Mon", "Tue", "Wed"]);
+  assert.ok(weeklySchedule(profile, [], "gym", date).every(d => d.rest));
+  assert.ok(week.filter(d => d.rest).every(d => d.title === "No workout scheduled"));
 });
 test("new weight updates fitness targets and reached goal transitions to maintenance", () => {
   const state = {
@@ -65,9 +72,9 @@ test("new weight updates fitness targets and reached goal transitions to mainten
 test("exercise IDs are unique and every schedule resolves its movements", () => {
   assert.equal(new Set(exercises.map((e) => e.id)).size, exercises.length);
   for (const place of ["home", "gym", "walk"] as const)
-    for (const count of [2, 3, 4, 5]) {
+    for (const count of [1, 2, 3, 4, 5, 6, 7]) {
       const week = weeklySchedule(
-        { ...profile, experience: "experienced", days: count },
+        { ...profile, experience: "experienced", days: count, workoutDays: [1,2,3,4,5,6,0].slice(0,count) },
         [],
         place,
       );

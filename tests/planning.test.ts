@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newProfile, emptyState, type Profile } from "../src/core/model";
 import { nutritionTargets } from "../src/core/nutrition";
-import { mealIdeas } from "../src/core/meal-catalog";
+import { mealIdeas, mealIdeasForCuisine } from "../src/core/meal-catalog";
 import {
   buildMealPlan,
   flexibleMealStatus,
@@ -31,9 +31,10 @@ const p: Profile = {
   targetWeight: 80,
   consent: true,
   country: "PK",
+  cuisine: "asian-indian",
   dietType: "vegan",
 };
-test("Pakistan vegan weekly ideas use local plant sources and have no animal ingredients", () => {
+test("Indian cuisine vegan weekly ideas use plant sources and have no animal ingredients", () => {
   const plan = buildMealPlan(p, new Date(2026, 9, 6, 12));
   assert.equal(plan.days.length, 7);
   assert.equal(plan.mode, "fitness");
@@ -45,9 +46,9 @@ test("Pakistan vegan weekly ideas use local plant sources and have no animal ing
   );
 });
 test("meal budget totals equal computed daily goals; budgets are never recipe nutrition claims", () => {
-  for (const country of ["PK", "US", "GB", "AE", "TR"])
+  for (const cuisine of ["american", "british", "mexican", "asian-indian", "asian-chinese", "asian-japanese", "asian-thai"] as const)
     for (const dietType of ["vegan", "vegetarian", "omnivore"] as const) {
-      const profile = { ...p, country, dietType };
+      const profile = { ...p, cuisine, dietType };
       const targets = nutritionTargets(profile);
       for (const day of buildMealPlan(profile).days)
         for (const key of [
@@ -94,12 +95,20 @@ test("medical profiles receive a seven-day care organizer without generated port
     assert.equal(flexibleMealStatus(emptyState, profile).eligible, false);
   }
 });
-test("missing local coverage does not silently serve an American menu", () => {
+test("American is the declared default, independent of legacy country data", () => {
   for (const country of [undefined, "OTHER"]) {
-    const plan = buildMealPlan({ ...p, country });
-    assert.equal(plan.mode, "local-setup");
-    assert.ok(plan.days.every((d) => d.meals.every((m) => m.budget === null)));
+    const plan = buildMealPlan({ ...p, country, cuisine: undefined });
+    assert.equal(plan.mode, "fitness");
+    assert.match(plan.days[0].meals[0].name, /Oats/);
   }
+});
+test("Mexican and Asian choices produce distinct cuisine ideas while retaining diet filters", () => {
+  assert.match(mealIdeasForCuisine("mexican", "vegan", "lunch")[0].name, /tacos/);
+  assert.match(mealIdeasForCuisine("asian-japanese", "vegan", "lunch")[0].name, /Edamame/);
+  assert.match(mealIdeasForCuisine("asian-thai", "vegan", "dinner")[0].name, /curry/);
+  for (const cuisine of ["mexican", "asian-chinese", "asian-japanese", "asian-thai"] as const)
+    for (const slot of ["breakfast", "lunch", "dinner", "snack"] as const)
+      assert.doesNotMatch(mealIdeasForCuisine(cuisine, "vegan", slot).map(m => m.name).join(" "), /egg|chicken|fish|salmon|yogurt/i);
 });
 test("selected known allergies filter catalog ideas; unknown allergies pause generation", () => {
   const profile = { ...p, allergyFoods: ["soy" as const, "wheat" as const] };

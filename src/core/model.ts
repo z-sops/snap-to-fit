@@ -6,6 +6,7 @@ import type {
   RoutineEvent,
   EducationSettings,
   CarePlan,
+  CuisinePreference,
 } from "./planning-types";
 export type Goal = "lose" | "maintain" | "gain";
 export type Place = "gym" | "home" | "walk";
@@ -18,6 +19,8 @@ export type Condition =
   | "pregnant"
   | "eating-disorder";
 export interface Profile {
+  cuisine?: CuisinePreference;
+  workoutDays?: number[];
   country?: string;
   dietType?: DietType;
   allergyFoods?: Allergen[];
@@ -147,6 +150,8 @@ export const emptyState: State = {
   cgm: [],
 };
 export const newProfile: Profile = {
+  country: "US",
+  cuisine: "american",
   name: "",
   age: 0,
   sex: "female",
@@ -194,9 +199,15 @@ export function validateProfile(p: Profile) {
     throw new Error("Invalid profile preferences.");
   if (
     ![1.2, 1.375, 1.55, 1.725].includes(p.activity) ||
-    ![2, 3, 4, 5].includes(p.days)
+    !Number.isInteger(p.days) || p.days < 1 || p.days > 7
   )
     throw new Error("Invalid activity preferences.");
+  if (p.workoutDays !== undefined && (!Array.isArray(p.workoutDays) ||
+      p.workoutDays.length !== p.days || new Set(p.workoutDays).size !== p.days ||
+      p.workoutDays.some(d => !Number.isInteger(d) || d < 0 || d > 6)))
+    throw new Error("Choose exactly the number of workout days you requested.");
+  if (p.cuisine !== undefined && !["american", "british", "mexican", "asian-indian", "asian-chinese", "asian-japanese", "asian-thai"].includes(p.cuisine))
+    throw new Error("Invalid cuisine preference.");
   const conditions = [
     "type1",
     "type2",

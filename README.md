@@ -1,4 +1,4 @@
-# Snap to Fit — v0.3.0
+# Snap to Fit — v0.3.1
 
 English adult fitness app for Android and iOS, implemented with Expo 57 and React Native. The source includes all module screens and a multi-user backend. It is a development release: signed native builds, physical-device acceptance testing and configured external services are still needed before publishing.
 
@@ -7,7 +7,7 @@ English adult fitness app for Android and iOS, implemented with Expo 57 and Reac
 - Four-step onboarding, health context and separate optional AI consent.
 - Calories, protein, carbs, fats and fibre estimates for eligible general-fitness profiles. Latest weight logs update estimates; reached goals switch derived estimates to maintenance.
 - Manual food logs and camera/gallery AI estimates requiring portion confirmation before saving.
-- Weekly gym/home/walking calendars, recovery days, beginner full-body, upper/lower and push/pull/legs splits, 21 exercises with 17 illustrative offline 3D movement patterns, performance logs and rest timer.
+- Weekly gym/home/walking calendars using the user's selected weekdays (1–7 days), beginner full-body, upper/lower and push/pull/legs splits, 21 exercises with 17 illustrative offline 3D movement patterns, performance logs and rest timer. Unselected days are not compulsory rest days.
 - Glucose, BP, weight and waist logs; weight journey, progress photos, waist-to-height ratio and repeated-weight plateau review.
 - Prescribed medication/injection records, symptoms and one-time local reminders.
 - Read-only HealthKit and Android Health Connect adapters for steps, weight and heart rate.
@@ -17,10 +17,17 @@ English adult fitness app for Android and iOS, implemented with Expo 57 and Reac
 - RevenueCat offerings, purchase, restore and subscription management with server-side entitlement verification. Core offline modules are free; optional Pro increases AI allowance. Billing is off until pricing/products are configured.
 - Privacy information and configurable public policy links. No doctor dashboard or advertising trackers.
 
-## New in v0.3.0
+## New in v0.3.1
 
-- Country and structured vegan/vegetarian/mixed onboarding, familiar foods and known ingredient allergies.
-- Automatically generated weekly general-fitness meal ideas, with daily macro budgets split across meals. Starting cuisine templates cover Pakistan, India, Bangladesh, USA, Canada, UK, UAE, Saudi Arabia and Türkiye; other countries use a custom familiar-meal setup. This is not a complete worldwide recipe database.
+- Five readable text navigation buttons (Today, Food, Move, Health, More); secondary destinations are in More. Bottom line-art icons removed.
+- User-selected workout count and weekdays, with no automatically assigned alternate-day calendar. Existing profiles choose their days in Move.
+- USA-focused cuisine preferences: American default, UK/British, Mexican, and Asian subchoices Indian/Chinese/Japanese/Thai. Diet and allergies remain separate. Legacy country fields remain readable but no longer select meal templates.
+- Gym searches open Google Maps directly when this build has no online listing service. Configured in-app searches use a recent approximate location when available, detect disabled location services and provide manual city/ZIP fallback. Google Places credentials/billing and backend deployment remain required for in-app listings.
+
+## Included from v0.3.0
+
+- Structured vegan/vegetarian/mixed onboarding, familiar foods and known ingredient allergies.
+- Weekly general-fitness meal ideas with daily planning budgets split across meals. Cuisine selection now follows v0.3.1 preferences above. This is not a complete worldwide recipe database or measured recipe nutrition.
 - Medical profiles get an automatic seven-day organizer populated from their own entered care-plan meals and optional targets. The app does not create an autonomous therapeutic diet. Unstructured allergies pause automatic recipe suggestions. Catalog matches still need label/recipe and cross-contact review.
 - Photo concerns require explicit acknowledgement before confirming the estimate. Medical context, possible animal ingredients, recorded allergies and entered-carb-reference overages are shown without pretending to predict a dangerous glucose spike. Logging actual consumption remains available.
 - One optional flexible-meal choice per local week for eligible general-fitness profiles; unavailable for medical profiles. It does not increase the calorie budget or certify a food as safe.

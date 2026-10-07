@@ -215,7 +215,8 @@ export default function Settings() {
       <Card>
         <H>About this build</H>
         <P>
-          Snap to Fit · development build 0.3.0. General-fitness estimates and
+          Snap to Fit · development build 0.3.1 · USA cuisine preferences and
+          user-selected workout days. General-fitness estimates and
           educational demonstrations. Native-device testing and launch
           configuration are still required.
         </P>

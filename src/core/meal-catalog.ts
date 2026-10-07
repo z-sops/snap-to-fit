@@ -1,4 +1,4 @@
-import type { DietType, Allergen, MealSlot } from "./planning-types";
+import type { DietType, Allergen, MealSlot, CuisinePreference } from "./planning-types";
 export interface MealIdea {
   name: string;
   proteinSources: string[];
@@ -39,6 +39,36 @@ export const allergenChoices = [
   { value: "tree-nut", label: "Tree nuts" },
   { value: "sesame", label: "Sesame" },
 ] as const;
+export function mealIdeasForCuisine(cuisine: CuisinePreference, diet: DietType, slot: MealSlot): MealIdea[] {
+  if (["american", "british", "asian-indian"].includes(cuisine))
+    return mealIdeas(cuisine === "british" ? "GB" : cuisine === "asian-indian" ? "IN" : "US", diet, slot);
+  const mexican = cuisine === "mexican";
+  const japanese = cuisine === "asian-japanese";
+  const thai = cuisine === "asian-thai";
+  const plant: Record<MealSlot, MealIdea[]> = {
+    breakfast: mexican ? [idea("Black bean breakfast bowl", ["black beans"], ["black beans", "tomato", "avocado", "corn tortilla"])] :
+      [idea("Tofu and vegetable rice bowl", ["tofu"], ["tofu", "rice", "vegetables"], ["soy"])],
+    lunch: mexican ? [idea("Bean and vegetable tacos", ["beans"], ["beans", "corn tortillas", "cabbage", "salsa"])] :
+      [idea(japanese ? "Edamame rice bowl" : thai ? "Tofu basil rice bowl" : "Tofu vegetable stir-fry with rice", [japanese ? "edamame" : "tofu"], [japanese ? "edamame" : "tofu", "rice", "vegetables"], ["soy"])],
+    dinner: mexican ? [idea("Bean and pepper rice bowl", ["beans"], ["beans", "peppers", "rice", "tomato"])] :
+      [idea(japanese ? "Tofu and mushroom rice bowl" : thai ? "Tofu coconut vegetable curry with rice" : "Tofu and broccoli rice bowl", ["tofu"], ["tofu", "vegetables", "rice", ...(thai ? ["coconut milk"] : [])], ["soy"])],
+    snack: mexican ? [idea("Roasted chickpeas and fruit", ["chickpeas"], ["chickpeas", "fruit"])] :
+      [idea("Edamame and fruit", ["edamame"], ["edamame", "fruit"], ["soy"])],
+  };
+  if (diet === "vegan") return plant[slot];
+  const vegetarian: Record<MealSlot, MealIdea[]> = {
+    breakfast: [idea(mexican ? "Egg and bean breakfast tacos" : "Egg and vegetable rice bowl", ["eggs"], ["eggs", "vegetables", mexican ? "corn tortillas" : "rice"], ["egg"])],
+    lunch: plant.lunch, dinner: plant.dinner, snack: plant.snack,
+  };
+  if (diet === "vegetarian") return [...vegetarian[slot], ...plant[slot]];
+  const mixed: Record<MealSlot, MealIdea[]> = {
+    breakfast: vegetarian.breakfast,
+    lunch: [idea(mexican ? "Chicken taco bowl" : japanese ? "Chicken rice bowl" : thai ? "Chicken basil rice bowl" : "Chicken vegetable stir-fry with rice", ["chicken"], ["chicken", "rice", "vegetables"])],
+    dinner: [idea(mexican ? "Fish tacos with cabbage" : japanese ? "Salmon rice bowl" : thai ? "Chicken coconut vegetable curry with rice" : "Chicken and broccoli with rice", [mexican || japanese ? "fish" : "chicken"], [mexican || japanese ? "fish" : "chicken", mexican ? "corn tortillas" : "rice", "vegetables", ...(thai ? ["coconut milk"] : [])], mexican || japanese ? ["fish"] : [])],
+    snack: plant.snack,
+  };
+  return [...mixed[slot], ...vegetarian[slot], ...plant[slot]];
+}
 type Cuisine =
   "south-asian" | "north-american" | "british" | "gulf" | "turkish";
 export function cuisineFor(country: string): Cuisine | null {

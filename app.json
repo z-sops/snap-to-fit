@@ -2,7 +2,7 @@
   "expo": {
     "name": "Snap to Fit",
     "slug": "snap-to-fit",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "orientation": "portrait",
     "icon": "./assets/snap-icon.png",
     "userInterfaceStyle": "light",
@@ -15,6 +15,7 @@
       }
     },
     "android": {
+      "versionCode": 2,
       "package": "com.zunitech.snaptofit",
       "allowBackup": false,
       "permissions": [

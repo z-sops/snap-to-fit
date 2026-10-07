@@ -1,5 +1,7 @@
 import { buildMealPlan,dietaryType } from "../core/meal-planning";
-import { countries, dietChoices, allergenChoices } from "../core/meal-catalog";
+import { dietChoices, allergenChoices } from "../core/meal-catalog";
+import { CuisinePreferences } from "../components/CuisinePreferences";
+import { WorkoutPreferences } from "../components/WorkoutPreferences";
 import {cancelNotifications} from '../services/routine-notifications';
 import React, { useState } from "react";
 import { router } from "expo-router";
@@ -47,8 +49,8 @@ export default function Onboarding() {
         setP((prev) => ({ ...prev, age, height, weight }));
       }
       if (step === 2) {
-        if (!p.country)
-          throw new Error("Select your country for local meal planning.");
+        if (!p.workoutDays || p.workoutDays.length !== p.days)
+          throw new Error("Choose your workout days for the week.");
         const targetWeight = numeric(
           numbers.targetWeight,
           30,
@@ -217,22 +219,13 @@ export default function Onboarding() {
             selected={p.place}
             onChange={(v) => change("place", v)}
           />
-          <P>Preferred sessions per week</P>
-          <Chips
-            values={[2, 3, 4, 5].map((v) => ({ value: v, label: String(v) }))}
-            selected={p.days}
-            onChange={(v) => change("days", v)}
-          />
-          <H>Local food and protein sources</H>
+          <WorkoutPreferences profile={p} onChange={setP}/>
+          <CuisinePreferences value={p.cuisine} onChange={v => change("cuisine", v)}/>
+          <H>Diet and protein sources</H>
           <P>
-            Select your country and eating pattern. Vegan excludes meat, fish,
+            Choose your eating pattern. Vegan excludes meat, fish,
             eggs and dairy; vegetarian excludes meat and fish.
           </P>
-          <Chips
-            values={countries}
-            selected={p.country || ""}
-            onChange={(v) => change("country", v)}
-          />
           <Chips
             values={dietChoices}
             selected={p.dietType || dietaryType(p)}

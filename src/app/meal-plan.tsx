@@ -23,7 +23,7 @@ import {
   validateCarePlan,
   weekStart,
 } from "../core/meal-planning";
-import { countries } from "../core/meal-catalog";
+import { CuisinePreferences, cuisineLabel } from "../components/CuisinePreferences";
 import { uid } from "../core/model";
 import type { CarePlan, MacroBudget, MealSlot } from "../core/planning-types";
 export default function MealPlanner() {
@@ -55,7 +55,7 @@ export default function MealPlanner() {
   return (
     <Screen
       title="Food that feels familiar."
-      subtitle="Your seven-day plan · local ingredients and your eating pattern"
+      subtitle="Your seven-day plan · cuisine preferences and your eating pattern"
     >
       <Card tint>
         <H>
@@ -66,8 +66,7 @@ export default function MealPlanner() {
               : "Complete your local meal setup"}
         </H>
         <P>
-          {countries.find((c) => c.value === plan.country)?.label ||
-            "Choose a country"}{" "}
+          {cuisineLabel(p.cuisine)}{" "}
           · {plan.diet} · week of {plan.week}
         </P>
         <P>
@@ -76,14 +75,13 @@ export default function MealPlanner() {
           for an unmeasured recipe.
         </P>
         {p.familiarFoods ? <P>Your familiar foods: {p.familiarFoods}</P> : null}
-        <Chips
-          values={countries}
-          selected={p.country || ""}
-          onChange={(country) =>
+        <CuisinePreferences
+          value={p.cuisine}
+          onChange={(cuisine) =>
             act(() =>
               update((s) => ({
                 ...s,
-                profile: s.profile ? { ...s.profile, country } : null,
+                profile: s.profile ? { ...s.profile, cuisine } : null,
               })),
             )
           }

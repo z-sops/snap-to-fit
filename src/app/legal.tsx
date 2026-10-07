@@ -45,7 +45,7 @@ export default function Legal() {
       </Card>
       <Card>
         <H>Nearby gym searches</H>
-        <P>When you consent to a gym search, your one-time location or entered area is sent through our server to Google Maps. Search coordinates and listings are not stored in your profile or backup. Google processes searches under its own policies. Opening directions or a Maps search launches Google Maps separately.</P>
+        <P>For in-app gym listings, your one-time location or entered area is sent through our server to Google Maps with your consent. Search coordinates and listings are not stored in your profile or backup. External searches open Maps directly, with its own location permissions. Google processes searches under its own policies.</P>
         <Button secondary title="Google privacy policy" onPress={() => Linking.openURL("https://policies.google.com/privacy")} />
       </Card>
       <Card>

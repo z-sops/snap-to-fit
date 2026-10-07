@@ -1,4 +1,5 @@
 export type DietType = "vegan" | "vegetarian" | "omnivore";
+export type CuisinePreference = "american" | "british" | "mexican" | "asian-indian" | "asian-chinese" | "asian-japanese" | "asian-thai";
 export type Allergen =
   | "milk"
   | "egg"

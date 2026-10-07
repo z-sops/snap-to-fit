@@ -5,6 +5,7 @@ import {
 } from "../core/schedule";
 import { router } from "expo-router";
 import { MusicControls } from "../components/MusicControls";
+import { WorkoutPreferences } from "../components/WorkoutPreferences";
 import React, { useState, useEffect } from "react";
 import {
   Screen,
@@ -21,10 +22,12 @@ import {
 import { Movement } from "../components/Movement";
 import { useStore } from "../services/store";
 import { exercises, lastPerformance } from "../core/workouts";
-import { uid, numeric, type Place, localDay } from "../core/model";
+import { uid, numeric, validateProfile, type Place, localDay } from "../core/model";
 export default function Move() {
   const { state, update } = useStore();
   const p = state.profile!;
+  const [editingWeek, setEditingWeek] = useState(!p.workoutDays);
+  const [weekProfile, setWeekProfile] = useState(p);
   const [place, setPlace] = useState<Place>(p.place);
   const [index, setIndex] = useState(0);
   const [sets, setSets] = useState("2");
@@ -45,7 +48,7 @@ export default function Move() {
     note: scheduled.restricted
       ? "Use your existing care plan. Individual exercise intensity is not assigned."
       : scheduled.rest
-        ? "Recovery day. The exercise library is available if you want to review movements."
+        ? "You have not scheduled a workout for this day. The exercise library is available to review or log any activity you choose."
         : "Your planned session. Warm up gently and use comfortable loads.",
   };
   const exercise = plan.items[index % plan.items.length];
@@ -62,6 +65,19 @@ export default function Move() {
     >
       <Button secondary title="Choose workout music" onPress={() => router.push("/music")} />
       <MusicControls />
+      <Card>
+        <Button secondary title={editingWeek ? "Close week settings" : "Choose / change my workout days"}
+          onPress={() => { setWeekProfile(p); setEditingWeek(!editingWeek); }}/>
+        {editingWeek ? <>
+          <WorkoutPreferences profile={weekProfile} onChange={setWeekProfile}/>
+          <Button title="Save my workout week" onPress={() => act(async () => {
+            if (!weekProfile.workoutDays) throw new Error("Choose your workout days first.");
+            validateProfile(weekProfile);
+            await update(s => ({ ...s, profile: s.profile ? { ...s.profile, days: weekProfile.days, workoutDays: weekProfile.workoutDays } : null }));
+            setEditingWeek(false); setIndex(0);
+          })}/>
+        </> : null}
+      </Card>
       <Chips
         values={[
           { value: "gym", label: "Gym" },
@@ -79,7 +95,7 @@ export default function Move() {
         <Chips
           values={week.map((d) => ({
             value: d.date,
-            label: `${d.weekday}${d.completed ? " ✓" : ""}${d.rest ? " · Rest" : ""}`,
+            label: `${d.weekday}${d.completed ? " ✓" : ""}${d.rest ? " · Off" : ""}`,
           }))}
           selected={selectedDate}
           onChange={(v) => {
@@ -89,7 +105,7 @@ export default function Move() {
         />
         <P>
           {week.filter((d) => !d.rest).length} planned training days, with
-          recovery days included. A check mark means an exercise was logged that
+          only on the days you selected. A check mark means an exercise was logged that
           day.
         </P>
       </Card>
@@ -97,8 +113,8 @@ export default function Move() {
         <H>{plan.title}</H>
         <P>{plan.note}</P>
         <P>
-          Suggested recovery/rest days are not compulsory calendar assignments.
-          Your weekly session preference remains adjustable.
+          You control this calendar. Unselected days are not compulsory rest
+          days. Plan suitable recovery around your activities and care plan.
         </P>
       </Card>
       <Card>

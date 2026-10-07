@@ -36,6 +36,13 @@ test("rejects missing and nonfinite inputs", () => {
 });
 test("adult onboarding rejects minors", () =>
   assert.throws(() => validateProfile({ ...profile, age: 17 })));
+test("workout days must be unique, in range and match the requested count", () => {
+  for (const workoutDays of [[1,1,2], [1,2], [1,2,7]])
+    assert.throws(() => validateProfile({ ...profile, days: 3, workoutDays }));
+  for (const days of [1,2,3,4,5,6,7])
+    assert.doesNotThrow(() => validateProfile({ ...profile, days, workoutDays: [1,2,3,4,5,6,0].slice(0,days) }));
+  assert.doesNotThrow(() => validateProfile(profile)); // Legacy profiles remain readable.
+});
 test("weight target must agree with goal", () =>
   assert.throws(() => validateProfile({ ...profile, targetWeight: 85 })));
 test("underweight weight-loss target is refused", () =>
