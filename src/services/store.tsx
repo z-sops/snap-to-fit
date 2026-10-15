@@ -78,6 +78,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     </Context.Provider>
   );
 }
+/** Store access for shared chrome (navigation) that may render outside the provider in tests. */
+export function useOptionalStore() {
+  return useContext(Context);
+}
 export function useStore() {
   const value = useContext(Context);
   if (!value) throw new Error("Missing app store.");

@@ -52,6 +52,10 @@ function SessionMusicProvider({ children }: { children: React.ReactNode }) {
 }
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const { namespace } = useStore();
+  // Static web rendering runs without a browser `Audio` object. The provider
+  // renders no markup and screens only mount after the store loads on the
+  // client, so skipping it during that server pass keeps hydration identical.
+  if (Platform.OS === 'web' && typeof window === 'undefined') return <>{children}</>;
   return <SessionMusicProvider key={namespace}>{children}</SessionMusicProvider>;
 }
 export function useMusic() {

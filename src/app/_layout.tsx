@@ -1,7 +1,7 @@
 import { MusicProvider } from "../services/music";
 import React, { useEffect } from "react";
 import { notificationNavigation } from "../services/notification-navigation";
-import { Stack, Redirect, usePathname, router } from "expo-router";
+import { Stack, router } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, ActivityIndicator } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -10,7 +10,6 @@ import { colors } from "../components/ui";
 import { doctorNotice, steroidNotice } from "../core/safety";
 function Root() {
   const { ready, error, state } = useStore();
-  const path = usePathname();
   useEffect(() => {
     if (!ready) return;
     return notificationNavigation((path) => router.push(path));
@@ -30,10 +29,31 @@ function Root() {
       <Text>{steroidNotice}</Text>
     </View>
   );
-  if (!state.profile && !["/onboarding", "/account", "/legal", "/gyms"].includes(path))
-    return <Redirect href="/onboarding" />;
-  return <Stack screenOptions={{ headerShown: false, animation: "fade" }} />;
+  // Keep the navigator mounted at all times. Returning <Redirect> here instead
+  // of the Stack unmounted every screen whenever an unprofiled user hit a
+  // guarded route, which showed up as dead taps / white screens on device.
+  const hasProfile = !!state.profile;
+  return (
+    <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
+      <Stack.Protected guard={hasProfile}>
+        <Stack.Screen name="index" />
+        {guardedScreens.map((name) => (
+          <Stack.Screen key={name} name={name} />
+        ))}
+      </Stack.Protected>
+      {/* Reachable with or without a profile; onboarding is also used to edit
+          an existing profile from Settings. */}
+      <Stack.Screen name="onboarding" />
+      <Stack.Screen name="account" />
+      <Stack.Screen name="legal" />
+      <Stack.Screen name="gyms" />
+    </Stack>
+  );
 }
+const guardedScreens = [
+  "food", "move", "health", "meal-plan", "metabolic", "journey", "medicines",
+  "cgm", "coach", "education", "music", "settings", "subscription",
+] as const;
 export default function Layout() {
   return (
     <SafeAreaProvider>

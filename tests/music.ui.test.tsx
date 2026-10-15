@@ -4,7 +4,7 @@ import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/re
 const mocks = vi.hoisted(() => ({ player: {pause:vi.fn(), play:vi.fn(),replace:vi.fn(),seekTo:vi.fn(),setActiveForLockScreen:vi.fn(),loop:false}, status:{isLoaded:true,playing:false,currentTime:0,duration:120,error:null,didJustFinish:false}, pick:vi.fn(), mode:vi.fn(), namespace:'guest' }));
 vi.mock('expo-audio', () => ({ useAudioPlayer:()=>mocks.player, useAudioPlayerStatus:()=>mocks.status, setAudioModeAsync:mocks.mode }));
 vi.mock('expo-document-picker', () => ({getDocumentAsync:mocks.pick}));
-vi.mock('../src/services/store',()=>({useStore:()=>({namespace:mocks.namespace})}));
+vi.mock('../src/services/store',()=>({useStore:()=>({namespace:mocks.namespace}),useOptionalStore:()=>null}));
 vi.mock('expo-router', () => ({ Link: ({children,href}: React.PropsWithChildren<{href:string}>) => <a href={href}>{children}</a>, usePathname: () => '/music' }));
 vi.mock('@expo/vector-icons', () => ({Ionicons: () => null}));
 import Music from '../src/app/music';

@@ -67,3 +67,46 @@ There is no standalone watchOS app, direct Fitbit cloud OAuth, or web watch acce
 Real tracker/device sync and permissions remain acceptance checks.
 
 Validation for this update: lint/typecheck, 66 core/backend tests, 15 UI tests, 20-route web export, native Android prebuild (minSdk 26), and 12 finite skinned poses each for the embedded walking and push-up clips. GPU rendering and physical-device wearable sync remain unverified.
+
+## 16 Oct 2026 — dependency reproducibility and navigation fix
+
+Checked against main `418780f`. Changes are on branch `fix/npm-ci-drawer-nav`.
+
+**npm ci (CI blocker).** Commit `67efda1` regenerated `package-lock.json` without
+peer dependencies (676 lines dropped while `package.json` dependencies were unchanged),
+typical of an npm config with `legacy-peer-deps=true`. npm 7+ installs required peers,
+so `npm ci` failed with EUSAGE. The lock was restored from `cbc2400` (last green CI),
+version fields set to 0.3.1, and normalised with Node 24.22 / npm 11.21 using
+`npm install --package-lock-only` (no `--force`, no `--legacy-peer-deps`, package set
+unchanged; `@react-native/metro-config` stays 0.86.3 to match React Native 0.86.3).
+Clean `npm ci` passes. On Windows check `npm config get legacy-peer-deps` returns
+`false` before regenerating the lock.
+
+**Navigation root cause.** The four main bottom tabs were `<Link asChild>` around a
+`Pressable` with a style array. expo-router's Slot rejects style arrays on asChild
+children (throws in development, mangles merged props in release); More and the
+secondary items did not hit this (More was not a Link, items used plain style objects),
+matching the device report. Separately, the root layout returned `<Redirect>` instead
+of the Stack for unprofiled users, unmounting the navigator, and onboarding showed tabs
+that could only bounce back to onboarding.
+
+**Fix.** Bottom bar (Today, Food, Move, Health, Menu) uses `Pressable` +
+`router.navigate`. A slide-out side menu (hamburger in the header or Menu tab) lists
+every screen in sections, respects reduced motion and closes with Android back. Before
+a profile exists the tabs are hidden and the menu offers only onboarding, sign-in, gyms
+and legal. The root layout always renders the Stack and guards profile-only screens
+with `Stack.Protected`. Doctor/steroid notices remain on every screen and in the menu.
+Web static export also stopped crashing on `Audio` during server render.
+
+**Owner decisions.** Asian cuisine submenu now offers Indian only; an existing saved
+Chinese/Japanese/Thai choice stays valid and visible (not erased). Workout weekdays
+already matched the request (user-chosen, consecutive allowed); unchanged. Gym copy
+shortened, addresses capped at two lines; still list + external Google Maps, no
+embedded map.
+
+**Validation (this workspace, Node 24.22 / npm 11.21).** `npm ci`, typecheck, lint,
+77 core/backend tests, 27 UI tests (new: navigation helpers, guard, tab/menu UI,
+cuisine), `expo export --platform all` (Android/iOS Hermes + web). Playwright on the
+production web export: 26/26 navigation checks (fresh user → onboarding, guarded deep
+link, onboarding → home, all 4 tabs, all 14 menu destinations with doctor notice), zero
+page errors. NOT yet done: Android APK build from this commit and Pixel 6a acceptance.

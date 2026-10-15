@@ -8,6 +8,13 @@ export const cuisineOptions = [
   { value: "asian-indian", label: "Indian" }, { value: "asian-chinese", label: "Chinese" },
   { value: "asian-japanese", label: "Japanese" }, { value: "asian-thai", label: "Thai" },
 ] as const;
+// Owner decision (Oct 2026): the Asian submenu offers Indian only. Chinese,
+// Japanese and Thai stay valid stored values so earlier choices keep working,
+// but they are only listed for a user who already has one selected.
+const offeredAsian: CuisinePreference[] = ["asian-indian"];
+export function asianChoices(current?: CuisinePreference) {
+  return cuisineOptions.slice(3).filter(o => offeredAsian.includes(o.value) || o.value === current);
+}
 export function cuisineLabel(value?: CuisinePreference) {
   return cuisineOptions.find(option => option.value === (value || "american"))?.label || "American";
 }
@@ -26,7 +33,7 @@ export function CuisinePreferences({ value = "american", onChange }: { value?: C
     {open ? <View accessibilityLabel="Choose cuisine">
       {cuisineOptions.slice(0,3).map(item => option(item.value, item.label))}
       <Button secondary title="Asian cuisines" onPress={() => setAsian(!asian)}/>
-      {asian ? cuisineOptions.slice(3).map(item => option(item.value, item.label)) : null}
+      {asian ? asianChoices(value).map(item => option(item.value, item.label)) : null}
     </View> : null}
   </>;
 }

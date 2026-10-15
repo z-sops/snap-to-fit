@@ -1,5 +1,5 @@
 import { doctorNotice, steroidNotice } from "../core/safety";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   View,
@@ -10,8 +10,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Animated,
+  Modal,
+  AccessibilityInfo,
 } from "react-native";
-import { Link, usePathname } from "expo-router";
+import { router, usePathname } from "expo-router";
+import { useOptionalStore } from "../services/store";
+import {
+  activeMainTab,
+  isActive,
+  mainTabs,
+  menuSections,
+  type AppRoute,
+} from "./navigation";
 import { Ionicons } from "@expo/vector-icons";
 export const colors = {
   ink: "#17213B",
@@ -43,11 +54,16 @@ export function Screen({
   subtitle?: string;
 }) {
   const path = usePathname();
-  const [more, setMore] = useState(false);
-  const nav = [
-    ["/", "Today"], ["/food", "Food"], ["/move", "Move"], ["/health", "Health"],
-  ] as const;
-  const moreRoute = !nav.some(([href]) => href === path);
+  const store = useOptionalStore();
+  // Before a profile exists only onboarding/account/legal/gyms are reachable,
+  // so the main tabs are hidden instead of bouncing back to onboarding.
+  const hasProfile = !!store?.state.profile;
+  const [menu, setMenu] = useState(false);
+  const active = activeMainTab(path);
+  const go = (href: AppRoute) => {
+    setMenu(false);
+    if (!isActive(path, href)) router.navigate(href);
+  };
   return (
     <KeyboardAvoidingView
       style={s.root}
@@ -55,13 +71,33 @@ export function Screen({
     >
       <View style={s.shell}>
         <View style={s.brand}>
+          <Pressable
+            onPress={() => setMenu(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Open menu"
+            aria-expanded={menu}
+            hitSlop={8}
+            style={s.iconButton}
+          >
+            <Ionicons name="menu" size={26} color={colors.ink} />
+          </Pressable>
           <Text style={s.logo}>
             snap<Text style={{ color: colors.green }}> to fit</Text>
             <Text style={{ fontSize: 11, color: colors.green }}> ✦</Text>
           </Text>
-          <Link href="/settings" accessibilityLabel="Open settings">
-            <Ionicons name="settings-outline" size={24} color={colors.ink} />
-          </Link>
+          {hasProfile ? (
+            <Pressable
+              onPress={() => go("/settings")}
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+              hitSlop={8}
+              style={s.iconButton}
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.ink} />
+            </Pressable>
+          ) : (
+            <View style={s.iconButton} />
+          )}
         </View>
         <ScrollView
           keyboardShouldPersistTaps="handled"
@@ -69,79 +105,157 @@ export function Screen({
         >
           <Text style={s.title}>{title}</Text>
           {subtitle ? <Text style={s.subtitle}>{subtitle}</Text> : null}
-          <View
-            accessibilityRole="summary"
-            style={{
-              padding: 12,
-              borderRadius: 12,
-              borderLeftWidth: 3,
-              borderLeftColor: "#D89D36",
-              backgroundColor: colors.amber,
-              marginBottom: 18,
-            }}
-          >
-            <Text
-              style={{
-                color: colors.ink,
-                fontSize: 12,
-                lineHeight: 18,
-                fontWeight: "600",
-              }}
-            >
-              {doctorNotice}
-            </Text>
-            <Text
-              style={{
-                color: colors.ink,
-                fontSize: 11,
-                lineHeight: 17,
-                marginTop: 6,
-              }}
-            >
-              {steroidNotice}
-            </Text>
-          </View>
+          <SafetyNotice />
           {children}
           <Text style={s.footer}>Your pace. Your progress.</Text>
         </ScrollView>
-        {more ? <View style={{ backgroundColor: "white", padding: 12, flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {([["/metabolic", "Tracker"], ["/coach", "Coach"], ["/meal-plan", "Meal plan"], ["/gyms", "Gyms"], ["/music", "Music"], ["/settings", "Settings"]] as const).map(([href, label]) =>
-            <Link key={href} href={href} asChild><Pressable onPress={() => setMore(false)} accessibilityRole="button" accessibilityLabel={label}
-              style={{ minHeight: 48, minWidth: 88, padding: 14, borderRadius: 12, backgroundColor: colors.bg }}><Text style={{ color: colors.ink, fontWeight: "600" }}>{label}</Text></Pressable></Link>)}
-        </View> : null}
-        <View style={s.nav}>
-          {nav.map(([href, label]) => (
-            <Link key={href} href={href} asChild>
-              <Pressable
-                style={[
-                  s.navItem,
-                  path === href && {
-                    backgroundColor: colors.lime,
-                    borderRadius: 16,
-                  },
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={label}
-                accessibilityState={{ selected: path === href }}
-              >
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: path === href ? colors.green : colors.muted,
-                    fontWeight: "600",
-                  }}
+        {hasProfile ? (
+          <View style={s.nav} accessibilityRole="tablist">
+            {mainTabs.map(({ href, label, icon }) => {
+              const selected = active === href;
+              return (
+                <Pressable
+                  key={href}
+                  onPress={() => go(href)}
+                  accessibilityRole="tab"
+                  accessibilityLabel={label}
+                  aria-selected={selected}
+                  style={selected ? s.navItemActive : s.navItem}
                 >
-                  {label}
-                </Text>
-              </Pressable>
-            </Link>
-          ))}
-          <Pressable accessibilityRole="button" accessibilityLabel="More" accessibilityState={{ expanded: more, selected: moreRoute }} onPress={() => setMore(!more)} style={[s.navItem, (more || moreRoute) && { backgroundColor: colors.lime }]}>
-            <Text style={{ fontSize: 12, color: more || moreRoute ? colors.green : colors.muted, fontWeight: "700" }}>More</Text>
-          </Pressable>
-        </View>
+                  <Ionicons
+                    name={icon as keyof typeof Ionicons.glyphMap}
+                    size={20}
+                    color={selected ? colors.green : colors.muted}
+                  />
+                  <Text style={selected ? s.navLabelActive : s.navLabel}>{label}</Text>
+                </Pressable>
+              );
+            })}
+            <Pressable
+              onPress={() => setMenu(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Menu"
+              aria-expanded={menu}
+              aria-selected={!active}
+              style={!active ? s.navItemActive : s.navItem}
+            >
+              <Ionicons name="grid-outline" size={20} color={!active ? colors.green : colors.muted} />
+              <Text style={!active ? s.navLabelActive : s.navLabel}>Menu</Text>
+            </Pressable>
+          </View>
+        ) : null}
       </View>
+      <SideMenu
+        open={menu}
+        path={path}
+        hasProfile={hasProfile}
+        onClose={() => setMenu(false)}
+        onGo={go}
+      />
     </KeyboardAvoidingView>
+  );
+}
+function SafetyNotice() {
+  return (
+    <View accessibilityRole="summary" style={s.notice}>
+      <Text style={s.noticeMain}>{doctorNotice}</Text>
+      <Text style={s.noticeSub}>{steroidNotice}</Text>
+    </View>
+  );
+}
+const MENU_WIDTH = 300;
+function SideMenu({
+  open,
+  path,
+  hasProfile,
+  onClose,
+  onGo,
+}: {
+  open: boolean;
+  path: string;
+  hasProfile: boolean;
+  onClose: () => void;
+  onGo: (href: AppRoute) => void;
+}) {
+  const [slide] = useState(() => new Animated.Value(0));
+  // Stays mounted after `open` turns false until the slide-out finishes.
+  const [mounted, setMounted] = useState(false);
+  const visible = open || mounted;
+  useEffect(() => {
+    let cancelled = false;
+    const run = (to: number, done: () => void) =>
+      void AccessibilityInfo.isReduceMotionEnabled()
+        .catch(() => false)
+        .then((reduce) => {
+          if (cancelled) return;
+          if (reduce) {
+            slide.setValue(to);
+            done();
+            return;
+          }
+          Animated.timing(slide, {
+            toValue: to,
+            duration: 220,
+            useNativeDriver: Platform.OS !== "web",
+          }).start(({ finished }) => finished && !cancelled && done());
+        });
+    if (open) run(1, () => setMounted(true));
+    else run(0, () => setMounted(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [open, slide]);
+  if (!visible) return null;
+  const translateX = slide.interpolate({ inputRange: [0, 1], outputRange: [-MENU_WIDTH, 0] });
+  return (
+    <Modal transparent visible animationType="none" onRequestClose={onClose} statusBarTranslucent>
+      <View style={s.menuRoot}>
+        <Animated.View style={[s.backdrop, { opacity: slide }]}>
+          <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel="Close menu" />
+        </Animated.View>
+        <Animated.View
+          style={[s.drawer, { transform: [{ translateX }] }]}
+          accessibilityViewIsModal
+        >
+          <View style={s.drawerHead}>
+            <Text style={s.logo}>
+              snap<Text style={{ color: colors.green }}> to fit</Text>
+            </Text>
+            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close menu" hitSlop={8} style={s.iconButton}>
+              <Ionicons name="close" size={26} color={colors.ink} />
+            </Pressable>
+          </View>
+          <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+            {menuSections(hasProfile).map((section) => (
+              <View key={section.title} style={{ marginTop: 14 }}>
+                <Text style={s.menuSection}>{section.title}</Text>
+                {section.items.map(({ href, label, icon }) => {
+                  const selected = isActive(path, href);
+                  return (
+                    <Pressable
+                      key={href}
+                      onPress={() => onGo(href)}
+                      accessibilityRole="link"
+                      accessibilityLabel={label}
+                      aria-selected={selected}
+                      style={selected ? s.menuItemActive : s.menuItem}
+                    >
+                      <Ionicons
+                        name={icon as keyof typeof Ionicons.glyphMap}
+                        size={20}
+                        color={selected ? colors.green : colors.ink}
+                      />
+                      <Text style={selected ? s.menuLabelActive : s.menuLabel}>{label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ))}
+            <Text style={s.menuNotice}>{doctorNotice}</Text>
+          </ScrollView>
+        </Animated.View>
+      </View>
+    </Modal>
   );
 }
 export function Card({
@@ -438,7 +552,24 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: colors.line,
   },
-  navItem: { flex: 1, flexBasis: 0, minWidth: 0, minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 12, paddingHorizontal: 2 },
+  navItem: { flex: 1, flexBasis: 0, minWidth: 0, minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 12, paddingHorizontal: 2, gap: 2 },
+  navItemActive: { flex: 1, flexBasis: 0, minWidth: 0, minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 16, paddingHorizontal: 2, gap: 2, backgroundColor: colors.lime },
+  navLabel: { fontSize: 12, color: colors.muted, fontWeight: "600" },
+  navLabelActive: { fontSize: 12, color: colors.green, fontWeight: "700" },
+  iconButton: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  notice: { padding: 12, borderRadius: 12, borderLeftWidth: 3, borderLeftColor: "#D89D36", backgroundColor: colors.amber, marginBottom: 18 },
+  noticeMain: { color: colors.ink, fontSize: 12, lineHeight: 18, fontWeight: "600" },
+  noticeSub: { color: colors.ink, fontSize: 11, lineHeight: 17, marginTop: 6 },
+  menuRoot: { flex: 1, flexDirection: "row" },
+  backdrop: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(23,33,59,0.45)" },
+  drawer: { width: MENU_WIDTH, maxWidth: "85%", height: "100%", backgroundColor: "white", paddingHorizontal: 14, paddingTop: 18, borderTopRightRadius: 22, borderBottomRightRadius: 22 },
+  drawerHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 6, paddingBottom: 12, borderBottomWidth: 1, borderColor: colors.line },
+  menuSection: { fontSize: 11, fontWeight: "700", color: colors.muted, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, paddingHorizontal: 8 },
+  menuItem: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48, paddingHorizontal: 10, borderRadius: 12 },
+  menuItemActive: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48, paddingHorizontal: 10, borderRadius: 12, backgroundColor: colors.lime },
+  menuLabel: { fontSize: 15, color: colors.ink, fontWeight: "600" },
+  menuLabelActive: { fontSize: 15, color: colors.green, fontWeight: "700" },
+  menuNotice: { fontSize: 11, lineHeight: 16, color: colors.muted, marginTop: 18, paddingHorizontal: 8 },
   footer: {
     textAlign: "center",
     fontSize: 12,
