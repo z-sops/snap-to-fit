@@ -35,7 +35,7 @@ export default function Today() {
     { href: "/metabolic", title: "Tracker", detail: "Meal and routine times", icon: "time", tint: "#EAF7EF" },
     { href: "/journey", title: "Journey", detail: "Weight and photos", icon: "trending-up", tint: "#EEF2FF" },
     { href: "/health", title: "Health & watch", detail: "Steps, weight, readings", icon: "pulse", tint: "#FDEBEC" },
-    { href: "/medicines", title: p.glp1 ? "GLP-1 companion" : "Prescribed routine", detail: p.glp1 ? "Shots, symptoms, reminders" : "Medicines and reminders", icon: "medkit", tint: "#F3EDFF" },
+    { href: "/medicines", title: "GLP-1 companion", detail: p.glp1 ? `${p.glp1.split(" (")[0]} · shots and reminders` : "Ozempic, Wegovy, Mounjaro, Zepbound", icon: "medkit", tint: "#F3EDFF" },
     { href: "/coach", title: "Coach", detail: "Ask about food and moving", icon: "chatbubbles", tint: "#E9F6FF" },
     { href: "/gyms", title: "Gyms", detail: "Find one nearby", icon: "location", tint: "#FFF8DD" },
     { href: "/music", title: "Music", detail: "Your workout songs", icon: "musical-notes", tint: "#F0F4F8" },
@@ -77,7 +77,7 @@ export default function Today() {
         </View>
       </View>
 
-      <Pressable onPress={() => router.navigate("/food")} accessibilityRole="button" accessibilityLabel="Snap a meal" style={s.snap}>
+      <Pressable onPress={() => router.navigate({ pathname: "/food", params: { snap: String(Date.now()) } })} accessibilityRole="button" accessibilityLabel="Snap your meal now" style={s.snap}>
         <View style={s.snapIcon}><Ionicons name="camera" size={30} color="white" /></View>
         <View style={{ flex: 1 }}>
           <Text style={s.snapTitle}>Snap your meal</Text>

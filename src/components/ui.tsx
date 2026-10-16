@@ -119,7 +119,11 @@ export function Screen({
             ))}
             <View style={s.snapSlot}>
               <Pressable
-                onPress={() => go("/food")}
+                onPress={() => {
+                  setMenu(false);
+                  // Opens the camera straight away on the Food screen.
+                  router.navigate({ pathname: "/food", params: { snap: String(Date.now()) } });
+                }}
                 accessibilityRole="button"
                 accessibilityLabel="Snap a meal"
                 style={s.snapBtn}

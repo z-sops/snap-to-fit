@@ -1,7 +1,7 @@
 import { foodReview } from "../core/food-review";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { effectiveProfile } from "../core/progress";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Image } from "react-native";
 import {
   Screen,
@@ -47,17 +47,25 @@ export default function Food() {
           total.carbs,
         )
       : null;
+  // The camera opens first, whatever the AI settings: the photo is kept with the
+  // entry and AI analysis runs only when consented and the online service exists.
   const scan = (camera: boolean) =>
     act(async () => {
-      if (!p.aiConsent)
-        throw new Error(
-          "Enable optional AI consent in Settings before photo analysis.",
-        );
       setBusy(true);
       try {
         const img = await pickPhoto(camera);
         if (!img) return;
         setPhoto(img.uri);
+        setSource("photo");
+        setReviewed(false);
+        if (!p.aiConsent) {
+          setNote("Photo added. Automatic calories need AI analysis, which is off. Turn it on in Settings, or enter the values below.");
+          return;
+        }
+        if (!process.env.EXPO_PUBLIC_API_URL) {
+          setNote("Photo added. AI meal analysis is not connected in this test build yet, so enter the values below for now.");
+          return;
+        }
         const result = await api<{
           name: string;
           calories: number;
@@ -68,7 +76,6 @@ export default function Food() {
           uncertainty: string;
         }>("/food", { image: img.data, mimeType: img.mimeType });
         validateMeal({ ...result, source: "photo" });
-        setReviewed(false);
         setName(result.name);
         setValues({
           calories: String(result.calories),
@@ -78,11 +85,18 @@ export default function Food() {
           fibre: String(result.fibre),
         });
         setNote(result.uncertainty);
-        setSource("photo");
       } finally {
         setBusy(false);
       }
     });
+  // The centre Snap button opens /food?snap=<timestamp>; each tap opens the camera once.
+  const { snap } = useLocalSearchParams<{ snap?: string }>();
+  const handledSnap = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!snap || handledSnap.current === snap) return;
+    handledSnap.current = snap;
+    scan(true);
+  }, [snap]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Screen
       title="Fuel your day."

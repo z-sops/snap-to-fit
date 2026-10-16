@@ -55,7 +55,7 @@ const profiledSections: NavSection[] = [
       { href: "/meal-plan", label: "Meal plan", icon: "calendar-outline" },
       { href: "/metabolic", label: "Tracker", icon: "stats-chart-outline" },
       { href: "/journey", label: "Journey", icon: "trending-up-outline" },
-      { href: "/medicines", label: "Prescribed routine", icon: "medkit-outline" },
+      { href: "/medicines", label: "GLP-1 & medicines", icon: "medkit-outline" },
       { href: "/cgm", label: "CGM readings", icon: "water-outline" },
     ],
   },

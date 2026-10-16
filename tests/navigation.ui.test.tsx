@@ -41,7 +41,7 @@ test("bottom tabs navigate, Today is selected on home, centre Snap opens food", 
   expect(screen.getByRole("tab", { name: "Today" }).getAttribute("aria-selected")).toBe("true");
   // The raised centre Snap button opens food logging; the menu lives in the header.
   fireEvent.click(screen.getByRole("button", { name: "Snap a meal" }));
-  expect(nav.navigate).toHaveBeenLastCalledWith("/food");
+  expect(nav.navigate).toHaveBeenLastCalledWith({ pathname: "/food", params: { snap: expect.any(String) } });
   expect(screen.queryByRole("button", { name: "Menu" })).toBeNull();
   for (const [label, href] of [["Food", "/food"], ["Move", "/move"], ["Health", "/health"]]) {
     fireEvent.click(screen.getByRole("tab", { name: label }));
@@ -59,7 +59,7 @@ test("slide-out menu lists secondary screens, navigates and closes", async () =>
   fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
   const coach = await screen.findByRole("link", { name: "Coach" });
   expect(screen.getByRole("link", { name: "Meal plan" })).toBeTruthy();
-  expect(screen.getByRole("link", { name: "Prescribed routine" })).toBeTruthy();
+  expect(screen.getByRole("link", { name: "GLP-1 & medicines" })).toBeTruthy();
   fireEvent.click(coach);
   expect(nav.navigate).toHaveBeenLastCalledWith("/coach");
   await waitFor(() => expect(screen.queryByRole("link", { name: "Coach" })).toBeNull());

@@ -18,7 +18,10 @@ vi.mock("expo-router", () => ({
     </a>
   ),
   usePathname: () => "/food",
+  useLocalSearchParams: () => routeParams.value,
+  router: { navigate: vi.fn(), push: vi.fn(), replace: vi.fn() },
 }));
+const routeParams = vi.hoisted(() => ({ value: {} as Record<string, string> }));
 vi.mock("@expo/vector-icons", () => ({ Ionicons: () => null }));
 vi.mock("../src/services/photos", () => ({
   pickPhoto: vi.fn(async () => ({
@@ -43,6 +46,7 @@ import { StoreProvider, useStore } from "../src/services/store";
 import { emptyState, newProfile } from "../src/core/model";
 import { saveState, saveSession, loadState } from "../src/services/storage";
 import { pickPhoto } from "../src/services/photos";
+import { api } from "../src/services/api";
 function ReadyFood() {
   const { ready } = useStore();
   return ready ? <Food /> : null;
@@ -58,11 +62,14 @@ const profile = {
 };
 beforeEach(async () => {
   vi.clearAllMocks();
+  routeParams.value = {};
+  vi.stubEnv("EXPO_PUBLIC_API_URL", "https://api.example.test");
   vi.spyOn(window, "alert").mockImplementation(() => {});
   await saveSession(null);
   await saveState({ ...emptyState, profile }, "guest");
 });
 afterEach(() => {
+  vi.unstubAllEnvs();
   cleanup();
   vi.restoreAllMocks();
 });
@@ -89,7 +96,7 @@ test("manual meal updates totals, persists decimals, and can be removed", async 
   await screen.findByText("No meals yet. Your first entry starts the story.");
   expect((await loadState()).meals.length).toBe(0);
 });
-test("camera processing is blocked until separate AI consent", async () => {
+test("camera opens without AI consent, but the photo is never sent for analysis", async () => {
   render(
     <StoreProvider>
       <ReadyFood />
@@ -97,8 +104,32 @@ test("camera processing is blocked until separate AI consent", async () => {
   );
   await screen.findByText("Food photo");
   fireEvent.click(screen.getByRole("button", { name: "Take a snap" }));
-  await waitFor(() => expect(window.alert).toHaveBeenCalled());
-  expect(pickPhoto).not.toHaveBeenCalled();
+  await waitFor(() => expect(pickPhoto).toHaveBeenCalledWith(true));
+  expect(await screen.findByText(/AI analysis, which is off/)).toBeTruthy();
+  expect(api).not.toHaveBeenCalled();
+});
+test("centre Snap button (snap param) opens the camera straight away", async () => {
+  routeParams.value = { snap: "123" };
+  render(
+    <StoreProvider>
+      <ReadyFood />
+    </StoreProvider>,
+  );
+  await waitFor(() => expect(pickPhoto).toHaveBeenCalledWith(true));
+  expect(pickPhoto).toHaveBeenCalledTimes(1);
+});
+test("without the online service a consented photo is kept for manual entry", async () => {
+  vi.stubEnv("EXPO_PUBLIC_API_URL", "");
+  await saveState({ ...emptyState, profile: { ...profile, aiConsent: true } });
+  render(
+    <StoreProvider>
+      <ReadyFood />
+    </StoreProvider>,
+  );
+  await screen.findByText("Food photo");
+  fireEvent.click(screen.getByRole("button", { name: "Take a snap" }));
+  expect(await screen.findByText(/not connected in this test build/)).toBeTruthy();
+  expect(api).not.toHaveBeenCalled();
 });
 test("photo estimate requires explicit review before logging", async () => {
   await saveState({ ...emptyState, profile: { ...profile, aiConsent: true } });
