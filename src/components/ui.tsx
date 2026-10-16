@@ -86,7 +86,7 @@ export function Screen({
           </Pressable>
           <Text style={s.logo}>
             snap<Text style={{ color: colors.green }}> to fit</Text>
-            <Text style={{ fontSize: 11, color: colors.green }}> ✦</Text>
+            <Text style={{ fontSize: 14, color: colors.green }}> ✦</Text>
           </Text>
           {hasProfile ? (
             <Pressable
@@ -485,13 +485,13 @@ const s = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderColor: colors.line,
   },
-  logo: { fontSize: 30, fontWeight: "800", letterSpacing: -1, color: colors.ink },
-  drawerLogo: { fontSize: 28, fontWeight: "800", letterSpacing: -1, color: colors.ink },
+  logo: { fontSize: 34, fontWeight: "800", letterSpacing: -1, color: colors.ink },
+  drawerLogo: { fontSize: 31, fontWeight: "800", letterSpacing: -1, color: colors.ink },
   content: { padding: 20, paddingBottom: 28 },
   title: {
     fontSize: 34,

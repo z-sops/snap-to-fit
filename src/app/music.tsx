@@ -12,6 +12,7 @@ export default function Music() {
     </Card>
     <Card><H>Music from your phone</H><P>Choose an audio file from your device or Files app. It stays on your device and is not uploaded. The selected track is available for this session; choose it again after restarting. Protected streaming downloads cannot be imported.</P>
       <Button title="Choose my audio file" onPress={() => void act(music.choose)}/>
+      <P>Your phone file picker opens on top of Snap to Fit. To come back without choosing a song, swipe in from the left or right edge of the screen (or press Back).</P>
       <P>Supported formats depend on your device. Native playback is configured for background and lock-screen controls; browser playback depends on browser support.</P>
     </Card>
     <MusicControls/>
