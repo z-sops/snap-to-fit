@@ -1,258 +1,234 @@
-import {
-  weeklySchedule,
-  progressionSuggestion,
-  isRestricted,
-} from "../core/schedule";
+import React, { useState } from "react";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
-import { MusicControls } from "../components/MusicControls";
+import { Ionicons } from "@expo/vector-icons";
+import { Screen, Card, H, P, Button, act } from "../components/ui";
+import { Surface, SectionHeader, Chip, PrimaryButton, Sheet, Pill, palette } from "../components/design";
 import { WorkoutPreferences } from "../components/WorkoutPreferences";
-import React, { useState, useEffect } from "react";
-import {
-  Screen,
-  Card,
-  H,
-  P,
-  Chips,
-  Field,
-  Button,
-  Row,
-  Metric,
-  act,
-} from "../components/ui";
-import { Movement } from "../components/Movement";
+import { WorkoutPlayer, type PlayerItem } from "../components/WorkoutPlayer";
+import { MusicControls } from "../components/MusicControls";
 import { useStore } from "../services/store";
-import { exercises, lastPerformance } from "../core/workouts";
+import { haptic } from "../services/feedback";
+import { weeklySchedule, isRestricted } from "../core/schedule";
 import { topicsFor } from "../core/learn";
+import { exerciseById, planImage } from "../core/exercise-library";
+import { streak } from "../core/streaks";
 import { uid, numeric, validateProfile, type Place, localDay } from "../core/model";
+
 export default function Move() {
   const { state, update } = useStore();
   const p = state.profile!;
   const [editingWeek, setEditingWeek] = useState(!p.workoutDays);
   const [weekProfile, setWeekProfile] = useState(p);
   const [place, setPlace] = useState<Place>(p.place);
-  const [index, setIndex] = useState(0);
-  const [sets, setSets] = useState("2");
-  const [reps, setReps] = useState("10");
-  const [weight, setWeight] = useState("0");
-  const [minutes, setMinutes] = useState("");
-  const [seconds, setSeconds] = useState(0);
-  const week = weeklySchedule(p, state.workouts, place);
   const [selectedDate, setSelectedDate] = useState(localDay());
-  const scheduled = week.find((d) => d.date === selectedDate) || week[0];
-  const items =
-    scheduled.items.length && !scheduled.restricted
-      ? scheduled.items
-      : exercises.filter((e) => e.place.includes(place));
-  const plan = {
-    ...scheduled,
-    items,
-    note: scheduled.restricted
-      ? "Use your existing care plan. Individual exercise intensity is not assigned."
-      : scheduled.rest
-        ? "You have not scheduled a workout for this day. The exercise library is available to review or log any activity you choose."
-        : "Your planned session. Warm up gently and use comfortable loads.",
-  };
-  const exercise = plan.items[index % plan.items.length];
-  const last = lastPerformance(state.workouts, exercise.id);
-  useEffect(() => {
-    if (seconds <= 0) return;
-    const timer = setTimeout(() => setSeconds((x) => Math.max(0, x - 1)), 1000);
-    return () => clearTimeout(timer);
-  }, [seconds]);
+  const [player, setPlayer] = useState<null | { title: string; items: PlayerItem[] }>(null);
+  const [logOpen, setLogOpen] = useState(false);
+  const week = weeklySchedule(p, state.workouts, place);
+  const day = week.find((d) => d.date === selectedDate) || week[0];
+  const restricted = isRestricted(p);
+  const voice = state.voiceCues !== false;
+  const units = p.units || "imperial";
+  const doneDays = week.filter((d) => d.completed).length;
+  const planned = week.filter((d) => !d.rest).length;
+  const weekMinutes = state.workouts.filter((w) => week.some((d) => d.date === localDay(w.at))).reduce((a, w) => a + w.minutes, 0);
+  const st = streak(state);
+  const guides = topicsFor(p);
+  const mine = (state.myWorkout || []).map(exerciseById).filter(Boolean) as NonNullable<ReturnType<typeof exerciseById>>[];
+
+  const planItems: PlayerItem[] = day.items.map((e) => ({ id: e.id, name: e.name, image: planImage(e.id), sets: day.sets || 2, reps: day.reps || 10, cues: e.cues }));
+  const myItems: PlayerItem[] = mine.map((e) => ({ id: e.id, name: e.name, image: e.images[0], sets: p.experience === "beginner" ? 2 : 3, reps: 10, cues: e.steps.slice(0, 3) }));
+
+  const save = (logs: typeof state.workouts) =>
+    act(async () => {
+      if (logs.length) await update((s) => ({ ...s, workouts: [...s.workouts, ...logs] }));
+      haptic("success");
+      setPlayer(null);
+    });
+
   return (
-    <Screen
-      title="Make time to move."
-      subtitle={`${p.days} preferred sessions per week · ${p.experience}`}
-    >
-      {topicsFor(p).length ? (
+    <Screen title="Move" subtitle={`${p.days} sessions a week · ${p.experience}`}>
+      <Surface dark>
+        <View style={s.sumRow}>
+          <View>
+            <Text style={s.darkLabel}>This week</Text>
+            <Text style={s.darkBig}>{doneDays}<Text style={s.darkUnit}> / {planned} sessions</Text></Text>
+          </View>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={s.darkLabel}>Active minutes</Text>
+            <Text style={s.darkMid}>{weekMinutes} min</Text>
+          </View>
+        </View>
+        <View style={s.days}>
+          {week.map((d) => (
+            <Pressable key={d.date} accessibilityRole="tab" aria-selected={d.date === selectedDate} accessibilityLabel={`${d.weekday}${d.rest ? ", rest day" : ""}${d.completed ? ", done" : ""}`}
+              onPress={() => setSelectedDate(d.date)} style={[s.day, d.date === selectedDate && s.dayOn]}>
+              <Text style={[s.dayName, d.date === selectedDate && { color: palette.ink }]}>{d.weekday.slice(0, 1)}</Text>
+              <Ionicons name={d.completed ? "checkmark-circle" : d.rest ? "ellipse-outline" : "barbell"} size={16} color={d.completed ? palette.fiber : d.date === selectedDate ? palette.ink : "#A9B4CC"} />
+            </Pressable>
+          ))}
+        </View>
+        <Text style={s.darkSmall}>{st.current ? `🔥 ${st.current}-day streak · ` : "Start a streak today · "}tap a day to see its plan</Text>
+      </Surface>
+
+      <View style={s.chipsRow}>
+        {(["gym", "home", "walk"] as Place[]).map((pl) => <Chip key={pl} label={pl === "gym" ? "🏋️ Gym" : pl === "home" ? "🏠 Home" : "🚶 Walking"} selected={place === pl} onPress={() => setPlace(pl)} />)}
+      </View>
+
+      <Surface>
+        <Text style={s.kicker}>{day.date === localDay() ? "Today" : day.weekday}</Text>
+        <Text style={s.title}>{restricted ? "Your care plan comes first" : day.rest ? "Rest or light activity" : day.title}</Text>
+        <Text style={s.p}>
+          {restricted
+            ? "Because of your health details, Snap to Fit doesn’t assign intensity. Use the library and safety guides with your doctor or physical therapist."
+            : day.rest
+              ? "No session planned. A walk, stretching or mobility work all count."
+              : `${day.items.length} exercises · ${day.sets} sets × ${day.reps} reps · about ${day.duration} min`}
+        </Text>
+        {!restricted && !day.rest ? (
+          <>
+            {planItems.map((it) => (
+              <View key={it.id} style={s.exRow}>
+                {it.image ? <Image source={{ uri: it.image }} style={s.exImg} /> : <View style={[s.exImg, s.exIcon]}><Ionicons name="barbell" size={18} color={palette.brand} /></View>}
+                <View style={{ flex: 1 }}>
+                  <Text style={s.exName}>{it.name}</Text>
+                  <Text style={s.exMeta}>{it.sets} × {it.reps}</Text>
+                </View>
+              </View>
+            ))}
+            <PrimaryButton title={day.completed ? "Do it again" : "Start workout"} icon="play" onPress={() => setPlayer({ title: day.title, items: planItems })} />
+          </>
+        ) : (
+          <PrimaryButton title="Browse exercises" icon="search" onPress={() => router.push("/exercises")} />
+        )}
+      </Surface>
+
+      {mine.length ? (
+        <Surface>
+          <View style={s.between}><Text style={s.title}>My workout</Text><Pill label={`${mine.length} exercises`} /></View>
+          {myItems.map((it) => (
+            <View key={it.id} style={s.exRow}>
+              <Image source={{ uri: it.image }} style={s.exImg} />
+              <Text style={[s.exName, { flex: 1 }]}>{it.name}</Text>
+            </View>
+          ))}
+          <PrimaryButton title="Start my workout" icon="play" onPress={() => setPlayer({ title: "My workout", items: myItems })} />
+        </Surface>
+      ) : null}
+
+      <Pressable accessibilityRole="button" accessibilityLabel="Open exercise library" onPress={() => router.push("/exercises")} style={s.libCard}>
+        <View style={s.libIcon}><Ionicons name="library" size={26} color="#fff" /></View>
+        <View style={{ flex: 1 }}>
+          <Text style={s.libTitle}>Exercise library</Text>
+          <Text style={s.libText}>870+ exercises by muscle and equipment, with form steps. Filtered for your health details.</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={22} color="#fff" />
+      </Pressable>
+
+      <View style={s.chipsRow}>
+        <Chip label={voice ? "🔊 Voice coach on" : "🔇 Voice coach off"} selected={voice} onPress={() => act(() => update((x) => ({ ...x, voiceCues: !voice })))} />
+        <Chip label="➕ Log activity" onPress={() => setLogOpen(true)} />
+        <Chip label="🎵 Workout music" onPress={() => router.push("/music")} />
+      </View>
+      <MusicControls />
+
+      {guides.length ? (
         <Card tint>
           <H>Exercise safety guides for you</H>
           <P>Based on your profile. Your doctor or physical therapist sets your limits — these guides help you ask the right questions.</P>
-          {topicsFor(p).slice(0, 4).map((a) => (
-            <Button key={a.id} secondary title={`${a.emoji} ${a.title}`}
-              onPress={() => router.push({ pathname: "/education", params: { topic: a.id } })} />
+          {guides.slice(0, 4).map((a) => (
+            <Button key={a.id} secondary title={`${a.emoji} ${a.title}`} onPress={() => router.push({ pathname: "/education", params: { topic: a.id } })} />
           ))}
         </Card>
       ) : null}
-      <Button secondary title="Choose workout music" onPress={() => router.push("/music")} />
-      <MusicControls />
+
       <Card>
-        <Button secondary title={editingWeek ? "Close week settings" : "Choose / change my workout days"}
-          onPress={() => { setWeekProfile(p); setEditingWeek(!editingWeek); }}/>
+        <Button secondary title={editingWeek ? "Close week settings" : "Choose / change my workout days"} onPress={() => { setWeekProfile(p); setEditingWeek(!editingWeek); }} />
         {editingWeek ? <>
-          <WorkoutPreferences profile={weekProfile} onChange={setWeekProfile}/>
+          <WorkoutPreferences profile={weekProfile} onChange={setWeekProfile} />
           <Button title="Save my workout week" onPress={() => act(async () => {
             if (!weekProfile.workoutDays) throw new Error("Choose your workout days first.");
             validateProfile(weekProfile);
-            await update(s => ({ ...s, profile: s.profile ? { ...s.profile, days: weekProfile.days, workoutDays: weekProfile.workoutDays } : null }));
-            setEditingWeek(false); setIndex(0);
-          })}/>
+            await update((x) => ({ ...x, profile: x.profile ? { ...x.profile, days: weekProfile.days, workoutDays: weekProfile.workoutDays } : null }));
+            setEditingWeek(false);
+          })} />
         </> : null}
       </Card>
-      <Chips
-        values={[
-          { value: "gym", label: "Gym" },
-          { value: "home", label: "Home" },
-          { value: "walk", label: "Walking" },
-        ]}
-        selected={place}
-        onChange={(v) => {
-          setPlace(v);
-          setIndex(0);
-        }}
-      />
-      <Card>
-        <H>This week</H>
-        <Chips
-          values={week.map((d) => ({
-            value: d.date,
-            label: `${d.weekday}${d.completed ? " ✓" : ""}${d.rest ? " · Off" : ""}`,
-          }))}
-          selected={selectedDate}
-          onChange={(v) => {
-            setSelectedDate(v);
-            setIndex(0);
-          }}
-        />
-        <P>
-          {week.filter((d) => !d.rest).length} planned training days, with
-          only on the days you selected. A check mark means an exercise was logged that
-          day.
-        </P>
-      </Card>
-      <Card tint>
-        <H>{plan.title}</H>
-        <P>{plan.note}</P>
-        <P>
-          You control this calendar. Unselected days are not compulsory rest
-          days. Plan suitable recovery around your activities and care plan.
-        </P>
-      </Card>
-      <Card>
-        <Chips
-          values={plan.items.map((e, i) => ({ value: i, label: e.name }))}
-          selected={index % plan.items.length}
-          onChange={setIndex}
-        />
-        <H>{exercise.name}</H>
-        <P>
-          {exercise.muscle} · {exercise.equipment}
-        </P>
-        <Movement motion={exercise.motion} />
-        <P>
-          Prototype animation illustrates the movement pattern. It is not a
-          validated form assessment or a substitute for learning the movement
-          safely.
-        </P>
-        {exercise.cues.map((c) => (
-          <P key={c}>• {c}</P>
-        ))}
-        {!plan.restricted && !plan.rest && place !== "walk" ? (
-          <P>
-            Planned suggestion: {plan.sets} sets × {plan.reps} reps, using a
-            comfortable load.
-          </P>
-        ) : null}
-        <P>
-          {!isRestricted(p)
-            ? progressionSuggestion(state.workouts, exercise.id)
-            : "Follow your existing care plan for progression."}
-        </P>
-        {last ? (
-          <P>
-            Last logged: {last.sets} sets × {last.reps} reps · {last.weight} kg
-            · {last.minutes} min. Increase only when form and recovery support
-            it.
-          </P>
-        ) : (
-          <P>No previous performance logged.</P>
-        )}
-        <H>Record what you completed</H>
-        {place !== "walk" ? (
-          <>
-            <Field
-              label="Sets completed (0 for holds/cardio)"
-              numeric
-              value={sets}
-              onChange={setSets}
-            />
-            <Field
-              label="Reps per set"
-              numeric
-              value={reps}
-              onChange={setReps}
-            />
-            <Field
-              label="Weight used (kg; 0 for bodyweight)"
-              numeric
-              value={weight}
-              onChange={setWeight}
-            />
-          </>
-        ) : null}
-        <Field
-          label="Duration (minutes)"
-          numeric
-          value={minutes}
-          onChange={setMinutes}
-        />
-        <Button
-          title="Save exercise entry"
-          onPress={() =>
-            act(async () => {
-              const entry = {
-                id: uid(),
-                at: new Date().toISOString(),
-                exerciseId: exercise.id,
-                name: exercise.name,
-                sets: place === "walk" ? 0 : numeric(sets, 0, 30, "Sets"),
-                reps: place === "walk" ? 0 : numeric(reps, 0, 100, "Reps"),
-                weight:
-                  place === "walk" ? 0 : numeric(weight, 0, 500, "Weight"),
-                minutes: numeric(minutes, 1, 240, "Duration"),
-              };
-              await update((s) => ({ ...s, workouts: [...s.workouts, entry] }));
-              setMinutes("");
-            })
-          }
-        />
-      </Card>
-      <Card>
-        <H>Rest timer</H>
-        <Row>
-          <Metric label="Seconds remaining" value={seconds} />
-        </Row>
-        <Row>
-          <Button title="Start 60 seconds" onPress={() => setSeconds(60)} />
-          <Button secondary title="Stop timer" onPress={() => setSeconds(0)} />
-        </Row>
-      </Card>
-      <Card>
-        <H>Recent sessions</H>
-        {[...state.workouts]
-          .reverse()
-          .slice(0, 10)
-          .map((w) => (
-            <Card key={w.id}>
-              <P>
-                {w.name} · {w.minutes} min ·{" "}
-                {new Date(w.at).toLocaleDateString()}
-              </P>
-              <Button
-                secondary
-                title="Remove exercise entry"
-                onPress={() =>
-                  act(() =>
-                    update((s) => ({
-                      ...s,
-                      workouts: s.workouts.filter((x) => x.id !== w.id),
-                    })),
-                  )
-                }
-              />
-            </Card>
-          ))}
-      </Card>
+
+      <SectionHeader title="Recent sessions" />
+      {state.workouts.length === 0 ? <Text style={s.p}>Finish a workout or log an activity to see it here.</Text> : null}
+      {[...state.workouts].reverse().slice(0, 12).map((w) => (
+        <View key={w.id} style={s.logRow}>
+          <View style={[s.exImg, s.exIcon]}><Ionicons name="barbell" size={18} color={palette.brand} /></View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.exName}>{w.name}</Text>
+            <Text style={s.exMeta}>{w.sets ? `${w.sets} × ${w.reps}${w.weight ? ` · ${units === "imperial" ? Math.round(w.weight * 2.2046) + " lb" : w.weight + " kg"}` : ""} · ` : ""}{w.minutes} min · {new Date(w.at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</Text>
+          </View>
+          <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${w.name}`} onPress={() => act(() => update((x) => ({ ...x, workouts: x.workouts.filter((y) => y.id !== w.id) })))} hitSlop={8}>
+            <Ionicons name="trash-outline" size={18} color={palette.muted} />
+          </Pressable>
+        </View>
+      ))}
+
+      {player ? (
+        <WorkoutPlayer visible title={player.title} items={player.items} voice={voice} units={units}
+          onVoice={(v) => act(() => update((x) => ({ ...x, voiceCues: v })))} onClose={() => setPlayer(null)} onFinish={save} />
+      ) : null}
+      <LogActivity visible={logOpen} onClose={() => setLogOpen(false)} onSave={(entry) => act(async () => {
+        await update((x) => ({ ...x, workouts: [...x.workouts, entry] }));
+        haptic("success");
+        setLogOpen(false);
+      })} />
     </Screen>
   );
 }
+
+const activities = [
+  { id: "walk", name: "Walking" }, { id: "run", name: "Running" }, { id: "cycle", name: "Cycling" },
+  { id: "swim", name: "Swimming" }, { id: "yoga", name: "Yoga / stretching" }, { id: "sport", name: "Sports" }, { id: "strength", name: "Strength training" },
+];
+function LogActivity({ visible, onClose, onSave }: { visible: boolean; onClose: () => void; onSave: (e: { id: string; at: string; exerciseId: string; name: string; sets: number; reps: number; weight: number; minutes: number }) => void }) {
+  const [kind, setKind] = useState("walk");
+  const [minutes, setMinutes] = useState("");
+  return (
+    <Sheet visible={visible} title="Log activity" onClose={onClose}
+      footer={<PrimaryButton title="Save activity" icon="checkmark" onPress={() => act(async () => {
+        const a = activities.find((x) => x.id === kind)!;
+        onSave({ id: uid(), at: new Date().toISOString(), exerciseId: a.id, name: a.name, sets: 0, reps: 0, weight: 0, minutes: numeric(minutes, 1, 240, "Duration") });
+        setMinutes("");
+      })} />}>
+      <View style={s.chipsRow}>{activities.map((a) => <Chip key={a.id} label={a.name} selected={kind === a.id} onPress={() => setKind(a.id)} />)}</View>
+      <TextInput value={minutes} onChangeText={setMinutes} keyboardType="number-pad" placeholder="Minutes" placeholderTextColor={palette.muted}
+        accessibilityLabel="Duration (minutes)" style={s.input} />
+    </Sheet>
+  );
+}
+
+const s = StyleSheet.create({
+  sumRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
+  darkLabel: { color: "#A9B4CC", fontSize: 13, fontWeight: "700" },
+  darkBig: { color: "#fff", fontSize: 36, fontWeight: "900" },
+  darkUnit: { color: "#A9B4CC", fontSize: 15, fontWeight: "700" },
+  darkMid: { color: "#fff", fontSize: 20, fontWeight: "800" },
+  darkSmall: { color: "#C9D2E5", fontSize: 12 },
+  days: { flexDirection: "row", justifyContent: "space-between" },
+  day: { width: 40, alignItems: "center", gap: 6, paddingVertical: 8, borderRadius: 14 },
+  dayOn: { backgroundColor: "#fff" },
+  dayName: { color: "#A9B4CC", fontWeight: "800" },
+  chipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  kicker: { color: palette.brand, fontSize: 12, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.6 },
+  title: { color: palette.ink, fontSize: 22, fontWeight: "900", letterSpacing: -0.4 },
+  p: { color: palette.muted, fontSize: 14, lineHeight: 20 },
+  between: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  exRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  exImg: { width: 52, height: 52, borderRadius: 14, backgroundColor: palette.bg },
+  exIcon: { alignItems: "center", justifyContent: "center", backgroundColor: palette.brandSoft },
+  exName: { color: palette.ink, fontSize: 15, fontWeight: "800" },
+  exMeta: { color: palette.muted, fontSize: 12, marginTop: 2 },
+  libCard: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: palette.brand, borderRadius: 24, padding: 18 },
+  libIcon: { width: 52, height: 52, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
+  libTitle: { color: "#fff", fontSize: 18, fontWeight: "900" },
+  libText: { color: "#DCE4FF", fontSize: 13, lineHeight: 18, marginTop: 2 },
+  logRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#fff", borderRadius: 18, padding: 10, borderWidth: 1, borderColor: "#EDF0F6" },
+  input: { backgroundColor: "#fff", borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
+});

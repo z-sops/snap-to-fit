@@ -166,6 +166,10 @@ export interface State {
   education?: EducationSettings;
   carePlan?: CarePlan;
   flexibleMeals?: { id: string; week: string; at: string }[];
+  /** Exercises the user added from the library to their own workout. */
+  myWorkout?: string[];
+  /** Spoken workout cues on/off (default on). */
+  voiceCues?: boolean;
   version: 1;
   profile: Profile | null;
   meals: Meal[];
