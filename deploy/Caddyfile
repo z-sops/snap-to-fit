@@ -1,0 +1,32 @@
+{
+	email {$ACME_EMAIL}
+}
+
+# Website: privacy, terms, support, delete-account (rendered into ./public by setup.sh)
+{$SITE_DOMAIN} {
+	root * /srv/site
+	try_files {path} {path}.html {path}/index.html
+	file_server
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+	}
+}
+
+# App backend + exercise images
+{$API_DOMAIN} {
+	encode gzip
+	request_body {
+		max_size 8MB
+	}
+	handle_path /media/* {
+		root * /srv/media
+		header Cache-Control "public, max-age=2592000, immutable"
+		file_server
+	}
+	handle {
+		reverse_proxy api:8787
+	}
+	header Strict-Transport-Security "max-age=31536000"
+}

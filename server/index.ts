@@ -232,7 +232,9 @@ export const server = createServer(async (req, res) => {
       return;
     }
   }
-  const ip = req.socket.remoteAddress || "local";
+  // Behind the Caddy reverse proxy every request comes from the proxy; use the client IP it forwards.
+  const forwarded = process.env.TRUST_PROXY === "1" ? String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() : "";
+  const ip = forwarded || req.socket.remoteAddress || "local";
   const now = Date.now();
   for (const [k, v] of attempts) if (v.expires < now) attempts.delete(k);
   const entry = attempts.get(ip) || { count: 0, expires: now + 60000 };

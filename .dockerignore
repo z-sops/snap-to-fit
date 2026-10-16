@@ -4,3 +4,12 @@ server/.env
 server/data
 build-check
 .expo
+android
+ios
+dist
+deploy
+docs
+tests
+assets
+*.apk
+*.aab

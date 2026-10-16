@@ -1,0 +1,39 @@
+# Snap to Fit production stack: API (Node 24) behind Caddy (automatic HTTPS).
+# Started by setup.sh; afterwards:  cd deploy && docker compose up -d --build
+services:
+  api:
+    build: ..
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 8787
+      DATABASE_PATH: /app/data/accounts.sqlite
+      TRUST_PROXY: "1"
+    volumes:
+      - api-data:/app/data
+    expose:
+      - "8787"
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+      SITE_DOMAIN: ${SITE_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./public:/srv/site:ro
+      - ./media:/srv/media:ro
+      - caddy-data:/data
+      - caddy-config:/config
+volumes:
+  api-data:
+  caddy-data:
+  caddy-config:

@@ -12,5 +12,12 @@ export function withoutDeviceReminders(s: State): State {
   };
 }
 export function backupState(s: State): State {
-  return { ...withoutDeviceReminders(s), photos: [] };
+  // Photos never leave the device: progress photos, meal photo thumbnails and photo avatars.
+  const clean = withoutDeviceReminders(s);
+  return {
+    ...clean,
+    photos: [],
+    meals: clean.meals.map(({ photoUri: _photo, ...m }) => m),
+    profile: clean.profile?.avatar?.photoUri ? { ...clean.profile, avatar: { ...clean.profile.avatar, photoUri: undefined } } : clean.profile,
+  };
 }

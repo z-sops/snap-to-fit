@@ -1,3 +1,4 @@
+import { links } from "../core/links";
 import React from "react";
 import { Linking } from "react-native";
 import { Screen, Card, H, P, Button } from "../components/ui";
@@ -78,22 +79,10 @@ export default function Legal() {
           including its identity, contact details, retention schedule and
           regional rights. Public policy links are configured for each release.
         </P>
-        {process.env.EXPO_PUBLIC_PRIVACY_URL ? (
-          <Button
-            secondary
-            title="Read privacy policy"
-            onPress={() =>
-              Linking.openURL(process.env.EXPO_PUBLIC_PRIVACY_URL!)
-            }
-          />
-        ) : null}
-        {process.env.EXPO_PUBLIC_TERMS_URL ? (
-          <Button
-            secondary
-            title="Read terms of use"
-            onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_TERMS_URL!)}
-          />
-        ) : null}
+        {links.privacy ? <Button secondary title="Read privacy policy" onPress={() => Linking.openURL(links.privacy)} /> : null}
+        {links.terms ? <Button secondary title="Read terms of use" onPress={() => Linking.openURL(links.terms)} /> : null}
+        {links.support ? <Button secondary title="Get support" onPress={() => Linking.openURL(links.support)} /> : null}
+        {links.deleteAccount ? <Button secondary title="How to delete your account" onPress={() => Linking.openURL(links.deleteAccount)} /> : null}
       </Card>
     </Screen>
   );
