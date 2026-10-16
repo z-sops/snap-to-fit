@@ -19,9 +19,9 @@ function source(granted: boolean, canAskAgain = true, tracks = songs) {
 }
 
 test("in-app song list: Back button, search, and picking a song closes the list", async () => {
-  const onClose = vi.fn(), onPick = vi.fn(), onBrowseFiles = vi.fn();
+  const onClose = vi.fn(), onPick = vi.fn();
   const src = source(true);
-  render(<DeviceAudioPicker open onClose={onClose} onPick={onPick} onBrowseFiles={onBrowseFiles} source={src} />);
+  render(<DeviceAudioPicker open onClose={onClose} onPick={onPick} source={src} />);
   expect(screen.getByRole("button", { name: "Back to Snap to Fit" })).toBeTruthy();
   expect(await screen.findByRole("button", { name: "Play Morning Run.mp3" })).toBeTruthy();
   expect(screen.getByText("3:05")).toBeTruthy();
@@ -35,26 +35,28 @@ test("in-app song list: Back button, search, and picking a song closes the list"
 
 test("Back returns to the app without choosing", async () => {
   const onClose = vi.fn(), onPick = vi.fn();
-  render(<DeviceAudioPicker open onClose={onClose} onPick={onPick} onBrowseFiles={vi.fn()} source={source(true)} />);
+  render(<DeviceAudioPicker open onClose={onClose} onPick={onPick} source={source(true)} />);
   await screen.findByRole("button", { name: "Play Morning Run.mp3" });
   fireEvent.click(screen.getByRole("button", { name: "Back to Snap to Fit" }));
   expect(onClose).toHaveBeenCalled();
   expect(onPick).not.toHaveBeenCalled();
 });
 
-test("denied permission explains and offers settings or Files; no songs are listed", async () => {
-  const onBrowseFiles = vi.fn();
+test("denied permission explains, offers settings and a way back; no songs are listed", async () => {
+  const onClose = vi.fn();
   const src = source(false, false);
-  render(<DeviceAudioPicker open onClose={vi.fn()} onPick={vi.fn()} onBrowseFiles={onBrowseFiles} source={src} />);
+  render(<DeviceAudioPicker open onClose={onClose} onPick={vi.fn()} source={src} />);
   expect(await screen.findByText("Allow access to your music")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Open phone settings" })).toBeTruthy();
+  expect(screen.queryByText(/Browse Files/)).toBeNull();
   expect(src.listDeviceAudio).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Browse Files instead" }));
-  expect(onBrowseFiles).toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Back to Music" }));
+  expect(onClose).toHaveBeenCalled();
 });
 
-test("empty library says so and points to Files", async () => {
-  render(<DeviceAudioPicker open onClose={vi.fn()} onPick={vi.fn()} onBrowseFiles={vi.fn()} source={source(true, true, [])} />);
+test("empty library says so and can check again, without the Files picker", async () => {
+  render(<DeviceAudioPicker open onClose={vi.fn()} onPick={vi.fn()} source={source(true, true, [])} />);
   expect(await screen.findByText("No songs found on this phone")).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Browse Files instead" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Check again" })).toBeTruthy();
+  expect(screen.queryByText(/Browse Files/)).toBeNull();
 });

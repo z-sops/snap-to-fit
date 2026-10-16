@@ -33,13 +33,11 @@ export function DeviceAudioPicker({
   open,
   onClose,
   onPick,
-  onBrowseFiles,
   source = deviceAudio,
 }: {
   open: boolean;
   onClose: () => void;
   onPick: (track: DeviceTrack) => void;
-  onBrowseFiles: () => void;
   source?: Source;
 }) {
   const insets = useMenuInsets();
@@ -130,7 +128,7 @@ export function DeviceAudioPicker({
             ) : (
               <Btn label="Open phone settings" onPress={() => void Linking.openSettings()} />
             )}
-            <Btn label="Browse Files instead" secondary onPress={() => { close(); onBrowseFiles(); }} />
+            <Btn label="Back to Music" secondary onPress={close} />
           </View>
         ) : null}
 
@@ -139,15 +137,15 @@ export function DeviceAudioPicker({
             <Text style={st.heading}>Could not load your songs</Text>
             <Text style={st.note}>{phase.message}</Text>
             <Btn label="Try again" onPress={retry} />
-            <Btn label="Browse Files instead" secondary onPress={() => { close(); onBrowseFiles(); }} />
+            <Btn label="Back to Music" secondary onPress={close} />
           </View>
         ) : null}
 
         {phase.kind === "ready" && phase.tracks.length === 0 ? (
           <View style={st.center}>
             <Text style={st.heading}>No songs found on this phone</Text>
-            <Text style={st.note}>Downloaded MP3 or M4A files appear here. Files in Drive or other apps can be chosen through Files.</Text>
-            <Btn label="Browse Files instead" secondary onPress={() => { close(); onBrowseFiles(); }} />
+            <Text style={st.note}>Songs saved on this phone (for example downloaded MP3 or M4A files) appear here.</Text>
+            <Btn label="Check again" onPress={retry} />
           </View>
         ) : null}
 
@@ -158,12 +156,6 @@ export function DeviceAudioPicker({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
             ListEmptyComponent={<Text style={st.note}>No songs match “{filter}”.</Text>}
-            ListFooterComponent={
-              <Pressable onPress={() => { close(); onBrowseFiles(); }} accessibilityRole="button" style={st.footerLink}>
-                <Ionicons name="folder-open-outline" size={18} color={colors.green} />
-                <Text style={st.footerText}>Not listed? Browse Files instead</Text>
-              </Pressable>
-            }
             renderItem={({ item }) => (
               <Pressable
                 onPress={() => { close(); onPick(item); }}
@@ -207,8 +199,6 @@ const st = StyleSheet.create({
   icon: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.lime, alignItems: "center", justifyContent: "center" },
   name: { flex: 1, fontSize: 15, fontWeight: "600", color: colors.ink },
   time: { fontSize: 13, color: colors.muted },
-  footerLink: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 18 },
-  footerText: { fontSize: 14, fontWeight: "600", color: colors.green },
   btn: { backgroundColor: colors.green, borderRadius: 15, minHeight: 50, paddingHorizontal: 22, justifyContent: "center", alignSelf: "stretch", alignItems: "center" },
   btnText: { color: "white", fontWeight: "700", fontSize: 15 },
   btnSecondary: { borderWidth: 1, borderColor: colors.line, backgroundColor: "white", borderRadius: 15, minHeight: 50, paddingHorizontal: 22, justifyContent: "center", alignSelf: "stretch", alignItems: "center" },

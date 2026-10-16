@@ -15,10 +15,8 @@ export default function Music() {
     </Card>
     <Card><H>Music from your phone</H>
       {deviceAudioSupported ? <>
-        <P>Pick a song saved on this phone. The list opens inside Snap to Fit, with a Back button. Songs stay on your phone and are not uploaded. The first time, Android asks for the “Music and audio” permission.</P>
-        <Button title="Choose a song from my phone" onPress={() => setPicker(true)}/>
-        <Button secondary title="Browse Files instead" onPress={() => void act(music.choose)}/>
-        <P>Browse Files opens your phone file picker on top of the app. To come back without choosing, swipe in from the right edge of the screen.</P>
+        <P>Your songs open inside Snap to Fit, with a Back button at the top. Songs stay on your phone and are not uploaded. The first time, Android asks for the “Music and audio” permission.</P>
+        <Button title="Choose my audio file" onPress={() => setPicker(true)}/>
       </> : <>
         <P>Choose an audio file from your device or Files app. It stays on your device and is not uploaded. Protected streaming downloads cannot be imported.</P>
         <Button title="Choose my audio file" onPress={() => void act(music.choose)}/>
@@ -26,7 +24,7 @@ export default function Music() {
       <P>The selected track is available for this session; choose it again after restarting. Supported formats depend on your device.</P>
     </Card>
     <DeviceAudioPicker open={picker} onClose={() => setPicker(false)}
-      onPick={t => void act(() => music.chooseDevice(t))} onBrowseFiles={() => void act(music.choose)}/>
+      onPick={t => void act(() => music.chooseDevice(t))}/>
     <MusicControls/>
   </Screen>;
 }
