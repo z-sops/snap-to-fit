@@ -3,7 +3,7 @@
 import React from "react";
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "./ui";
+import { colors, isDark } from "./ui";
 import { useMenuInsets } from "./menu-insets";
 
 export const palette = {
@@ -12,19 +12,20 @@ export const palette = {
   brand: colors.green,
   brandSoft: colors.lime,
   bg: colors.bg,
-  card: "#FFFFFF",
+  card: colors.card,
+  hairline: colors.hairline,
   line: colors.line,
   protein: "#F26B5B",
   carbs: "#F2B63D",
   fat: "#7C5CF2",
   fiber: "#34B37A",
-  good: "#1E7A47",
-  goodSoft: "#E7F6EE",
-  warn: "#9A5B00",
-  warnSoft: "#FFF4DE",
-  bad: "#B42318",
-  badSoft: "#FDECEC",
-  night: "#111A2E",
+  good: isDark ? "#4ADE80" : "#1E7A47",
+  goodSoft: isDark ? "#11291C" : "#E7F6EE",
+  warn: isDark ? "#F5C26B" : "#9A5B00",
+  warnSoft: isDark ? "#2A2213" : "#FFF4DE",
+  bad: isDark ? "#FF8A7A" : "#B42318",
+  badSoft: isDark ? "#2E1414" : "#FDECEC",
+  night: isDark ? "#1A2440" : "#111A2E",
 };
 
 const shadow: ViewStyle = Platform.select({
@@ -112,7 +113,7 @@ export function Chip({ label, selected, onPress }: { label: string; selected?: b
   return (
     <Pressable accessibilityRole="button" aria-selected={!!selected} accessibilityLabel={label} onPress={onPress}
       style={[d.chip, selected && { backgroundColor: palette.ink, borderColor: palette.ink }]}>
-      <Text style={[d.chipText, selected && { color: "#fff" }]}>{label}</Text>
+      <Text style={[d.chipText, selected && { color: isDark ? palette.bg : "#fff" }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -148,24 +149,24 @@ export function Sheet({ visible, title, onClose, children, footer, closeLabel = 
 }
 
 const d = StyleSheet.create({
-  surface: { backgroundColor: palette.card, borderRadius: 24, borderWidth: 1, borderColor: "#EDF0F6", padding: 18, gap: 12 },
+  surface: { backgroundColor: palette.card, borderRadius: 24, borderWidth: 1, borderColor: palette.hairline, padding: 18, gap: 12 },
   sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8 },
   sectionTitle: { color: palette.ink, fontSize: 20, fontWeight: "800", letterSpacing: -0.3 },
   sectionAction: { color: palette.brand, fontSize: 15, fontWeight: "700" },
   pill: { flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
   pillText: { fontSize: 12, fontWeight: "800" },
-  tile: { flex: 1, borderRadius: 18, padding: 12, gap: 2, borderWidth: 1, borderColor: "#EDF0F6" },
+  tile: { flex: 1, borderRadius: 18, padding: 12, gap: 2, borderWidth: 1, borderColor: palette.hairline },
   tileLabel: { color: palette.muted, fontSize: 12, fontWeight: "700" },
   tileValue: { fontSize: 22, fontWeight: "800", letterSpacing: -0.4 },
   tileUnit: { fontSize: 13, fontWeight: "700", color: palette.muted },
-  barTrack: { backgroundColor: "#EDF0F6", overflow: "hidden" },
+  barTrack: { backgroundColor: palette.hairline, overflow: "hidden" },
   macroLabel: { color: palette.muted, fontSize: 12, fontWeight: "700" },
   macroValue: { color: palette.ink, fontSize: 15, fontWeight: "800" },
   macroTotal: { color: palette.muted, fontSize: 12, fontWeight: "600" },
   stepper: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: palette.bg, borderRadius: 999, padding: 4 },
-  stepBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#fff", alignItems: "center", justifyContent: "center" },
+  stepBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: palette.card, alignItems: "center", justifyContent: "center" },
   stepValue: { minWidth: 44, textAlign: "center", color: palette.ink, fontSize: 18, fontWeight: "800" },
-  chip: { borderWidth: 1, borderColor: palette.line, backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
+  chip: { borderWidth: 1, borderColor: palette.line, backgroundColor: palette.card, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
   chipText: { color: palette.ink, fontSize: 14, fontWeight: "700" },
   primary: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center", backgroundColor: palette.brand, borderRadius: 18, paddingVertical: 16 },
   primaryText: { color: "#fff", fontSize: 17, fontWeight: "800" },
@@ -174,5 +175,5 @@ const d = StyleSheet.create({
   sheetClose: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   sheetTitle: { flex: 1, textAlign: "center", color: palette.ink, fontSize: 17, fontWeight: "800" },
   sheetBody: { padding: 16, gap: 14, paddingBottom: 32 },
-  sheetFoot: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1, borderColor: palette.line, backgroundColor: "#fff" },
+  sheetFoot: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1, borderColor: palette.line, backgroundColor: palette.card },
 });

@@ -61,7 +61,7 @@ const s = StyleSheet.create({
   circle: { alignItems: "center", justifyContent: "center" },
   h: { color: palette.ink, fontSize: 17, fontWeight: "800" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  cell: { width: 56, height: 56, borderRadius: 18, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "transparent" },
+  cell: { width: 56, height: 56, borderRadius: 18, backgroundColor: palette.card, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "transparent" },
   cellOn: { borderColor: palette.brand, backgroundColor: palette.brandSoft },
   initial: { fontSize: 24, fontWeight: "800", color: palette.ink },
   swatch: { width: 40, height: 40, borderRadius: 20, borderWidth: 2, borderColor: "#fff" },

@@ -7,7 +7,7 @@ import { bodyNumbers, adaptiveTdee } from "../core/targets";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Screen, act } from "../components/ui";
+import { Screen, act, soft, isDark } from "../components/ui";
 import { ProgressRing, theme } from "../components/onboarding-ui";
 import { useStore } from "../services/store";
 import { effectiveProfile } from "../core/progress";
@@ -47,17 +47,17 @@ export default function Today() {
   const left = Math.round(targets.calories - totals.calories);
 
   const featured: Tile[] = [
-    { href: "/medicines", title: "GLP-1 companion", detail: p.glp1 ? `${p.glp1.split(" (")[0]} · shots, side effects, protein` : "Ozempic, Wegovy, Mounjaro, Zepbound", icon: "medkit", tint: "#F3EDFF" },
-    { href: "/education", title: "Gym Truth", detail: "Supplements, steroids, soreness — the science", icon: "school", tint: "#EAF7EF" },
-    { href: "/coach", title: "AI Coach", detail: "Ask about food and moving", icon: "chatbubbles", tint: "#E9F6FF" },
+    { href: "/medicines", title: "GLP-1 companion", detail: p.glp1 ? `${p.glp1.split(" (")[0]} · shots, side effects, protein` : "Ozempic, Wegovy, Mounjaro, Zepbound", icon: "medkit", tint: soft("#F3EDFF") },
+    { href: "/education", title: "Gym Truth", detail: "Supplements, steroids, soreness — the science", icon: "school", tint: soft("#EAF7EF") },
+    { href: "/coach", title: "AI Coach", detail: "Ask about food and moving", icon: "chatbubbles", tint: soft("#E9F6FF") },
   ];
   const more: Tile[] = [
-    { href: "/meal-plan", title: "Meal plan", detail: "Your week of meals", icon: "calendar", tint: "#FFF1E6" },
-    { href: "/journey", title: "Journey", detail: "Weight and photos", icon: "trending-up", tint: "#EEF2FF" },
-    { href: "/health", title: "Health & watch", detail: "Steps, weight, readings", icon: "pulse", tint: "#FDEBEC" },
-    { href: "/metabolic", title: "Tracker", detail: "Meal and routine times", icon: "time", tint: "#EAF7EF" },
-    { href: "/gyms", title: "Gyms", detail: "Find one nearby", icon: "location", tint: "#FFF8DD" },
-    { href: "/music", title: "Music", detail: "Your workout songs", icon: "musical-notes", tint: "#F0F4F8" },
+    { href: "/meal-plan", title: "Meal plan", detail: "Your week of meals", icon: "calendar", tint: soft("#FFF1E6") },
+    { href: "/journey", title: "Journey", detail: "Weight and photos", icon: "trending-up", tint: soft("#EEF2FF") },
+    { href: "/health", title: "Health & watch", detail: "Steps, weight, readings", icon: "pulse", tint: soft("#FDEBEC") },
+    { href: "/metabolic", title: "Tracker", detail: "Meal and routine times", icon: "time", tint: soft("#EAF7EF") },
+    { href: "/gyms", title: "Gyms", detail: "Find one nearby", icon: "location", tint: soft("#FFF8DD") },
+    { href: "/music", title: "Music", detail: "Your workout songs", icon: "musical-notes", tint: soft("#F0F4F8") },
   ];
 
 
@@ -119,13 +119,13 @@ export default function Today() {
 
       <View style={s.quickRow}>
         <QuickAction icon="camera" label="Snap" tint={theme.brand} dark onPress={() => router.navigate({ pathname: "/food", params: { snap: String(Date.now()) } })} a11y="Snap your meal now" />
-        <QuickAction icon="barcode-outline" label="Barcode" tint="#E7F6EE" onPress={() => router.navigate("/food")} a11y="Scan a barcode" />
-        <QuickAction icon="search" label="Search" tint="#FFF4DE" onPress={() => router.navigate("/food")} a11y="Search foods" />
-        <QuickAction icon="barbell" label="Workout" tint="#EEF2FF" onPress={() => router.navigate("/move")} a11y="Start a workout" />
+        <QuickAction icon="barcode-outline" label="Barcode" tint={soft("#E7F6EE")} onPress={() => router.navigate("/food")} a11y="Scan a barcode" />
+        <QuickAction icon="search" label="Search" tint={soft("#FFF4DE")} onPress={() => router.navigate("/food")} a11y="Search foods" />
+        <QuickAction icon="barbell" label="Workout" tint={soft("#EEF2FF")} onPress={() => router.navigate("/move")} a11y="Start a workout" />
       </View>
 
       <Pressable onPress={() => router.navigate("/move")} accessibilityRole="button" accessibilityLabel="Today's workout" style={s.card}>
-        <View style={[s.tileIcon, { backgroundColor: "#EEF2FF" }]}><Ionicons name="barbell" size={22} color={theme.brand} /></View>
+        <View style={[s.tileIcon, { backgroundColor: soft("#EEF2FF") }]}><Ionicons name="barbell" size={22} color={theme.brand} /></View>
         <View style={{ flex: 1 }}>
           <Text style={s.cardKicker}>Today&apos;s workout</Text>
           <Text style={s.cardTitle}>{!todayPlan || todayPlan.rest ? "No workout scheduled" : todayPlan.title}</Text>
@@ -235,7 +235,7 @@ function WeekStrip({ selected, onSelect, meals }: { selected: string; onSelect: 
 
 function QuickAction({ icon, label, tint, onPress, a11y, dark }: { icon: keyof typeof Ionicons.glyphMap; label: string; tint: string; onPress: () => void; a11y: string; dark?: boolean }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={a11y} style={[s.quick, dark && { backgroundColor: theme.ink, borderColor: theme.ink }]}>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={a11y} style={[s.quick, dark && { backgroundColor: "#111A2E", borderColor: "#111A2E" }]}>
       <View style={[s.quickIcon, { backgroundColor: tint }]}><Ionicons name={icon} size={22} color={dark ? "white" : theme.ink} /></View>
       <Text style={[s.quickText, dark && { color: "white" }]}>{label}</Text>
     </Pressable>
@@ -276,7 +276,7 @@ function MealRow({ meal }: { meal: Meal }) {
   const time = new Date(meal.at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   return (
     <View style={s.mealRow}>
-      <View style={[s.tileIcon, { backgroundColor: "#FFF1E6" }]}>
+      <View style={[s.tileIcon, { backgroundColor: soft("#FFF1E6") }]}>
         <Ionicons name={meal.source === "photo" ? "camera" : "restaurant"} size={20} color={theme.ink} />
       </View>
       <View style={{ flex: 1 }}>
@@ -307,32 +307,32 @@ const s = StyleSheet.create({
   topRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 },
   topTitle: { fontSize: 15, fontWeight: "800", color: theme.ink },
   topText: { fontSize: 12, color: theme.muted, marginTop: 2 },
-  streak: { alignItems: "center", backgroundColor: "#FFF4DE", borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
-  streakNum: { fontSize: 17, fontWeight: "900", color: "#9A5B00" },
-  streakLabel: { fontSize: 10, fontWeight: "700", color: "#9A5B00" },
-  win: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#E7F6EE", borderRadius: 22, padding: 16, marginBottom: 14 },
+  streak: { alignItems: "center", backgroundColor: soft("#FFF4DE"), borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
+  streakNum: { fontSize: 17, fontWeight: "900", color: isDark ? "#F5C26B" : "#9A5B00" },
+  streakLabel: { fontSize: 10, fontWeight: "700", color: isDark ? "#F5C26B" : "#9A5B00" },
+  win: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: soft("#E7F6EE"), borderRadius: 22, padding: 16, marginBottom: 14 },
   winEmoji: { fontSize: 30 },
-  winTitle: { fontSize: 16, fontWeight: "800", color: "#1E7A47" },
-  winText: { fontSize: 13, color: "#1E7A47", marginTop: 2, lineHeight: 18 },
+  winTitle: { fontSize: 16, fontWeight: "800", color: isDark ? "#4ADE80" : "#1E7A47" },
+  winText: { fontSize: 13, color: isDark ? "#4ADE80" : "#1E7A47", marginTop: 2, lineHeight: 18 },
   quickRow: { flexDirection: "row", gap: 10, marginBottom: 14 },
-  quick: { flex: 1, alignItems: "center", gap: 8, backgroundColor: "white", borderRadius: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.line },
+  quick: { flex: 1, alignItems: "center", gap: 8, backgroundColor: theme.bg, borderRadius: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.line },
   quickIcon: { width: 46, height: 46, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   quickText: { fontSize: 13, fontWeight: "800", color: theme.ink },
-  reportCard: { backgroundColor: "white", borderRadius: 24, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line, gap: 10 },
+  reportCard: { backgroundColor: theme.bg, borderRadius: 24, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line, gap: 10 },
   reportHead: { flexDirection: "row", alignItems: "center" },
-  numbers: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "white", borderRadius: 22, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line },
+  numbers: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: theme.bg, borderRadius: 22, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line },
   numValue: { fontSize: 18, fontWeight: "800", color: theme.ink, marginTop: 2 },
   numUnit: { fontSize: 11, color: theme.muted, fontWeight: "700" },
   tileIconSm: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   week: { flexDirection: "row", justifyContent: "space-between", marginBottom: 14 },
-  day: { width: 42, paddingVertical: 8, borderRadius: 16, alignItems: "center", backgroundColor: "white" },
+  day: { width: 42, paddingVertical: 8, borderRadius: 16, alignItems: "center", backgroundColor: theme.bg },
   dayOn: { width: 42, paddingVertical: 8, borderRadius: 16, alignItems: "center", backgroundColor: theme.brand },
   dayName: { fontSize: 12, fontWeight: "700", color: theme.muted },
   dayNameOn: { fontSize: 12, fontWeight: "700", color: "#DCE4FF" },
   dayNum: { fontSize: 16, fontWeight: "800", color: theme.ink, marginTop: 2 },
   dayNumOn: { fontSize: 16, fontWeight: "800", color: "white", marginTop: 2 },
   dot: { width: 5, height: 5, borderRadius: 3, marginTop: 4 },
-  hero: { backgroundColor: "white", borderRadius: 26, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: theme.line },
+  hero: { backgroundColor: theme.bg, borderRadius: 26, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: theme.line },
   heroRow: { flexDirection: "row", alignItems: "center", gap: 18 },
   heroNum: { fontSize: 30, fontWeight: "800", color: theme.ink, letterSpacing: -0.8 },
   heroUnit: { fontSize: 12, fontWeight: "700", color: theme.muted },
@@ -349,14 +349,14 @@ const s = StyleSheet.create({
   snapIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: theme.brand, alignItems: "center", justifyContent: "center" },
   snapTitle: { fontSize: 19, fontWeight: "800", color: "white" },
   snapText: { fontSize: 13, lineHeight: 18, color: "#C9D2EE", marginTop: 3 },
-  card: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: "white", borderRadius: 22, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line },
+  card: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: theme.bg, borderRadius: 22, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line },
   cardKicker: { fontSize: 12, fontWeight: "800", color: theme.brand, textTransform: "uppercase", letterSpacing: 0.5 },
   cardTitle: { fontSize: 17, fontWeight: "800", color: theme.ink, marginTop: 2 },
   cardText: { fontSize: 13, lineHeight: 19, color: theme.muted, marginTop: 2 },
   sectionHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 6, marginBottom: 10 },
   section: { fontSize: 19, fontWeight: "800", color: theme.ink, marginBottom: 10 },
   link: { fontSize: 14, fontWeight: "800", color: theme.brand, marginBottom: 10 },
-  mealRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "white", borderRadius: 20, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: theme.line },
+  mealRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: theme.bg, borderRadius: 20, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: theme.line },
   mealName: { fontSize: 15, fontWeight: "800", color: theme.ink },
   mealKcal: { fontSize: 15, fontWeight: "800", color: theme.ink },
   mealTime: { fontSize: 12, color: theme.muted, marginTop: 2 },
@@ -364,7 +364,7 @@ const s = StyleSheet.create({
   chip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   chipText: { fontSize: 11, fontWeight: "800" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  tile: { width: "30%", flexGrow: 1, backgroundColor: "white", borderRadius: 20, padding: 12, borderWidth: 1, borderColor: theme.line, minHeight: 112 },
+  tile: { width: "30%", flexGrow: 1, backgroundColor: theme.bg, borderRadius: 20, padding: 12, borderWidth: 1, borderColor: theme.line, minHeight: 112 },
   tileIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   tileTitle: { fontSize: 14, fontWeight: "800", color: theme.ink, marginTop: 10 },
   tileText: { fontSize: 12, lineHeight: 17, color: theme.muted, marginTop: 3 },

@@ -54,6 +54,9 @@ const S = {
   rhabdo: { title: "Stony Brook Medicine — Early signs of rhabdomyolysis", url: "https://health.stonybrookmedicine.edu/understanding-the-early-signs-of-rhabdomyolysis/" },
   diureticNews: { title: "TODAY — Young bodybuilder dies of complications of severe dehydration (2025)", url: "https://www.today.com/today/amp/rcna194869" },
   dga: { title: "Dietary Guidelines for Americans", url: "https://www.dietaryguidelines.gov/" },
+  usdaFdc: { title: "USDA FoodData Central", url: "https://fdc.nal.usda.gov/" },
+  off: { title: "Open Food Facts", url: "https://world.openfoodfacts.org/" },
+  photoStudy: { title: "Healio — AI photo calorie apps underestimated meals by ~33% (NUTRITION 2026)", url: "https://www.healio.com/news/primary-care/20260804/ai-photobased-calorietracking-tools-underestimate-them-by-33" },
   cdcOlder: { title: "CDC — Physical activity for older adults", url: "https://www.cdc.gov/physical-activity-basics/guidelines/older-adults.html" },
   cdcArthritis: { title: "CDC — Exercise to ease arthritis pain", url: "https://www.cdc.gov/arthritis/communications/features/arthritis-exercise.html" },
   agingMuscle: { title: "Volpi et al. — Muscle tissue changes with aging (NIH PMC)", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC2804956/" },
@@ -350,6 +353,19 @@ export const articles: Article[] = [
       { heading: "Water", body: "Needs vary with body size, heat and sweat. Drink through the day; pale-yellow urine is a simple check. Dark urine after hard training needs attention." },
     ],
     sources: [S.dga, S.rhabdo],
+  },
+
+  {
+    id: "how-we-estimate", category: "fuel", emoji: "🔬", verdict: "know",
+    title: "How Snap to Fit estimates your food",
+    summary: "Lab data first, package labels second, photos last — and always an honest range instead of a fake-precise number.",
+    sections: [
+      { heading: "Search", body: "Foods come from USDA FoodData Central (SR Legacy) — lab-analysed reference values for 8,000+ foods with up to 19 nutrients. Dishes like biryani or a burrito bowl are built from USDA ingredients in typical home portions, so they carry a wider range." },
+      { heading: "Barcode", body: "Packaged foods come from Open Food Facts, a free open database of package labels. Check the label on your package — recipes change." },
+      { heading: "Photo", body: "The AI names the foods and estimates grams; the calories then come from USDA data for each item. A 2026 study found popular photo apps underestimated meals by about a third, mostly fat — so we ask about cooking oil and show a range." },
+      { heading: "Why a range", body: "Portions you eyeball, hidden oil, butter and sauces make every food log approximate. The likely range shows how sure the estimate is; weighing food now and then keeps you honest." },
+    ],
+    sources: [S.usdaFdc, S.off, S.photoStudy],
   },
 
   // ---------------- Health conditions & 50+ ----------------

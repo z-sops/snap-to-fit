@@ -6,7 +6,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, ActivityIndicator } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { StoreProvider, useStore } from "../services/store";
-import { colors } from "../components/ui";
+import { colors, isDark } from "../components/ui";
 import { doctorNotice, steroidNotice } from "../core/safety";
 function Root() {
   const { ready, error, state } = useStore();
@@ -58,7 +58,7 @@ export default function Layout() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? "light" : "dark"} />
         <StoreProvider>
           <MusicProvider><Root /></MusicProvider>
         </StoreProvider>

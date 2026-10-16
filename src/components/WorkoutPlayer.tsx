@@ -124,9 +124,9 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
           <View style={s.restPick}>
             <Text style={s.p}>Rest between sets</Text>
             {[45, 60, 90, 120].map((sec) => (
-              <Pressable key={sec} accessibilityRole="button" accessibilityLabel={`Rest ${sec} seconds`} onPress={() => setRestLength(sec)}
+              <Pressable key={sec} accessibilityRole="button" accessibilityLabel={`Set rest to ${sec} seconds`} onPress={() => setRestLength(sec)}
                 style={[s.restChip, restLength === sec && { backgroundColor: palette.ink }]}>
-                <Text style={[s.restChipText, restLength === sec && { color: "#fff" }]}>{sec}s</Text>
+                <Text style={[s.restChipText, restLength === sec && { color: palette.bg }]}>{sec}s</Text>
               </Pressable>
             ))}
           </View>
@@ -140,23 +140,23 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
 
 const s = StyleSheet.create({
   topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  voice: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  voice: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: palette.card, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
   voiceText: { color: palette.brand, fontWeight: "800", fontSize: 13 },
   progress: { flexDirection: "row", gap: 4 },
   seg: { flex: 1, height: 6, borderRadius: 3, backgroundColor: palette.line },
-  image: { width: "100%", height: 230, borderRadius: 24, backgroundColor: "#fff" },
+  image: { width: "100%", height: 230, borderRadius: 24, backgroundColor: palette.card },
   name: { color: palette.ink, fontSize: 26, fontWeight: "900", letterSpacing: -0.5 },
   statRow: { flexDirection: "row", gap: 10 },
-  stat: { flex: 1, backgroundColor: "#fff", borderRadius: 20, padding: 14, gap: 6, alignItems: "center" },
+  stat: { flex: 1, backgroundColor: palette.card, borderRadius: 20, padding: 14, gap: 6, alignItems: "center" },
   statLabel: { color: palette.muted, fontWeight: "700", fontSize: 12 },
   statNum: { color: palette.ink, fontWeight: "900", fontSize: 30 },
-  input: { backgroundColor: "#fff", borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
+  input: { backgroundColor: palette.card, borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
   cue: { color: palette.ink, fontSize: 14, lineHeight: 20 },
   restBox: { backgroundColor: palette.night, borderRadius: 24, padding: 22, alignItems: "center", gap: 4 },
   restLabel: { color: "#A9B4CC", fontWeight: "800" },
   restNum: { color: "#fff", fontSize: 64, fontWeight: "900" },
   restPick: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
-  restChip: { backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  restChip: { backgroundColor: palette.card, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
   restChipText: { color: palette.ink, fontWeight: "800" },
   skip: { color: palette.brand, fontWeight: "700", textAlign: "center", paddingVertical: 6 },
   small: { color: palette.muted, fontSize: 12, textAlign: "center" },

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Screen, colors } from "../components/ui";
+import { Screen, colors, isDark, soft } from "../components/ui";
 import { EducationReminders } from "../components/EducationReminders";
 import { useStore } from "../services/store";
 import {
@@ -17,12 +17,12 @@ import {
 } from "../core/learn";
 
 const categoryLook: Record<LearnCategory, { emoji: string; tint: string }> = {
-  danger: { emoji: "🚫", tint: "#FDECEC" },
-  supplements: { emoji: "🧴", tint: "#EEF2FF" },
-  body: { emoji: "💪", tint: "#E7F6EE" },
-  fuel: { emoji: "🍽️", tint: "#FFF4DE" },
-  conditions: { emoji: "🩺", tint: "#E9F6FF" },
-  faq: { emoji: "❓", tint: "#F3EDFF" },
+  danger: { emoji: "🚫", tint: soft("#FDECEC") },
+  supplements: { emoji: "🧴", tint: soft("#EEF2FF") },
+  body: { emoji: "💪", tint: soft("#E7F6EE") },
+  fuel: { emoji: "🍽️", tint: soft("#FFF4DE") },
+  conditions: { emoji: "🩺", tint: soft("#E9F6FF") },
+  faq: { emoji: "❓", tint: soft("#F3EDFF") },
 };
 
 const learnNotice =
@@ -74,7 +74,7 @@ export default function Education() {
         </Text>
       </View>
       <View style={s.notice} accessibilityRole="alert">
-        <Ionicons name="medkit-outline" size={18} color="#9A5B00" />
+        <Ionicons name="medkit-outline" size={18} color={isDark ? "#F5C26B" : "#9A5B00"} />
         <Text style={s.noticeText}>{learnNotice}</Text>
       </View>
       <TextInput
@@ -171,7 +171,7 @@ function ArticleView({ article }: { article: Article }) {
         </View>
       ))}
       <View style={s.notice} accessibilityRole="alert">
-        <Ionicons name="medkit-outline" size={18} color="#9A5B00" />
+        <Ionicons name="medkit-outline" size={18} color={isDark ? "#F5C26B" : "#9A5B00"} />
         <Text style={s.noticeText}>{article.caution ? `${article.caution} ` : ""}{learnNotice}</Text>
       </View>
       <View style={s.section}>
@@ -187,13 +187,13 @@ function ArticleView({ article }: { article: Article }) {
 }
 
 const s = StyleSheet.create({
-  hero: { backgroundColor: colors.ink, borderRadius: 24, padding: 20, gap: 6 },
+  hero: { backgroundColor: "#111A2E", borderRadius: 24, padding: 20, gap: 6 },
   heroEmoji: { fontSize: 34 },
   heroTitle: { color: "#fff", fontSize: 22, fontWeight: "800" },
   heroText: { color: "#D6DCEA", fontSize: 15, lineHeight: 21 },
-  notice: { flexDirection: "row", gap: 8, backgroundColor: "#FFF4DE", borderRadius: 14, padding: 12, alignItems: "flex-start" },
-  noticeText: { flex: 1, color: "#6B4300", fontSize: 13, lineHeight: 18 },
-  search: { backgroundColor: "#fff", borderWidth: 1, borderColor: colors.line, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: colors.ink },
+  notice: { flexDirection: "row", gap: 8, backgroundColor: soft("#FFF4DE"), borderRadius: 14, padding: 12, alignItems: "flex-start" },
+  noticeText: { flex: 1, color: isDark ? "#F5C26B" : "#6B4300", fontSize: 13, lineHeight: 18 },
+  search: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: colors.ink },
   muted: { color: colors.muted, fontSize: 15 },
   forYou: { color: colors.ink, fontSize: 20, fontWeight: "800" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
@@ -205,14 +205,14 @@ const s = StyleSheet.create({
   legend: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   pill: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
   pillText: { fontSize: 12, fontWeight: "800" },
-  row: { flexDirection: "row", gap: 12, alignItems: "center", backgroundColor: "#fff", borderRadius: 18, borderWidth: 1, borderColor: colors.line, padding: 14 },
+  row: { flexDirection: "row", gap: 12, alignItems: "center", backgroundColor: colors.card, borderRadius: 18, borderWidth: 1, borderColor: colors.line, padding: 14 },
   rowEmoji: { fontSize: 28 },
   rowTitle: { color: colors.ink, fontSize: 16, fontWeight: "800" },
   rowSummary: { color: colors.muted, fontSize: 14, lineHeight: 19 },
-  detailHead: { backgroundColor: "#fff", borderRadius: 20, borderWidth: 1, borderColor: colors.line, padding: 16, gap: 8 },
+  detailHead: { backgroundColor: colors.card, borderRadius: 20, borderWidth: 1, borderColor: colors.line, padding: 16, gap: 8 },
   detailEmoji: { fontSize: 40 },
   detailSummary: { color: colors.ink, fontSize: 16, lineHeight: 22, fontWeight: "600" },
-  section: { backgroundColor: "#fff", borderRadius: 18, borderWidth: 1, borderColor: colors.line, padding: 16, gap: 6 },
+  section: { backgroundColor: colors.card, borderRadius: 18, borderWidth: 1, borderColor: colors.line, padding: 16, gap: 6 },
   sectionHeading: { color: colors.ink, fontSize: 16, fontWeight: "800" },
   sectionBody: { color: colors.ink, fontSize: 15, lineHeight: 22 },
   source: { color: colors.green, fontSize: 14, lineHeight: 20, textDecorationLine: "underline" },

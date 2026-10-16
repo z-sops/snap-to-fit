@@ -63,8 +63,8 @@ export default function Move() {
           {week.map((d) => (
             <Pressable key={d.date} accessibilityRole="tab" aria-selected={d.date === selectedDate} accessibilityLabel={`${d.weekday}${d.rest ? ", rest day" : ""}${d.completed ? ", done" : ""}`}
               onPress={() => setSelectedDate(d.date)} style={[s.day, d.date === selectedDate && s.dayOn]}>
-              <Text style={[s.dayName, d.date === selectedDate && { color: palette.ink }]}>{d.weekday.slice(0, 1)}</Text>
-              <Ionicons name={d.completed ? "checkmark-circle" : d.rest ? "ellipse-outline" : "barbell"} size={16} color={d.completed ? palette.fiber : d.date === selectedDate ? palette.ink : "#A9B4CC"} />
+              <Text style={[s.dayName, d.date === selectedDate && { color: "#17213B" }]}>{d.weekday.slice(0, 1)}</Text>
+              <Ionicons name={d.completed ? "checkmark-circle" : d.rest ? "ellipse-outline" : "barbell"} size={16} color={d.completed ? palette.fiber : d.date === selectedDate ? "#17213B" : "#A9B4CC"} />
             </Pressable>
           ))}
         </View>
@@ -229,6 +229,6 @@ const s = StyleSheet.create({
   libIcon: { width: 52, height: 52, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
   libTitle: { color: "#fff", fontSize: 18, fontWeight: "900" },
   libText: { color: "#DCE4FF", fontSize: 13, lineHeight: 18, marginTop: 2 },
-  logRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#fff", borderRadius: 18, padding: 10, borderWidth: 1, borderColor: "#EDF0F6" },
-  input: { backgroundColor: "#fff", borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
+  logRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: palette.card, borderRadius: 18, padding: 10, borderWidth: 1, borderColor: palette.hairline },
+  input: { backgroundColor: palette.card, borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
 });

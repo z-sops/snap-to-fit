@@ -73,11 +73,11 @@ export function FoodSearch({ visible, onClose, onPick, meals, onBarcode }: {
 }
 
 const s = StyleSheet.create({
-  searchBox: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#fff", borderRadius: 18, borderWidth: 1, borderColor: palette.line, paddingHorizontal: 14, paddingVertical: 4 },
+  searchBox: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: palette.card, borderRadius: 18, borderWidth: 1, borderColor: palette.line, paddingHorizontal: 14, paddingVertical: 4 },
   input: { flex: 1, fontSize: 16, color: palette.ink, paddingVertical: 12 },
   tabs: { flexDirection: "row", gap: 8 },
   hint: { color: palette.muted, fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.6 },
-  row: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#fff", borderRadius: 18, padding: 12, borderWidth: 1, borderColor: "#EDF0F6" },
+  row: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: palette.card, borderRadius: 18, padding: 12, borderWidth: 1, borderColor: palette.hairline },
   dot: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   name: { color: palette.ink, fontSize: 15, fontWeight: "700" },
   meta: { color: palette.muted, fontSize: 13, marginTop: 2 },

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Screen, act } from "../components/ui";
+import { Screen, act, soft } from "../components/ui";
 import { Surface, SectionHeader, Bar, Sheet, PrimaryButton, Chip, palette } from "../components/design";
 import { FoodSearch } from "../components/food/FoodSearch";
 import { FoodDetail, type NewMeal } from "../components/food/FoodDetail";
@@ -130,10 +130,10 @@ export default function FoodScreen() {
       </Surface>
 
       <View style={s.actions}>
-        <Action icon="camera" label={busy ? "Opening…" : "Snap meal"} a11y="Take a snap" tint="#EEF2FF" color={palette.brand} onPress={() => scan(true)} />
-        <Action icon="barcode-outline" label="Barcode" a11y="Scan barcode" tint="#E7F6EE" color={palette.good} onPress={() => open(defaultSlot(), "barcode")} />
-        <Action icon="search" label="Search" a11y="Search food" tint="#FFF4DE" color={palette.warn} onPress={() => open(defaultSlot(), "search")} />
-        <Action icon="flash" label="Quick add" a11y="Quick add calories" tint="#F3EDFF" color="#6D28D9" onPress={() => open(defaultSlot(), "quick")} />
+        <Action icon="camera" label={busy ? "Opening…" : "Snap meal"} a11y="Take a snap" tint={soft("#EEF2FF")} color={palette.brand} onPress={() => scan(true)} />
+        <Action icon="barcode-outline" label="Barcode" a11y="Scan barcode" tint={soft("#E7F6EE")} color={palette.good} onPress={() => open(defaultSlot(), "barcode")} />
+        <Action icon="search" label="Search" a11y="Search food" tint={soft("#FFF4DE")} color={palette.warn} onPress={() => open(defaultSlot(), "search")} />
+        <Action icon="flash" label="Quick add" a11y="Quick add calories" tint={soft("#F3EDFF")} color="#6D28D9" onPress={() => open(defaultSlot(), "quick")} />
       </View>
       <Pressable accessibilityRole="button" accessibilityLabel="Choose photo" onPress={() => scan(false)} style={s.gallery}>
         <Ionicons name="images-outline" size={16} color={palette.brand} />
@@ -287,7 +287,7 @@ const s = StyleSheet.create({
   darkValue: { color: "#fff", fontSize: 15, fontWeight: "800" },
   darkTotal: { color: "#A9B4CC", fontSize: 12, fontWeight: "600" },
   actions: { flexDirection: "row", gap: 10 },
-  action: { flex: 1, alignItems: "center", gap: 8, backgroundColor: "#fff", borderRadius: 20, paddingVertical: 14, borderWidth: 1, borderColor: "#EDF0F6" },
+  action: { flex: 1, alignItems: "center", gap: 8, backgroundColor: palette.card, borderRadius: 20, paddingVertical: 14, borderWidth: 1, borderColor: palette.hairline },
   actionIcon: { width: 48, height: 48, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   actionText: { color: palette.ink, fontSize: 13, fontWeight: "800" },
   gallery: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 4 },
@@ -301,7 +301,7 @@ const s = StyleSheet.create({
   slotKcal: { color: palette.muted, fontSize: 14, fontWeight: "700" },
   plus: { width: 34, height: 34, borderRadius: 17, backgroundColor: palette.brand, alignItems: "center", justifyContent: "center" },
   empty: { color: palette.muted, fontSize: 14, lineHeight: 20 },
-  item: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 6, borderTopWidth: 1, borderColor: "#F0F2F7" },
+  item: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 6, borderTopWidth: 1, borderColor: palette.hairline },
   thumb: { width: 44, height: 44, borderRadius: 14 },
   thumbIcon: { backgroundColor: palette.brandSoft, alignItems: "center", justifyContent: "center" },
   itemName: { color: palette.ink, fontSize: 15, fontWeight: "700" },
@@ -311,6 +311,6 @@ const s = StyleSheet.create({
   microRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 3 },
   microName: { width: 110, color: palette.ink, fontSize: 14, fontWeight: "600" },
   microValue: { width: 96, textAlign: "right", color: palette.muted, fontSize: 13, fontWeight: "600" },
-  input: { backgroundColor: "#fff", borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
+  input: { backgroundColor: palette.card, borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
   wrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
 });

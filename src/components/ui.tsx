@@ -17,6 +17,7 @@ import {
   AccessibilityInfo,
   Image,
   BackHandler,
+  Appearance,
 } from "react-native";
 import { router, usePathname } from "expo-router";
 import { useOptionalStore } from "../services/store";
@@ -29,15 +30,13 @@ import {
   type AppRoute,
 } from "./navigation";
 import { Ionicons } from "@expo/vector-icons";
-export const colors = {
-  ink: "#17213B",
-  muted: "#5D6880",
-  green: "#355AF4",
-  lime: "#EEF2FF",
-  bg: "#F4F6FA",
-  line: "#E2E7F0",
-  amber: "#FFF6E7",
-};
+/** Pastel tint in light mode; a faint wash of the same hue on dark backgrounds. */
+export const soft = (hex: string) => (Appearance.getColorScheme() === "dark" ? `${hex}24` : hex);
+/** Follows the phone's light/dark setting at launch. */
+export const isDark = Appearance.getColorScheme() === "dark";
+export const colors = isDark
+  ? { ink: "#EEF2FA", muted: "#9AA6BF", green: "#6B8CFF", lime: "#1C2A55", bg: "#0B1220", line: "#26324A", amber: "#2A2213", card: "#141D31", hairline: "#1F2A42" }
+  : { ink: "#17213B", muted: "#5D6880", green: "#355AF4", lime: "#EEF2FF", bg: "#F4F6FA", line: "#E2E7F0", amber: "#FFF6E7", card: "#FFFFFF", hairline: "#EDF0F6" };
 export function notify(message: string) {
   if (Platform.OS === "web") window.alert(message);
   else Alert.alert("Snap to Fit", message);
@@ -211,9 +210,9 @@ function SafetyNotice() {
     <Pressable accessibilityRole="button" aria-expanded={open} accessibilityLabel={open ? "Hide safety notice" : "Show safety notice"}
       onPress={() => setOpen(!open)} style={[s.notice, !open && s.noticeCompact]}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        <Ionicons name="information-circle-outline" size={18} color="#9A5B00" />
+        <Ionicons name="information-circle-outline" size={18} color={isDark ? "#F5C26B" : "#9A5B00"} />
         <Text style={[s.noticeMain, { flex: 1 }]} numberOfLines={open ? undefined : 1}>{doctorNotice}</Text>
-        <Ionicons name={open ? "chevron-up" : "chevron-down"} size={16} color="#9A5B00" />
+        <Ionicons name={open ? "chevron-up" : "chevron-down"} size={16} color={isDark ? "#F5C26B" : "#9A5B00"} />
       </View>
       {open ? <Text style={s.noticeSub}>{steroidNotice}</Text> : null}
     </Pressable>
@@ -454,8 +453,9 @@ export function Chips<T extends string | number>({
         >
           <Text
             style={{
-              color: selected === v.value ? "white" : colors.ink,
-              fontSize: 13,
+              color: selected === v.value ? (isDark ? colors.bg : "white") : colors.ink,
+              fontSize: 14,
+              fontWeight: "700",
             }}
           >
             {v.label}
@@ -547,8 +547,8 @@ const s = StyleSheet.create({
   drawerLogo: { fontSize: 31, fontWeight: "800", letterSpacing: -1, color: colors.ink },
   content: { padding: 20, paddingBottom: 28 },
   title: {
-    fontSize: 34,
-    fontWeight: "800",
+    fontSize: 32,
+    fontWeight: "900",
     letterSpacing: -1,
     color: colors.ink,
     marginBottom: 6,
@@ -560,20 +560,24 @@ const s = StyleSheet.create({
     marginBottom: 24,
   },
   card: {
-    padding: 22,
-    borderRadius: 22,
-    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 24,
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: colors.line,
-    marginBottom: 16,
+    borderColor: colors.hairline,
+    marginBottom: 14,
+    ...(Platform.OS === "web"
+      ? ({ boxShadow: "0 6px 24px rgba(23,33,59,0.06)" } as object)
+      : { shadowColor: "#17213B", shadowOpacity: isDark ? 0 : 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 5 }, elevation: isDark ? 0 : 1 }),
   },
   heading: {
-    fontSize: 21,
-    fontWeight: "700",
+    fontSize: 19,
+    fontWeight: "800",
+    letterSpacing: -0.3,
     color: colors.ink,
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  body: { fontSize: 15, lineHeight: 24, color: colors.muted, marginBottom: 10 },
+  body: { fontSize: 15, lineHeight: 22, color: colors.muted, marginBottom: 10 },
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -582,15 +586,15 @@ const s = StyleSheet.create({
   },
   button: {
     backgroundColor: colors.green,
-    borderRadius: 15,
-    minHeight: 52,
+    borderRadius: 18,
+    minHeight: 54,
     paddingHorizontal: 18,
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 10,
   },
-  buttonText: { color: "white", fontWeight: "700", fontSize: 15 },
+  buttonText: { color: "white", fontWeight: "800", fontSize: 16 },
   label: {
     fontSize: 12,
     fontWeight: "600",
@@ -598,10 +602,10 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
-    backgroundColor: colors.bg,
+    backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 14,
     fontSize: 16,
     color: colors.ink,
@@ -609,11 +613,12 @@ const s = StyleSheet.create({
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 15 },
   chip: {
-    borderRadius: 22,
+    borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.line,
+    backgroundColor: colors.card,
     paddingHorizontal: 15,
-    paddingVertical: 11,
+    paddingVertical: 10,
   },
   metric: {
     fontSize: 32,
@@ -626,7 +631,7 @@ const s = StyleSheet.create({
     paddingBottom: 8,
     paddingTop: 8,
     paddingHorizontal: 8,
-    backgroundColor: "white",
+    backgroundColor: colors.card,
     borderTopWidth: 1,
     borderColor: colors.line,
   },
@@ -647,7 +652,7 @@ const s = StyleSheet.create({
   noticeSub: { color: colors.ink, fontSize: 11, lineHeight: 17, marginTop: 6 },
   menuRoot: { flex: 1, flexDirection: "row" },
   backdrop: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(23,33,59,0.45)" },
-  drawer: { width: MENU_WIDTH, maxWidth: "85%", height: "100%", backgroundColor: "white", paddingHorizontal: 14, borderTopRightRadius: 22, borderBottomRightRadius: 22 },
+  drawer: { width: MENU_WIDTH, maxWidth: "85%", height: "100%", backgroundColor: colors.card, paddingHorizontal: 14, borderTopRightRadius: 22, borderBottomRightRadius: 22 },
   drawerHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 6, paddingBottom: 12, borderBottomWidth: 1, borderColor: colors.line },
   menuSection: { fontSize: 11, fontWeight: "700", color: colors.muted, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, paddingHorizontal: 8 },
   menuItem: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48, paddingHorizontal: 10, borderRadius: 12 },

@@ -6,7 +6,7 @@ import { cancelNotifications } from "../services/routine-notifications";
 import React, { useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
-import { act, notify } from "../components/ui";
+import { act, notify, soft } from "../components/ui";
 import {
   Logo,
   OptionCard,
@@ -456,10 +456,10 @@ const s = StyleSheet.create({
   chipOn: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: theme.brand },
   chipText: { fontSize: 14, fontWeight: "600", color: theme.ink },
   chipTextOn: { fontSize: 14, fontWeight: "700", color: "white" },
-  infoCard: { backgroundColor: "#FFF6E7", borderRadius: 16, padding: 14, marginBottom: 14, borderLeftWidth: 3, borderLeftColor: "#D89D36" },
+  infoCard: { backgroundColor: soft("#FFF6E7"), borderRadius: 16, padding: 14, marginBottom: 14, borderLeftWidth: 3, borderLeftColor: "#D89D36" },
   infoTitle: { fontSize: 16, fontWeight: "800", color: theme.ink, marginBottom: 6 },
   infoText: { fontSize: 13, lineHeight: 19, color: theme.ink },
-  welcome: { flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "white" },
+  welcome: { flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: theme.bg },
   brand: { fontSize: 38, fontWeight: "800", letterSpacing: -1.2, color: theme.ink, marginTop: 14 },
   tagline: { fontSize: 16, lineHeight: 23, color: theme.muted, textAlign: "center", marginTop: 8, maxWidth: 320 },
   hero: { width: "100%", maxWidth: 360, height: 250, marginVertical: 18 },
@@ -469,7 +469,7 @@ const s = StyleSheet.create({
   linkText: { fontSize: 16, fontWeight: "700", color: theme.brand },
   linkMuted: { fontSize: 14, fontWeight: "600", color: theme.muted },
   notice: { fontSize: 11, lineHeight: 15, color: theme.muted, textAlign: "center", marginTop: 6 },
-  reveal: { flexGrow: 1, padding: 24, backgroundColor: "white", maxWidth: 560, width: "100%", alignSelf: "center" },
+  reveal: { flexGrow: 1, padding: 24, backgroundColor: theme.bg, maxWidth: 560, width: "100%", alignSelf: "center" },
   revealBack: { minHeight: 40, justifyContent: "center" },
   revealTitle: { fontSize: 30, lineHeight: 36, fontWeight: "800", color: theme.ink, letterSpacing: -0.6, marginTop: 6 },
   kcal: { fontSize: 46, fontWeight: "800", color: theme.ink, letterSpacing: -1 },

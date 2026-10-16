@@ -1,3 +1,4 @@
+import { soft } from "../ui";
 import React, { useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,7 +13,7 @@ const sourceBadge: Record<string, { label: string; icon: string; color: string; 
   usda: { label: "USDA lab data", icon: "shield-checkmark", color: palette.good, bg: palette.goodSoft },
   recipe: { label: "Recipe estimate", icon: "restaurant", color: palette.warn, bg: palette.warnSoft },
   barcode: { label: "Package label", icon: "barcode", color: palette.brand, bg: palette.brandSoft },
-  photo: { label: "AI photo estimate", icon: "sparkles", color: "#6D28D9", bg: "#F3EDFF" },
+  photo: { label: "AI photo estimate", icon: "sparkles", color: "#6D28D9", bg: soft("#F3EDFF") },
 };
 const micros: NutrientKey[] = nutrientKeys.filter((k) => !["calories", "protein", "carbs", "fat"].includes(k));
 
@@ -186,8 +187,8 @@ const s = StyleSheet.create({
   qtyRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   qtyLabel: { color: palette.ink, fontSize: 16, fontWeight: "700" },
   note: { color: palette.muted, fontSize: 13, lineHeight: 18 },
-  concern: { color: "#6B4300", fontSize: 14, lineHeight: 20 },
-  itemRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4, borderTopWidth: 1, borderColor: "#F0F2F7" },
+  concern: { color: palette.warn, fontSize: 14, lineHeight: 20 },
+  itemRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4, borderTopWidth: 1, borderColor: palette.hairline },
   itemName: { color: palette.ink, fontSize: 15, fontWeight: "700" },
   ackRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
   microHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },

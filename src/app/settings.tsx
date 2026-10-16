@@ -1,3 +1,4 @@
+import { formatHeight, formatWeight } from "../core/units";
 import React, { useState } from "react";
 import { Platform, Alert, Share } from "react-native";
 import { router } from "expo-router";
@@ -41,7 +42,7 @@ export default function Settings() {
       <Card>
         <H>{p.name}’s profile</H>
         <P>
-          {p.age} years · {p.height} cm · {p.weight} kg at setup · {p.goal}
+          {p.age} years · {formatHeight(p.height, p.units || "imperial")} · {formatWeight(p.weight, p.units || "imperial")} at setup · {p.goal === "lose" ? "lose weight" : p.goal === "gain" ? "build muscle" : "maintain"}
         </P>
         <Button
           title="Edit health profile & preferences"

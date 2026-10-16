@@ -13,7 +13,7 @@ function serviceURL() {
   const base = process.env.EXPO_PUBLIC_API_URL;
   if (!base)
     throw new Error(
-      "The online service is not configured. Offline logging remains available.",
+      "Coach, AI photo analysis, backup and CGM need the Snap to Fit online service, which isn’t connected in this test build yet. Logging, food search, barcode, workouts and everything else work offline.",
     );
   if (
     !base.startsWith("https://") &&
@@ -50,10 +50,11 @@ export async function publicAPI<T>(path: string, body: unknown): Promise<T> {
   return request(path, body, "");
 }
 export async function api<T>(path: string, body: unknown): Promise<T> {
+  serviceURL(); // explain a missing online service before asking to sign in
   const original = await getSession();
   let token = await getToken();
   if (!token)
-    throw new Error("Sign in through Account to use online services.");
+    throw new Error("Coach, AI photo analysis, backup and CGM need a free Snap to Fit account. Open the menu → Account and backup to sign in.");
   const unchanged = async () => {
     const current = await getSession();
     if (
