@@ -126,6 +126,8 @@ export interface Medicine {
   time: string;
   nextDate: string;
   reminderId?: string;
+  /** How often, as written on the prescription. */
+  frequency?: "weekly" | "daily" | "other";
 }
 export interface DoseLog {
   id: string;
@@ -134,6 +136,8 @@ export interface DoseLog {
   name: string;
   dose: string;
   symptoms: string;
+  /** Injection site used (GLP-1 / insulin), for rotation history. */
+  site?: string;
 }
 export interface WorkoutLog {
   id: string;
@@ -166,6 +170,8 @@ export interface State {
   education?: EducationSettings;
   carePlan?: CarePlan;
   flexibleMeals?: { id: string; week: string; at: string }[];
+  /** GLP-1 side-effect check-ins: severity 0–3 per symptom. */
+  glp1Checkins?: { id: string; at: string; effects: Record<string, number>; note?: string }[];
   /** Exercises the user added from the library to their own workout. */
   myWorkout?: string[];
   /** Spoken workout cues on/off (default on). */
