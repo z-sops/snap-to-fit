@@ -48,3 +48,12 @@ test("50+ profile with a heart stent and slip disc sees For you guides; topic li
   render(<StoreProvider><Ready /></StoreProvider>);
   expect(await screen.findByText(/Healthy kidneys keep protein in the blood/)).toBeTruthy();
 });
+
+test("steroid info links offer FDA and NHS, FDA first for US and NHS first for UK", async () => {
+  const { steroidLinks } = await import("../src/components/EducationReminders");
+  expect(steroidLinks("US").map((l) => l.title)).toEqual([expect.stringMatching(/FDA/), expect.stringMatching(/NHS/)]);
+  expect(steroidLinks("GB")[0].title).toMatch(/NHS/);
+  render(<StoreProvider><Ready /></StoreProvider>);
+  expect(await screen.findByRole("button", { name: /Read FDA/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /Read NHS/ })).toBeTruthy();
+});

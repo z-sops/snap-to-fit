@@ -98,15 +98,16 @@ export function EducationReminders() {
             })
           }
         />
-        <Button
-          secondary
-          title="Read NHS anabolic-steroid information"
-          onPress={() =>
-            Linking.openURL(
-              "https://www.nhs.uk/conditions/anabolic-steroid-misuse/",
-            )
-          }
-        />
+        {steroidLinks(p.country).map((l) => (
+          <Button key={l.url} secondary title={l.title} onPress={() => Linking.openURL(l.url)} />
+        ))}
       </Card>
   );
+}
+
+const fdaLink = { title: "Read FDA steroid & bodybuilding-product warnings (US)", url: "https://www.fda.gov/consumers/consumer-updates/caution-bodybuilding-products-can-be-risky" };
+const nhsLink = { title: "Read NHS anabolic-steroid information (UK)", url: "https://www.nhs.uk/conditions/anabolic-steroid-misuse/" };
+/** US users see the FDA first, UK users the NHS first; both are always shown. */
+export function steroidLinks(country?: string) {
+  return country === "GB" ? [nhsLink, fdaLink] : [fdaLink, nhsLink];
 }

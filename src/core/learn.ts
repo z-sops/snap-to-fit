@@ -45,6 +45,8 @@ const S = {
   odsCarnitine: { title: "NIH ODS — Carnitine", url: "https://ods.od.nih.gov/factsheets/Carnitine-HealthProfessional/" },
   fdaBodybuilding: { title: "FDA — Certain bodybuilding products put consumers at risk", url: "https://www.fda.gov/drugs/fraudulent-products/certain-bodybuilding-products-put-consumers-risk-heart-attack-stroke-serious-liver-damage-and-more" },
   fdaDmaa: { title: "FDA — DMAA in products marketed as dietary supplements", url: "https://www.fda.gov/food/dietary-supplement-products-ingredients/dmaa-products-marketed-dietary-supplements" },
+  fdaBodybuildingRisky: { title: "FDA (US) — Caution: bodybuilding products can be risky", url: "https://www.fda.gov/consumers/consumer-updates/caution-bodybuilding-products-can-be-risky" },
+  nhsSteroids: { title: "NHS (UK) — Anabolic steroid misuse", url: "https://www.nhs.uk/conditions/anabolic-steroid-misuse/" },
   nidaSteroids: { title: "NIDA — Anabolic steroids", url: "https://archives.drugabuse.gov/publications/nida-community-drug-alert-bulletin-anabolic-steroids" },
   issnProtein: { title: "ISSN position stand: protein and exercise (2017)", url: "https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8" },
   issnCreatine: { title: "ISSN position stand: creatine (2017)", url: "https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0173-z" },
@@ -83,7 +85,7 @@ export const articles: Article[] = [
       { heading: "Needles", body: "Shared or non-sterile needles spread HIV, hepatitis B and C, abscesses and heart-valve infections." },
     ],
     caution: "If you are using or thinking about using steroids, talk to a doctor confidentially. Do not stop prescribed steroid medicines (like prednisone) on your own — those are different medicines.",
-    sources: [S.nidaSteroids],
+    sources: [S.fdaBodybuildingRisky, S.nhsSteroids, S.nidaSteroids],
   },
   {
     id: "sarms", category: "danger", emoji: "⚠️", verdict: "avoid",
