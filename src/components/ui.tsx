@@ -114,37 +114,23 @@ export function Screen({
         </ScrollView>
         {hasProfile ? (
           <View style={s.nav} accessibilityRole="tablist">
-            {mainTabs.map(({ href, label, icon }) => {
-              const selected = active === href;
-              return (
-                <Pressable
-                  key={href}
-                  onPress={() => go(href)}
-                  accessibilityRole="tab"
-                  accessibilityLabel={label}
-                  aria-selected={selected}
-                  style={selected ? s.navItemActive : s.navItem}
-                >
-                  <Ionicons
-                    name={icon as keyof typeof Ionicons.glyphMap}
-                    size={20}
-                    color={selected ? colors.green : colors.muted}
-                  />
-                  <Text style={selected ? s.navLabelActive : s.navLabel}>{label}</Text>
-                </Pressable>
-              );
-            })}
-            <Pressable
-              onPress={() => setMenu(true)}
-              accessibilityRole="button"
-              accessibilityLabel="Menu"
-              aria-expanded={menu}
-              aria-selected={!active}
-              style={!active ? s.navItemActive : s.navItem}
-            >
-              <Ionicons name="grid-outline" size={20} color={!active ? colors.green : colors.muted} />
-              <Text style={!active ? s.navLabelActive : s.navLabel}>Menu</Text>
-            </Pressable>
+            {mainTabs.slice(0, 2).map((t) => (
+              <NavTab key={t.href} item={t} selected={active === t.href} onPress={() => go(t.href)} />
+            ))}
+            <View style={s.snapSlot}>
+              <Pressable
+                onPress={() => go("/food")}
+                accessibilityRole="button"
+                accessibilityLabel="Snap a meal"
+                style={s.snapBtn}
+              >
+                <Ionicons name="camera" size={28} color="white" />
+              </Pressable>
+              <Text style={s.snapLabel}>Snap</Text>
+            </View>
+            {mainTabs.slice(2).map((t) => (
+              <NavTab key={t.href} item={t} selected={active === t.href} onPress={() => go(t.href)} />
+            ))}
           </View>
         ) : null}
       </View>
@@ -156,6 +142,24 @@ export function Screen({
         onGo={go}
       />
     </KeyboardAvoidingView>
+  );
+}
+function NavTab({ item, selected, onPress }: { item: (typeof mainTabs)[number]; selected: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="tab"
+      accessibilityLabel={item.label}
+      aria-selected={selected}
+      style={selected ? s.navItemActive : s.navItem}
+    >
+      <Ionicons
+        name={item.icon as keyof typeof Ionicons.glyphMap}
+        size={20}
+        color={selected ? colors.green : colors.muted}
+      />
+      <Text style={selected ? s.navLabelActive : s.navLabel}>{item.label}</Text>
+    </Pressable>
   );
 }
 function SafetyNotice() {
@@ -579,6 +583,9 @@ const s = StyleSheet.create({
   },
   navItem: { flex: 1, flexBasis: 0, minWidth: 0, minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 12, paddingHorizontal: 2, gap: 2 },
   navItemActive: { flex: 1, flexBasis: 0, minWidth: 0, minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 16, paddingHorizontal: 2, gap: 2, backgroundColor: colors.lime },
+  snapSlot: { flex: 1, alignItems: "center", justifyContent: "flex-end" },
+  snapBtn: { width: 62, height: 62, borderRadius: 31, backgroundColor: colors.green, alignItems: "center", justifyContent: "center", marginTop: -30, borderWidth: 5, borderColor: "white", shadowColor: "#17213B", shadowOpacity: 0.22, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
+  snapLabel: { fontSize: 12, fontWeight: "800", color: colors.ink, marginTop: 2 },
   navLabel: { fontSize: 12, color: colors.muted, fontWeight: "600" },
   navLabelActive: { fontSize: 12, color: colors.green, fontWeight: "700" },
   iconButton: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },

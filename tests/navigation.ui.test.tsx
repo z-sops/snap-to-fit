@@ -35,11 +35,14 @@ async function renderScreen(profiled: boolean) {
   await screen.findByText("body");
 }
 
-test("bottom tabs navigate and Today is selected on home (not Menu)", async () => {
+test("bottom tabs navigate, Today is selected on home, centre Snap opens food", async () => {
   await renderScreen(true);
   await waitFor(() => expect(screen.getByRole("tab", { name: "Today" })).toBeTruthy());
   expect(screen.getByRole("tab", { name: "Today" }).getAttribute("aria-selected")).toBe("true");
-  expect(screen.getByRole("button", { name: "Menu" }).getAttribute("aria-selected")).toBe("false");
+  // The raised centre Snap button opens food logging; the menu lives in the header.
+  fireEvent.click(screen.getByRole("button", { name: "Snap a meal" }));
+  expect(nav.navigate).toHaveBeenLastCalledWith("/food");
+  expect(screen.queryByRole("button", { name: "Menu" })).toBeNull();
   for (const [label, href] of [["Food", "/food"], ["Move", "/move"], ["Health", "/health"]]) {
     fireEvent.click(screen.getByRole("tab", { name: label }));
     expect(nav.navigate).toHaveBeenLastCalledWith(href);

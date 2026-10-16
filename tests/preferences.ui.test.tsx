@@ -56,7 +56,7 @@ test("existing profile chooses consecutive days, persists them and keeps old log
   expect((await loadState("guest")).workouts[0].id).toBe("old");
   expect(screen.queryByText("Your workout week")).toBeNull();
   expect(screen.queryByRole("link", {name: "Tracker"})).toBeNull();
-  fireEvent.click(screen.getByRole("button", {name: "Menu"}));
+  fireEvent.click(screen.getByRole("button", {name: "Open menu"}));
   expect(await screen.findByRole("link", {name: "Tracker"})).toBeTruthy();
   expect(screen.getByRole("link", {name: "Gyms"})).toBeTruthy();
 });

@@ -110,3 +110,29 @@ cuisine), `expo export --platform all` (Android/iOS Hermes + web). Playwright on
 production web export: 26/26 navigation checks (fresh user → onboarding, guarded deep
 link, onboarding → home, all 4 tabs, all 14 menu destinations with doctor notice), zero
 page errors. NOT yet done: Android APK build from this commit and Pixel 6a acceptance.
+
+## 16 Oct 2026 — new onboarding and Home (UI redesign phase 1–2)
+
+Owner supplied 15 reference screens (Caloriesense, Cal AI, DietAI, SnapNutrition,
+SageUp and others). Decisions: light theme, US units (lb, ft/in) by default with a
+metric toggle, a new logo, onboarding and Home first.
+
+- Onboarding: welcome screen with logo mark (concept A, `assets/logo-mark.*`,
+  pending owner's final pick), then one question per card (15–16 steps) with wheel
+  pickers, option cards, a GLP-1 step that records the prescribed brand only (no
+  dose advice), consent, and a "Your plan" reveal (animated calories and macro
+  rings; paused when health conditions or medicines are recorded). Doctor notice
+  is pinned on every step. Profile gains optional `units` and `glp1`; stored values
+  stay kg/cm.
+- Home: greeting, Sunday-first week strip (tap past days), calories-left ring with
+  eaten/estimate, protein/carbs/fat rings, "Snap your meal" hero card, today's
+  workout card, recently logged meals with macro chips, and an Explore grid that
+  gives every feature its own entry.
+- Bottom bar: Today, Food, raised centre Snap button, Move, Health; the full menu
+  stays behind ☰.
+- Rings are built from plain Views (no new native module), so this update needs a
+  new APK build but not `npm ci` or `prebuild`.
+
+Validation: typecheck, lint, 80 core and 32 UI tests (new: units, onboarding flow),
+`expo export --platform all`, and a web walkthrough of onboarding → Home with a
+logged meal (no page errors). Not yet tested on the Pixel 6a.
