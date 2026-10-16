@@ -46,6 +46,7 @@ export default function Legal() {
       <Card>
         <H>Nearby gym searches</H>
         <P>For in-app gym listings, your one-time location or entered area is sent through our server to Google Maps with your consent. Search coordinates and listings are not stored in your profile or backup. External searches open Maps directly, with its own location permissions. Google processes searches under its own policies.</P>
+        <P>On Android, choosing a song inside the app uses the “Music and audio” permission to list audio files on your phone. Songs are played from your phone and are not uploaded, saved to your profile or included in backups. You can deny it or turn it off in phone settings.</P>
         <Button secondary title="Google privacy policy" onPress={() => Linking.openURL("https://policies.google.com/privacy")} />
       </Card>
       <Card>

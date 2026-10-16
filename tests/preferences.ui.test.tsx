@@ -27,6 +27,20 @@ test("American default changes via cuisine menu and Asian subchoices without cou
   expect(screen.queryByText("Pakistan")).toBeNull();
   expect(screen.queryByRole("radio", {name: "Mexican"})).toBeNull();
 });
+test("Asian submenu offers Indian only; a saved legacy Asian choice is kept, not erased", () => {
+  render(<Cuisine/>);
+  fireEvent.click(screen.getByRole("button", {name: /Cuisine: American/}));
+  fireEvent.click(screen.getByRole("button", {name: "Asian cuisines"}));
+  expect(screen.getByRole("radio", {name: "Indian"})).toBeTruthy();
+  for (const name of ["Chinese", "Japanese", "Thai"]) expect(screen.queryByRole("radio", {name})).toBeNull();
+  cleanup();
+  render(<CuisinePreferences value="asian-thai" onChange={() => {}}/>);
+  expect(screen.getByRole("button", {name: /Cuisine: Thai/})).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", {name: /Cuisine: Thai/}));
+  expect(screen.getByRole("radio", {name: "Thai"})).toBeTruthy();
+  expect(screen.getByRole("radio", {name: "Indian"})).toBeTruthy();
+  expect(screen.queryByRole("radio", {name: "Chinese"})).toBeNull();
+});
 function ReadyMove() { return useStore().ready ? <Move/> : null; }
 test("existing profile chooses consecutive days, persists them and keeps old logs", async () => {
   vi.spyOn(window, "alert").mockImplementation(() => {});
@@ -41,8 +55,8 @@ test("existing profile chooses consecutive days, persists them and keeps old log
   await waitFor(async () => expect((await loadState("guest")).profile?.workoutDays).toEqual([1,2,3]));
   expect((await loadState("guest")).workouts[0].id).toBe("old");
   expect(screen.queryByText("Your workout week")).toBeNull();
-  expect(screen.queryByRole("button", {name: "Tracker"})).toBeNull();
-  fireEvent.click(screen.getByRole("button", {name: "More"}));
-  expect(screen.getByRole("button", {name: "Tracker"})).toBeTruthy();
-  expect(screen.getByRole("button", {name: "Gyms"})).toBeTruthy();
+  expect(screen.queryByRole("link", {name: "Tracker"})).toBeNull();
+  fireEvent.click(screen.getByRole("button", {name: "Open menu"}));
+  expect(await screen.findByRole("link", {name: "Tracker"})).toBeTruthy();
+  expect(screen.getByRole("link", {name: "Gyms"})).toBeTruthy();
 });

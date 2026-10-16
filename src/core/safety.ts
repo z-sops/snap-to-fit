@@ -3,7 +3,7 @@ import type { Profile } from "./model";
 // Product scope limits, not a clinical assessment or clearance to exercise.
 export function exerciseRestricted(p: Profile) {
   return p.conditions.length > 0 || p.insulin || !!p.medicines.trim() ||
-    !!p.injuries.trim() || p.weight / (p.height / 100) ** 2 < 18.5 || p.age > 78;
+    !!p.injuries.trim() || !!p.limits?.length || p.weight / (p.height / 100) ** 2 < 18.5 || p.age > 78;
 }
 
 export function restrictedHealthAdvice(text: string): string | null {

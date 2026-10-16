@@ -22,6 +22,7 @@ import {
 import { Movement } from "../components/Movement";
 import { useStore } from "../services/store";
 import { exercises, lastPerformance } from "../core/workouts";
+import { topicsFor } from "../core/learn";
 import { uid, numeric, validateProfile, type Place, localDay } from "../core/model";
 export default function Move() {
   const { state, update } = useStore();
@@ -63,6 +64,16 @@ export default function Move() {
       title="Make time to move."
       subtitle={`${p.days} preferred sessions per week · ${p.experience}`}
     >
+      {topicsFor(p).length ? (
+        <Card tint>
+          <H>Exercise safety guides for you</H>
+          <P>Based on your profile. Your doctor or physical therapist sets your limits — these guides help you ask the right questions.</P>
+          {topicsFor(p).slice(0, 4).map((a) => (
+            <Button key={a.id} secondary title={`${a.emoji} ${a.title}`}
+              onPress={() => router.push({ pathname: "/education", params: { topic: a.id } })} />
+          ))}
+        </Card>
+      ) : null}
       <Button secondary title="Choose workout music" onPress={() => router.push("/music")} />
       <MusicControls />
       <Card>

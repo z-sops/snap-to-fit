@@ -4,6 +4,8 @@ import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-au
 import * as DocumentPicker from 'expo-document-picker';
 import { useStore } from './store';
 import { validateLocalTrack, type LocalTrack, musicServices } from '../core/music';
+import { deviceAudioUri } from './device-audio';
+import type { DeviceTrack } from './device-audio-types';
 function useMusicController() {
   const player = useAudioPlayer(null, { updateInterval: 1000 });
   const status = useAudioPlayerStatus(player);
@@ -17,6 +19,15 @@ function useMusicController() {
     const result = await DocumentPicker.getDocumentAsync({ type: 'audio/*', multiple: false, copyToCacheDirectory: true, base64: false });
     if (result.canceled || owner !== generation.current) return;
     const next = validateLocalTrack(result.assets[0]);
+    clear(); player.replace({ uri: next.uri }); setTrack(next);
+  }
+  // A song picked from the in-app list (Android media store). MediaStore has
+  // already classified it as audio; the file stays on the phone.
+  async function chooseDevice(item: DeviceTrack) {
+    const owner = generation.current;
+    const uri = await deviceAudioUri(item.id);
+    if (owner !== generation.current) return;
+    const next = validateLocalTrack({ name: item.name, uri, mimeType: 'audio/*' });
     clear(); player.replace({ uri: next.uri }); setTrack(next);
   }
   async function toggle() {
@@ -34,7 +45,7 @@ function useMusicController() {
     player.pause(); if (Platform.OS !== 'web') player.setActiveForLockScreen(false);
     await Linking.openURL(url);
   }
-  return { track, status, repeat, choose, toggle, clear, openService,
+  return { track, status, repeat, choose, chooseDevice, toggle, clear, openService,
     setRepeat: (v: boolean) => {
       // Expo AudioPlayer is a native mutable object; loop is its documented setter.
       // eslint-disable-next-line react-hooks/immutability
@@ -52,6 +63,10 @@ function SessionMusicProvider({ children }: { children: React.ReactNode }) {
 }
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const { namespace } = useStore();
+  // Static web rendering runs without a browser `Audio` object. The provider
+  // renders no markup and screens only mount after the store loads on the
+  // client, so skipping it during that server pass keeps hydration identical.
+  if (Platform.OS === 'web' && typeof window === 'undefined') return <>{children}</>;
   return <SessionMusicProvider key={namespace}>{children}</SessionMusicProvider>;
 }
 export function useMusic() {

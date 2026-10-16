@@ -40,15 +40,16 @@ export default function Gyms() {
   return <Screen title="Gyms near you." subtitle="Find somewhere to train, wherever you are.">
     <Card>
       <H>Find your local gym</H>
-      {!process.env.EXPO_PUBLIC_API_URL ? <P>Gym searches in this build open Google Maps. In-app listings are not enabled yet; Maps handles nearby results and its own location permissions.</P> : null}
-      <P>In-app listings send your search location or area through our service to Google Maps. External searches open Maps directly. Search locations are not saved to your profile or backup. Confirm gym details before visiting.</P>
+      <P>{process.env.EXPO_PUBLIC_API_URL
+        ? 'Your search location or area goes through our service to Google Maps. It is not saved to your profile or backup.'
+        : 'Searches open Google Maps, which shows nearby gyms and asks for its own location permission. In-app listings are not enabled in this build.'} Confirm gym details before visiting.</P>
       <Check label="Allow my search location or area to be sent to Google Maps" value={consent} onChange={setConsent}/>
       {process.env.EXPO_PUBLIC_API_URL ? <Chips selected={radius} onChange={setRadius} values={[1000,5000,10000,25000].map(value => ({value, label: `${value/1000} km`}))}/> : null}
       <Button title={busy ? 'Searching…' : 'Use my current location'} disabled={busy || !consent} onPress={() => void search(true)}/>
       <Field label="Area, city or ZIP code" value={area} onChange={setArea} placeholder="Austin, TX or 78701"/>
       <Button secondary title="Search this area" disabled={busy || !consent || area.trim().length<3} onPress={() => void search(false)}/>
       <Button secondary title="Search Google Maps" onPress={() => void act(() => Linking.openURL(mapsSearchURL(area)))}/>
-      <P>Google Maps opens externally and uses its own location permissions. Area searches use provider relevance; location searches show nearest results by straight-line distance.</P>
+      {process.env.EXPO_PUBLIC_API_URL ? <P>Location searches list the nearest gyms by straight-line distance; area searches use Google relevance order.</P> : null}
       {error ? <Text accessibilityRole="alert" style={{color:'#9B342C',marginTop:12}}>{error}</Text> : null}
       {note ? <P>{note}</P> : null}
     </Card>
@@ -57,8 +58,8 @@ export default function Gyms() {
       <Text style={{fontSize:14,color:'#5E5E5E',fontWeight:'400',marginBottom:12}}>Google Maps</Text>
       {!result.gyms.length ? <P>No listed gyms found. Try a wider radius, another area or Google Maps.</P> : null}
       {result.gyms.map(gym => <Card key={gym.id}>
-        <H>{gym.name}</H><P>{gym.address}</P>
-        {gym.distanceKm !== undefined ? <P>{gym.distanceKm.toFixed(1)} km away · straight-line distance</P> : null}
+        <H>{gym.name}</H><Text numberOfLines={2} style={{fontSize:14,lineHeight:20,color:'#5D6880',marginBottom:8}}>{gym.address}</Text>
+        {gym.distanceKm !== undefined ? <P>{gym.distanceKm.toFixed(1)} km away (straight line)</P> : null}
         <Button title={`Directions to ${gym.name}`} onPress={() => void act(() => Linking.openURL(directionsURL(gym)))}/>
         <Button secondary title="View details on Google Maps" onPress={() => void act(() => Linking.openURL(gym.mapsURL))}/>
         {gym.attributions.map((a,i) => <Text key={i} onPress={a.url ? () => void act(() => Linking.openURL(a.url!)) : undefined}>{a.name}</Text>)}

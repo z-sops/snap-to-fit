@@ -10,6 +10,8 @@ import type {
 } from "./planning-types";
 export type Goal = "lose" | "maintain" | "gain";
 export type Place = "gym" | "home" | "walk";
+export type MovementLimit = "knee" | "knee-replacement" | "lower-back" | "neck" | "shoulder" | "prostate";
+export const movementLimits: readonly MovementLimit[] = ["knee", "knee-replacement", "lower-back", "neck", "shoulder", "prostate"];
 export type Condition =
   | "type1"
   | "type2"
@@ -19,6 +21,10 @@ export type Condition =
   | "pregnant"
   | "eating-disorder";
 export interface Profile {
+  /** Display/input units; values are always stored in kg and cm. */
+  units?: "imperial" | "metric";
+  /** GLP-1 medication named by the user from their prescription (record only). */
+  glp1?: string;
   cuisine?: CuisinePreference;
   workoutDays?: number[];
   country?: string;
@@ -42,6 +48,8 @@ export interface Profile {
   allergies: string;
   diet: string;
   injuries: string;
+  /** Structured movement limits picked in onboarding (education + caution only). */
+  limits?: MovementLimit[];
   cleared: boolean;
   consent: boolean;
   aiConsent: boolean;
@@ -150,6 +158,7 @@ export const emptyState: State = {
   cgm: [],
 };
 export const newProfile: Profile = {
+  units: "imperial",
   country: "US",
   cuisine: "american",
   name: "",
@@ -222,6 +231,8 @@ export function validateProfile(p: Profile) {
     p.conditions.some((c) => !conditions.includes(c))
   )
     throw new Error("Invalid health context.");
+  if (p.limits !== undefined && (!Array.isArray(p.limits) || p.limits.some((l) => !movementLimits.includes(l))))
+    throw new Error("Invalid movement limits.");
   for (const name of ["medicines", "allergies", "diet", "injuries"] as const)
     if (typeof p[name] !== "string" || p[name].length > 2000)
       throw new Error("Invalid health preferences.");
@@ -264,6 +275,10 @@ export function validateProfile(p: Profile) {
     (typeof p.familiarFoods !== "string" || p.familiarFoods.length > 1000)
   )
     throw new Error("Invalid familiar-food preferences.");
+  if (p.units !== undefined && !["imperial", "metric"].includes(p.units))
+    throw new Error("Invalid unit preference.");
+  if (p.glp1 !== undefined && (typeof p.glp1 !== "string" || p.glp1.length > 80))
+    throw new Error("Invalid medication entry.");
   if (!p.name.trim()) throw new Error("Please enter your name.");
   numeric(String(p.age), 18, 100, "Age");
   numeric(String(p.height), 100, 230, "Height (cm)");

@@ -4,7 +4,7 @@
     "slug": "snap-to-fit",
     "version": "0.3.1",
     "orientation": "portrait",
-    "icon": "./assets/snap-icon.png",
+    "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
@@ -15,9 +15,17 @@
       }
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-foreground.png",
+        "backgroundImage": "./assets/adaptive-background.png",
+        "monochromeImage": "./assets/adaptive-monochrome.png"
+      },
       "versionCode": 2,
       "package": "com.zunitech.snaptofit",
       "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+      ],
       "permissions": [
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_WEIGHT",
@@ -25,6 +33,7 @@
       ]
     },
     "web": {
+      "favicon": "./assets/favicon.png",
       "bundler": "metro",
       "output": "static"
     },
@@ -62,10 +71,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/snap-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/splash-logo.png",
+          "imageWidth": 160,
           "resizeMode": "contain",
-          "backgroundColor": "#DDF3A4"
+          "backgroundColor": "#FFFFFF"
         }
       ],
       [
@@ -75,6 +84,15 @@
           "isIosBackgroundLocationEnabled": false,
           "isAndroidBackgroundLocationEnabled": false,
           "isAndroidForegroundServiceEnabled": false
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": false,
+          "savePhotosPermission": false,
+          "isAccessMediaLocationEnabled": false,
+          "granularPermissions": ["audio"]
         }
       ],
       [

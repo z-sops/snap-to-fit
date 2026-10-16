@@ -1,5 +1,7 @@
 import { doctorNotice, steroidNotice } from "../core/safety";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useMenuInsets } from "./menu-insets";
+import menuArt from "../../assets/menu-nutrition.png";
 import {
   ScrollView,
   View,
@@ -10,8 +12,22 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Animated,
+  Modal,
+  AccessibilityInfo,
+  Image,
+  BackHandler,
 } from "react-native";
-import { Link, usePathname } from "expo-router";
+import { router, usePathname } from "expo-router";
+import { useOptionalStore } from "../services/store";
+import {
+  activeMainTab,
+  isActive,
+  mainTabs,
+  menuSections,
+  normalizePath,
+  type AppRoute,
+} from "./navigation";
 import { Ionicons } from "@expo/vector-icons";
 export const colors = {
   ink: "#17213B",
@@ -33,21 +49,48 @@ export async function act(fn: () => Promise<unknown>) {
     notify(e instanceof Error ? e.message : "Something went wrong. Try again.");
   }
 }
+/** Screens without their own back step: main tabs and first-run onboarding. */
+const noBackBar = ["/", "/food", "/move", "/health", "/onboarding"];
+
 export function Screen({
   children,
   title,
   subtitle,
+  onBack,
+  backLabel,
 }: {
   children: React.ReactNode;
   title: string;
   subtitle?: string;
+  /** In-screen back step (e.g. topic → list). Also handles the Android back key. */
+  onBack?: () => void;
+  backLabel?: string;
 }) {
   const path = usePathname();
-  const [more, setMore] = useState(false);
-  const nav = [
-    ["/", "Today"], ["/food", "Food"], ["/move", "Move"], ["/health", "Health"],
-  ] as const;
-  const moreRoute = !nav.some(([href]) => href === path);
+  const store = useOptionalStore();
+  // Before a profile exists only onboarding/account/legal/gyms are reachable,
+  // so the main tabs are hidden instead of bouncing back to onboarding.
+  const hasProfile = !!store?.state.profile;
+  const [menu, setMenu] = useState(false);
+  const active = activeMainTab(path);
+  const go = (href: AppRoute) => {
+    setMenu(false);
+    if (!isActive(path, href)) router.navigate(href);
+  };
+  const showBack = !!onBack || (hasProfile && !noBackBar.includes(normalizePath(path)));
+  const back = () => {
+    if (onBack) return onBack();
+    if (router.canGoBack?.()) router.back();
+    else router.navigate("/");
+  };
+  useEffect(() => {
+    if (!onBack || Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      onBack();
+      return true;
+    });
+    return () => sub.remove();
+  }, [onBack]);
   return (
     <KeyboardAvoidingView
       style={s.root}
@@ -55,93 +98,234 @@ export function Screen({
     >
       <View style={s.shell}>
         <View style={s.brand}>
+          <Pressable
+            onPress={() => setMenu(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Open menu"
+            aria-expanded={menu}
+            hitSlop={8}
+            style={s.iconButton}
+          >
+            <Ionicons name="menu" size={26} color={colors.ink} />
+          </Pressable>
           <Text style={s.logo}>
             snap<Text style={{ color: colors.green }}> to fit</Text>
-            <Text style={{ fontSize: 11, color: colors.green }}> ✦</Text>
+            <Text style={{ fontSize: 14, color: colors.green }}> ✦</Text>
           </Text>
-          <Link href="/settings" accessibilityLabel="Open settings">
-            <Ionicons name="settings-outline" size={24} color={colors.ink} />
-          </Link>
+          {hasProfile ? (
+            <Pressable
+              onPress={() => go("/settings")}
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+              hitSlop={8}
+              style={s.iconButton}
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.ink} />
+            </Pressable>
+          ) : (
+            <View style={s.iconButton} />
+          )}
         </View>
+        {showBack ? (
+          <View style={s.backBar}>
+            <Pressable
+              onPress={back}
+              accessibilityRole="button"
+              accessibilityLabel={backLabel || "Back"}
+              hitSlop={8}
+              style={s.backBtn}
+            >
+              <Ionicons name="chevron-back" size={20} color={colors.green} />
+              <Text style={s.backText}>{backLabel || "Back"}</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <ScrollView
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={s.content}
         >
           <Text style={s.title}>{title}</Text>
           {subtitle ? <Text style={s.subtitle}>{subtitle}</Text> : null}
-          <View
-            accessibilityRole="summary"
-            style={{
-              padding: 12,
-              borderRadius: 12,
-              borderLeftWidth: 3,
-              borderLeftColor: "#D89D36",
-              backgroundColor: colors.amber,
-              marginBottom: 18,
-            }}
-          >
-            <Text
-              style={{
-                color: colors.ink,
-                fontSize: 12,
-                lineHeight: 18,
-                fontWeight: "600",
-              }}
-            >
-              {doctorNotice}
-            </Text>
-            <Text
-              style={{
-                color: colors.ink,
-                fontSize: 11,
-                lineHeight: 17,
-                marginTop: 6,
-              }}
-            >
-              {steroidNotice}
-            </Text>
-          </View>
+          <SafetyNotice />
           {children}
           <Text style={s.footer}>Your pace. Your progress.</Text>
         </ScrollView>
-        {more ? <View style={{ backgroundColor: "white", padding: 12, flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {([["/metabolic", "Tracker"], ["/coach", "Coach"], ["/meal-plan", "Meal plan"], ["/gyms", "Gyms"], ["/music", "Music"], ["/settings", "Settings"]] as const).map(([href, label]) =>
-            <Link key={href} href={href} asChild><Pressable onPress={() => setMore(false)} accessibilityRole="button" accessibilityLabel={label}
-              style={{ minHeight: 48, minWidth: 88, padding: 14, borderRadius: 12, backgroundColor: colors.bg }}><Text style={{ color: colors.ink, fontWeight: "600" }}>{label}</Text></Pressable></Link>)}
-        </View> : null}
-        <View style={s.nav}>
-          {nav.map(([href, label]) => (
-            <Link key={href} href={href} asChild>
+        {hasProfile ? (
+          <View style={s.nav} accessibilityRole="tablist">
+            {mainTabs.slice(0, 2).map((t) => (
+              <NavTab key={t.href} item={t} selected={active === t.href} onPress={() => go(t.href)} />
+            ))}
+            <View style={s.snapSlot}>
               <Pressable
-                style={[
-                  s.navItem,
-                  path === href && {
-                    backgroundColor: colors.lime,
-                    borderRadius: 16,
-                  },
-                ]}
+                onPress={() => {
+                  setMenu(false);
+                  // Opens the camera straight away on the Food screen.
+                  router.navigate({ pathname: "/food", params: { snap: String(Date.now()) } });
+                }}
                 accessibilityRole="button"
-                accessibilityLabel={label}
-                accessibilityState={{ selected: path === href }}
+                accessibilityLabel="Snap a meal"
+                style={s.snapBtn}
               >
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: path === href ? colors.green : colors.muted,
-                    fontWeight: "600",
-                  }}
-                >
-                  {label}
-                </Text>
+                <Ionicons name="camera" size={28} color="white" />
               </Pressable>
-            </Link>
-          ))}
-          <Pressable accessibilityRole="button" accessibilityLabel="More" accessibilityState={{ expanded: more, selected: moreRoute }} onPress={() => setMore(!more)} style={[s.navItem, (more || moreRoute) && { backgroundColor: colors.lime }]}>
-            <Text style={{ fontSize: 12, color: more || moreRoute ? colors.green : colors.muted, fontWeight: "700" }}>More</Text>
-          </Pressable>
-        </View>
+              <Text style={s.snapLabel}>Snap</Text>
+            </View>
+            {mainTabs.slice(2).map((t) => (
+              <NavTab key={t.href} item={t} selected={active === t.href} onPress={() => go(t.href)} />
+            ))}
+          </View>
+        ) : null}
       </View>
+      <SideMenu
+        open={menu}
+        path={path}
+        hasProfile={hasProfile}
+        onClose={() => setMenu(false)}
+        onGo={go}
+      />
     </KeyboardAvoidingView>
+  );
+}
+function NavTab({ item, selected, onPress }: { item: (typeof mainTabs)[number]; selected: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="tab"
+      accessibilityLabel={item.label}
+      aria-selected={selected}
+      style={selected ? s.navItemActive : s.navItem}
+    >
+      <Ionicons
+        name={item.icon as keyof typeof Ionicons.glyphMap}
+        size={20}
+        color={selected ? colors.green : colors.muted}
+      />
+      <Text style={selected ? s.navLabelActive : s.navLabel}>{item.label}</Text>
+    </Pressable>
+  );
+}
+function SafetyNotice() {
+  return (
+    <View accessibilityRole="summary" style={s.notice}>
+      <Text style={s.noticeMain}>{doctorNotice}</Text>
+      <Text style={s.noticeSub}>{steroidNotice}</Text>
+    </View>
+  );
+}
+const MENU_WIDTH = 300;
+function SideMenu({
+  open,
+  path,
+  hasProfile,
+  onClose,
+  onGo,
+}: {
+  open: boolean;
+  path: string;
+  hasProfile: boolean;
+  onClose: () => void;
+  onGo: (href: AppRoute) => void;
+}) {
+  const [slide] = useState(() => new Animated.Value(0));
+  const insets = useMenuInsets();
+  // Stays mounted after `open` turns false until the slide-out finishes.
+  const [mounted, setMounted] = useState(false);
+  const visible = open || mounted;
+  useEffect(() => {
+    let cancelled = false;
+    const run = (to: number, done: () => void) =>
+      void AccessibilityInfo.isReduceMotionEnabled()
+        .catch(() => false)
+        .then((reduce) => {
+          if (cancelled) return;
+          if (reduce) {
+            slide.setValue(to);
+            done();
+            return;
+          }
+          Animated.timing(slide, {
+            toValue: to,
+            duration: 220,
+            useNativeDriver: Platform.OS !== "web",
+          }).start(({ finished }) => finished && !cancelled && done());
+        });
+    if (open) run(1, () => setMounted(true));
+    else run(0, () => setMounted(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [open, slide]);
+  if (!visible) return null;
+  const translateX = slide.interpolate({ inputRange: [0, 1], outputRange: [-MENU_WIDTH, 0] });
+  return (
+    <Modal transparent visible animationType="none" onRequestClose={onClose} statusBarTranslucent>
+      <View style={s.menuRoot}>
+        <Animated.View style={[s.backdrop, { opacity: slide }]}>
+          <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel="Close menu" />
+        </Animated.View>
+        <Animated.View
+          style={[
+            s.drawer,
+            { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 8, transform: [{ translateX }] },
+          ]}
+          accessibilityViewIsModal
+        >
+          <View style={s.drawerHead}>
+            <Text style={s.drawerLogo}>
+              snap<Text style={{ color: colors.green }}> to fit</Text>
+              <Text style={{ fontSize: 13, color: colors.green }}> ✦</Text>
+            </Text>
+            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close menu" hitSlop={8} style={s.iconButton}>
+              <Ionicons name="close" size={26} color={colors.ink} />
+            </Pressable>
+          </View>
+          <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 16 }}>
+            {menuSections(hasProfile).map((section) => (
+              <View key={section.title} style={{ marginTop: 14 }}>
+                <Text style={s.menuSection}>{section.title}</Text>
+                {section.items.map(({ href, label, icon }) => {
+                  const selected = isActive(path, href);
+                  return (
+                    <Pressable
+                      key={href}
+                      onPress={() => onGo(href)}
+                      accessibilityRole="link"
+                      accessibilityLabel={label}
+                      aria-selected={selected}
+                      style={selected ? s.menuItemActive : s.menuItem}
+                    >
+                      <Ionicons
+                        name={icon as keyof typeof Ionicons.glyphMap}
+                        size={20}
+                        color={selected ? colors.green : colors.ink}
+                      />
+                      <Text style={selected ? s.menuLabelActive : s.menuLabel}>{label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ))}
+            {!hasProfile ? (
+              <View style={s.menuInfo}>
+                <Ionicons name="lock-open-outline" size={22} color={colors.green} />
+                <Text style={s.menuInfoTitle}>Finish your profile to unlock everything</Text>
+                <Text style={s.menuInfoBody}>
+                  Today, Food, Move, Health, meal plans, the tracker, coach and music
+                  appear here once your profile is saved. It takes about 5 minutes.
+                </Text>
+              </View>
+            ) : null}
+            <View style={s.menuNoticeBox}>
+              <Text style={s.menuNotice}>{doctorNotice}</Text>
+            </View>
+            {/* Decorative illustration; sits at the bottom when there is room. */}
+            <View style={s.menuArtWrap} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <Image source={menuArt} style={s.menuArt} resizeMode="contain" accessibilityIgnoresInvertColors />
+            </View>
+          </ScrollView>
+        </Animated.View>
+      </View>
+    </Modal>
   );
 }
 export function Card({
@@ -347,12 +531,13 @@ const s = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderColor: colors.line,
   },
-  logo: { fontSize: 25, fontWeight: "800", letterSpacing: -1 },
+  logo: { fontSize: 34, fontWeight: "800", letterSpacing: -1, color: colors.ink },
+  drawerLogo: { fontSize: 31, fontWeight: "800", letterSpacing: -1, color: colors.ink },
   content: { padding: 20, paddingBottom: 28 },
   title: {
     fontSize: 34,
@@ -438,7 +623,37 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: colors.line,
   },
-  navItem: { flex: 1, flexBasis: 0, minWidth: 0, minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 12, paddingHorizontal: 2 },
+  navItem: { flex: 1, flexBasis: 0, minWidth: 0, minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 12, paddingHorizontal: 2, gap: 2 },
+  navItemActive: { flex: 1, flexBasis: 0, minWidth: 0, minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 16, paddingHorizontal: 2, gap: 2, backgroundColor: colors.lime },
+  snapSlot: { flex: 1, alignItems: "center", justifyContent: "flex-end" },
+  snapBtn: { width: 62, height: 62, borderRadius: 31, backgroundColor: colors.green, alignItems: "center", justifyContent: "center", marginTop: -30, borderWidth: 5, borderColor: "white", shadowColor: "#17213B", shadowOpacity: 0.22, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
+  snapLabel: { fontSize: 12, fontWeight: "800", color: colors.ink, marginTop: 2 },
+  navLabel: { fontSize: 12, color: colors.muted, fontWeight: "600" },
+  navLabelActive: { fontSize: 12, color: colors.green, fontWeight: "700" },
+  iconButton: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBar: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 2, backgroundColor: colors.bg },
+  backBtn: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 2, paddingVertical: 6, paddingHorizontal: 8, borderRadius: 999, backgroundColor: colors.lime },
+  backText: { color: colors.green, fontSize: 15, fontWeight: "700" },
+  notice: { padding: 12, borderRadius: 12, borderLeftWidth: 3, borderLeftColor: "#D89D36", backgroundColor: colors.amber, marginBottom: 18 },
+  noticeMain: { color: colors.ink, fontSize: 12, lineHeight: 18, fontWeight: "600" },
+  noticeSub: { color: colors.ink, fontSize: 11, lineHeight: 17, marginTop: 6 },
+  menuRoot: { flex: 1, flexDirection: "row" },
+  backdrop: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(23,33,59,0.45)" },
+  drawer: { width: MENU_WIDTH, maxWidth: "85%", height: "100%", backgroundColor: "white", paddingHorizontal: 14, borderTopRightRadius: 22, borderBottomRightRadius: 22 },
+  drawerHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 6, paddingBottom: 12, borderBottomWidth: 1, borderColor: colors.line },
+  menuSection: { fontSize: 11, fontWeight: "700", color: colors.muted, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, paddingHorizontal: 8 },
+  menuItem: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48, paddingHorizontal: 10, borderRadius: 12 },
+  menuItemActive: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48, paddingHorizontal: 10, borderRadius: 12, backgroundColor: colors.lime },
+  menuLabel: { fontSize: 15, color: colors.ink, fontWeight: "600" },
+  menuLabelActive: { fontSize: 15, color: colors.green, fontWeight: "700" },
+  menuNotice: { fontSize: 12, lineHeight: 17, color: colors.ink, fontWeight: "600" },
+  menuNoticeBox: { marginTop: 18, padding: 12, borderRadius: 12, borderLeftWidth: 3, borderLeftColor: "#D89D36", backgroundColor: colors.amber },
+  menuArtWrap: { flexGrow: 1, justifyContent: "flex-end", marginTop: 16 },
+  // Explicit height: web otherwise applies the bitmap height and ignores aspectRatio.
+  menuArt: { width: "100%", height: 230, opacity: 0.95 },
+  menuInfo: { marginTop: 18, padding: 16, borderRadius: 16, backgroundColor: colors.lime, gap: 6 },
+  menuInfoTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },
+  menuInfoBody: { fontSize: 13, lineHeight: 19, color: colors.muted },
   footer: {
     textAlign: "center",
     fontSize: 12,
