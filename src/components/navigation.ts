@@ -63,7 +63,7 @@ const profiledSections: NavSection[] = [
     title: "Support",
     items: [
       { href: "/coach", label: "Coach", icon: "chatbubbles-outline" },
-      { href: "/education", label: "Learn", icon: "school-outline" },
+      { href: "/education", label: "Gym Truth", icon: "school-outline" },
       { href: "/gyms", label: "Gyms", icon: "location-outline" },
       { href: "/music", label: "Music", icon: "musical-notes-outline" },
     ],

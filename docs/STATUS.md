@@ -136,3 +136,8 @@ metric toggle, a new logo, onboarding and Home first.
 Validation: typecheck, lint, 80 core and 32 UI tests (new: units, onboarding flow),
 `expo export --platform all`, and a web walkthrough of onboarding → Home with a
 logged meal (no page errors). Not yet tested on the Pixel 6a.
+
+## Progress 2026-10-16 — Gym Truth learning hub
+- `/education` is now **Gym Truth**: 5 card categories (Dangerous shortcuts, Supplements: the science, Your body, Fuel basics, Beginner questions), 30 topics, search, verdict pills (Avoid / Can help / Food first / Usually not worth it), doctor notice + sources on every topic. No brand names.
+- Content lives in `src/core/learn.ts` (NIH ODS, FDA, NIDA, ISSN sources). Reminder settings moved to `src/components/EducationReminders.tsx`.
+- Home tile and menu renamed to "Gym Truth" and shown at every age. JS-only change: no prebuild needed.

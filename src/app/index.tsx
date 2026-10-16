@@ -39,7 +39,7 @@ export default function Today() {
     { href: "/coach", title: "Coach", detail: "Ask about food and moving", icon: "chatbubbles", tint: "#E9F6FF" },
     { href: "/gyms", title: "Gyms", detail: "Find one nearby", icon: "location", tint: "#FFF8DD" },
     { href: "/music", title: "Music", detail: "Your workout songs", icon: "musical-notes", tint: "#F0F4F8" },
-    ...(p.age <= 50 ? [{ href: "/education", title: "Learn", detail: "Build strength safely", icon: "school", tint: "#EAF7EF" } as Tile] : []),
+    { href: "/education", title: "Gym Truth", detail: "Supplements, steroids, soreness — the science", icon: "school", tint: "#EAF7EF" },
   ];
 
   return (
