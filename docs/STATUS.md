@@ -164,6 +164,8 @@ logged meal (no page errors). Not yet tested on the Pixel 6a.
   prebuild is required for the next APK.
 - Exercise images load from the public dataset on GitHub; set EXPO_PUBLIC_EXERCISE_MEDIA_URL
   to our own CDN before launch.
-- Not done yet: Spanish translation (planned after launch), production server + paid Gemini key,
+- Spanish (US): follows the phone language, switch in Settings; AI Coach and voice coach answer in
+  Spanish. Gym Truth article bodies are still English.
+- Not done yet: production server + paid Gemini key,
   FatSecret Premier Free (owner to apply), iPhone build/test via EAS.
 - Store listing draft: docs/STORE_LISTING.md
