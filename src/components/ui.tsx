@@ -1,5 +1,7 @@
 import { doctorNotice, steroidNotice } from "../core/safety";
 import React, { useEffect, useState } from "react";
+import { useMenuInsets } from "./menu-insets";
+import menuArt from "../../assets/menu-nutrition.png";
 import {
   ScrollView,
   View,
@@ -13,6 +15,7 @@ import {
   Animated,
   Modal,
   AccessibilityInfo,
+  Image,
 } from "react-native";
 import { router, usePathname } from "expo-router";
 import { useOptionalStore } from "../services/store";
@@ -178,6 +181,7 @@ function SideMenu({
   onGo: (href: AppRoute) => void;
 }) {
   const [slide] = useState(() => new Animated.Value(0));
+  const insets = useMenuInsets();
   // Stays mounted after `open` turns false until the slide-out finishes.
   const [mounted, setMounted] = useState(false);
   const visible = open || mounted;
@@ -214,18 +218,22 @@ function SideMenu({
           <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel="Close menu" />
         </Animated.View>
         <Animated.View
-          style={[s.drawer, { transform: [{ translateX }] }]}
+          style={[
+            s.drawer,
+            { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 8, transform: [{ translateX }] },
+          ]}
           accessibilityViewIsModal
         >
           <View style={s.drawerHead}>
-            <Text style={s.logo}>
+            <Text style={s.drawerLogo}>
               snap<Text style={{ color: colors.green }}> to fit</Text>
+              <Text style={{ fontSize: 13, color: colors.green }}> ✦</Text>
             </Text>
             <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close menu" hitSlop={8} style={s.iconButton}>
               <Ionicons name="close" size={26} color={colors.ink} />
             </Pressable>
           </View>
-          <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+          <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 16 }}>
             {menuSections(hasProfile).map((section) => (
               <View key={section.title} style={{ marginTop: 14 }}>
                 <Text style={s.menuSection}>{section.title}</Text>
@@ -251,7 +259,23 @@ function SideMenu({
                 })}
               </View>
             ))}
-            <Text style={s.menuNotice}>{doctorNotice}</Text>
+            {!hasProfile ? (
+              <View style={s.menuInfo}>
+                <Ionicons name="lock-open-outline" size={22} color={colors.green} />
+                <Text style={s.menuInfoTitle}>Finish your profile to unlock everything</Text>
+                <Text style={s.menuInfoBody}>
+                  Today, Food, Move, Health, meal plans, the tracker, coach and music
+                  appear here once your profile is saved. It takes about 5 minutes.
+                </Text>
+              </View>
+            ) : null}
+            <View style={s.menuNoticeBox}>
+              <Text style={s.menuNotice}>{doctorNotice}</Text>
+            </View>
+            {/* Decorative illustration; sits at the bottom when there is room. */}
+            <View style={s.menuArtWrap} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <Image source={menuArt} style={s.menuArt} resizeMode="contain" accessibilityIgnoresInvertColors />
+            </View>
           </ScrollView>
         </Animated.View>
       </View>
@@ -466,7 +490,8 @@ const s = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.line,
   },
-  logo: { fontSize: 25, fontWeight: "800", letterSpacing: -1 },
+  logo: { fontSize: 30, fontWeight: "800", letterSpacing: -1, color: colors.ink },
+  drawerLogo: { fontSize: 28, fontWeight: "800", letterSpacing: -1, color: colors.ink },
   content: { padding: 20, paddingBottom: 28 },
   title: {
     fontSize: 34,
@@ -562,14 +587,21 @@ const s = StyleSheet.create({
   noticeSub: { color: colors.ink, fontSize: 11, lineHeight: 17, marginTop: 6 },
   menuRoot: { flex: 1, flexDirection: "row" },
   backdrop: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(23,33,59,0.45)" },
-  drawer: { width: MENU_WIDTH, maxWidth: "85%", height: "100%", backgroundColor: "white", paddingHorizontal: 14, paddingTop: 18, borderTopRightRadius: 22, borderBottomRightRadius: 22 },
+  drawer: { width: MENU_WIDTH, maxWidth: "85%", height: "100%", backgroundColor: "white", paddingHorizontal: 14, borderTopRightRadius: 22, borderBottomRightRadius: 22 },
   drawerHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 6, paddingBottom: 12, borderBottomWidth: 1, borderColor: colors.line },
   menuSection: { fontSize: 11, fontWeight: "700", color: colors.muted, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, paddingHorizontal: 8 },
   menuItem: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48, paddingHorizontal: 10, borderRadius: 12 },
   menuItemActive: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48, paddingHorizontal: 10, borderRadius: 12, backgroundColor: colors.lime },
   menuLabel: { fontSize: 15, color: colors.ink, fontWeight: "600" },
   menuLabelActive: { fontSize: 15, color: colors.green, fontWeight: "700" },
-  menuNotice: { fontSize: 11, lineHeight: 16, color: colors.muted, marginTop: 18, paddingHorizontal: 8 },
+  menuNotice: { fontSize: 12, lineHeight: 17, color: colors.ink, fontWeight: "600" },
+  menuNoticeBox: { marginTop: 18, padding: 12, borderRadius: 12, borderLeftWidth: 3, borderLeftColor: "#D89D36", backgroundColor: colors.amber },
+  menuArtWrap: { flexGrow: 1, justifyContent: "flex-end", marginTop: 16 },
+  // Explicit height: web otherwise applies the bitmap height and ignores aspectRatio.
+  menuArt: { width: "100%", height: 230, opacity: 0.95 },
+  menuInfo: { marginTop: 18, padding: 16, borderRadius: 16, backgroundColor: colors.lime, gap: 6 },
+  menuInfoTitle: { fontSize: 15, fontWeight: "700", color: colors.ink },
+  menuInfoBody: { fontSize: 13, lineHeight: 19, color: colors.muted },
   footer: {
     textAlign: "center",
     fontSize: 12,
