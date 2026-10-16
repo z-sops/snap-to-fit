@@ -19,6 +19,10 @@ export type Condition =
   | "pregnant"
   | "eating-disorder";
 export interface Profile {
+  /** Display/input units; values are always stored in kg and cm. */
+  units?: "imperial" | "metric";
+  /** GLP-1 medication named by the user from their prescription (record only). */
+  glp1?: string;
   cuisine?: CuisinePreference;
   workoutDays?: number[];
   country?: string;
@@ -150,6 +154,7 @@ export const emptyState: State = {
   cgm: [],
 };
 export const newProfile: Profile = {
+  units: "imperial",
   country: "US",
   cuisine: "american",
   name: "",
@@ -264,6 +269,10 @@ export function validateProfile(p: Profile) {
     (typeof p.familiarFoods !== "string" || p.familiarFoods.length > 1000)
   )
     throw new Error("Invalid familiar-food preferences.");
+  if (p.units !== undefined && !["imperial", "metric"].includes(p.units))
+    throw new Error("Invalid unit preference.");
+  if (p.glp1 !== undefined && (typeof p.glp1 !== "string" || p.glp1.length > 80))
+    throw new Error("Invalid medication entry.");
   if (!p.name.trim()) throw new Error("Please enter your name.");
   numeric(String(p.age), 18, 100, "Age");
   numeric(String(p.height), 100, 230, "Height (cm)");
