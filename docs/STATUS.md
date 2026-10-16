@@ -147,3 +147,23 @@ logged meal (no page errors). Not yet tested on the Pixel 6a.
 - Onboarding "injuries" step now has structured movement limits (knee, knee replacement, lower back, neck, shoulder, prostate) saved as `profile.limits`; they pause exercise intensity like other health details.
 - "For you" list on Gym Truth and "Exercise safety guides for you" card on Move, matched to age 50+, conditions and limits; `/education?topic=<id>` opens a topic.
 - Every non-tab screen shows a Back button under the header (router.back, or Home when there is no history). In-screen steps (topic → list → hub) use the same button and the Android back key.
+
+## Progress 2026-10-16 (evening) — launch gaps (branch feat/launch-gaps)
+- Food: USDA SR28 database (8,257 foods, 19 nutrients) + recipe dishes; Open Food Facts barcode
+  scanner (expo-camera); result sheet with servings, likely range, cooking-fat question,
+  micronutrients %DV; meal sections; quick add. Photo AI returns items+grams and is priced from USDA.
+- Home: avatar, streak, protein win, quick actions, weekly chart, My numbers (BMR/TDEE/BMI,
+  adaptive TDEE), weekly report + achievements.
+- Move: 876-exercise library (free-exercise-db, public domain) with profile-aware safety
+  filtering; guided workout player with voice cues (expo-speech) and rest timer; activity log.
+- GLP-1 companion: prescription setup, countdown, shot log + site rotation, side-effect
+  check-ins with label-based alerts, weekly protein/fiber/strength, doctor summary share.
+- Coach chat UI; Journey and Health redesigned; lb/in entry stored as kg/cm.
+- Dark mode follows the phone (app.json userInterfaceStyle automatic).
+- NEW NATIVE MODULES: expo-camera, expo-speech, react-native-svg, expo-haptics → a fresh
+  prebuild is required for the next APK.
+- Exercise images load from the public dataset on GitHub; set EXPO_PUBLIC_EXERCISE_MEDIA_URL
+  to our own CDN before launch.
+- Not done yet: Spanish translation (planned after launch), production server + paid Gemini key,
+  FatSecret Premier Free (owner to apply), iPhone build/test via EAS.
+- Store listing draft: docs/STORE_LISTING.md
