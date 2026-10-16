@@ -1,13 +1,16 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 import { Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen, colors } from "../components/ui";
 import { EducationReminders } from "../components/EducationReminders";
+import { useStore } from "../services/store";
 import {
   articles,
   articlesIn,
   categories,
   searchArticles,
+  topicsFor,
   verdicts,
   type Article,
   type LearnCategory,
@@ -18,6 +21,7 @@ const categoryLook: Record<LearnCategory, { emoji: string; tint: string }> = {
   supplements: { emoji: "🧴", tint: "#EEF2FF" },
   body: { emoji: "💪", tint: "#E7F6EE" },
   fuel: { emoji: "🍽️", tint: "#FFF4DE" },
+  conditions: { emoji: "🩺", tint: "#E9F6FF" },
   faq: { emoji: "❓", tint: "#F3EDFF" },
 };
 
@@ -30,11 +34,19 @@ export default function Education() {
   const [query, setQuery] = useState("");
   const article = articles.find((a) => a.id === articleId) || null;
   const results = useMemo(() => (query.trim() ? searchArticles(query) : []), [query]);
+  const profile = useStore().state.profile;
+  const forYou = profile ? topicsFor(profile) : [];
+  const { topic } = useLocalSearchParams<{ topic?: string }>();
+  useEffect(() => {
+    // Deep link from Move/Home ("/education?topic=slip-disc") opens that topic once.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (topic && articles.some((a) => a.id === topic)) setArticleId(topic);
+  }, [topic]);
 
   if (article) {
     return (
-      <Screen title={article.title} subtitle="Gym Truth">
-        <BackButton label={category ? "Back to list" : "Back to Gym Truth"} onPress={() => setArticleId(null)} />
+      <Screen title={article.title} subtitle="Gym Truth" onBack={() => setArticleId(null)}
+        backLabel={category ? "Back to list" : "Back to Gym Truth"}>
         <ArticleView article={article} />
       </Screen>
     );
@@ -43,8 +55,7 @@ export default function Education() {
   if (category) {
     const meta = categories.find((c) => c.id === category)!;
     return (
-      <Screen title={meta.label} subtitle={meta.detail}>
-        <BackButton label="Back to Gym Truth" onPress={() => setCategory(null)} />
+      <Screen title={meta.label} subtitle={meta.detail} onBack={() => setCategory(null)} backLabel="Back to Gym Truth">
         {category === "supplements" ? <VerdictLegend /> : null}
         {articlesIn(category).map((a) => (
           <ArticleRow key={a.id} article={a} onPress={() => setArticleId(a.id)} />
@@ -74,6 +85,13 @@ export default function Education() {
         onChangeText={setQuery}
         style={s.search}
       />
+      {!query.trim() && forYou.length ? (
+        <View style={{ gap: 10 }}>
+          <Text style={s.forYou}>For you</Text>
+          <Text style={s.muted}>Based on the age, health details and movement limits in your profile.</Text>
+          {forYou.map((a) => <ArticleRow key={a.id} article={a} onPress={() => setArticleId(a.id)} />)}
+        </View>
+      ) : null}
       {query.trim() ? (
         results.length ? (
           results.map((a) => <ArticleRow key={a.id} article={a} onPress={() => setArticleId(a.id)} />)
@@ -100,15 +118,6 @@ export default function Education() {
       )}
       <EducationReminders />
     </Screen>
-  );
-}
-
-function BackButton({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={s.back}>
-      <Ionicons name="chevron-back" size={18} color={colors.green} />
-      <Text style={s.backText}>{label}</Text>
-    </Pressable>
   );
 }
 
@@ -186,14 +195,13 @@ const s = StyleSheet.create({
   noticeText: { flex: 1, color: "#6B4300", fontSize: 13, lineHeight: 18 },
   search: { backgroundColor: "#fff", borderWidth: 1, borderColor: colors.line, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: colors.ink },
   muted: { color: colors.muted, fontSize: 15 },
+  forYou: { color: colors.ink, fontSize: 20, fontWeight: "800" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   tile: { flexGrow: 1, flexBasis: "45%", borderRadius: 20, padding: 16, gap: 4, minHeight: 150 },
   tileEmoji: { fontSize: 30 },
   tileTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
   tileDetail: { color: colors.muted, fontSize: 13, lineHeight: 18 },
   tileCount: { color: colors.green, fontSize: 13, fontWeight: "700", marginTop: "auto" },
-  back: { flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start", paddingVertical: 6 },
-  backText: { color: colors.green, fontSize: 15, fontWeight: "700" },
   legend: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   pill: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
   pillText: { fontSize: 12, fontWeight: "800" },

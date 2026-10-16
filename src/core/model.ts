@@ -10,6 +10,8 @@ import type {
 } from "./planning-types";
 export type Goal = "lose" | "maintain" | "gain";
 export type Place = "gym" | "home" | "walk";
+export type MovementLimit = "knee" | "knee-replacement" | "lower-back" | "neck" | "shoulder" | "prostate";
+export const movementLimits: readonly MovementLimit[] = ["knee", "knee-replacement", "lower-back", "neck", "shoulder", "prostate"];
 export type Condition =
   | "type1"
   | "type2"
@@ -46,6 +48,8 @@ export interface Profile {
   allergies: string;
   diet: string;
   injuries: string;
+  /** Structured movement limits picked in onboarding (education + caution only). */
+  limits?: MovementLimit[];
   cleared: boolean;
   consent: boolean;
   aiConsent: boolean;
@@ -227,6 +231,8 @@ export function validateProfile(p: Profile) {
     p.conditions.some((c) => !conditions.includes(c))
   )
     throw new Error("Invalid health context.");
+  if (p.limits !== undefined && (!Array.isArray(p.limits) || p.limits.some((l) => !movementLimits.includes(l))))
+    throw new Error("Invalid movement limits.");
   for (const name of ["medicines", "allergies", "diet", "injuries"] as const)
     if (typeof p[name] !== "string" || p[name].length > 2000)
       throw new Error("Invalid health preferences.");

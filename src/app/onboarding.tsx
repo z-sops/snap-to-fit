@@ -18,7 +18,7 @@ import {
   useCountUp,
 } from "../components/onboarding-ui";
 import { useStore } from "../services/store";
-import { newProfile, type Profile, type Condition, validateProfile, uid } from "../core/model";
+import { newProfile, type Profile, type Condition, type MovementLimit, validateProfile, uid } from "../core/model";
 import { nutritionTargets } from "../core/nutrition";
 import { doctorNotice, steroidNotice } from "../core/safety";
 import {
@@ -34,11 +34,20 @@ import {
 import menuArt from "../../assets/menu-nutrition.png";
 import { glp1Choices } from "../core/glp1";
 
+const limitChoices: { value: MovementLimit; label: string; emoji: string }[] = [
+  { value: "knee", label: "Knee pain or knee arthritis", emoji: "🦵" },
+  { value: "knee-replacement", label: "Knee replacement (done or planned)", emoji: "🦿" },
+  { value: "lower-back", label: "Lower back / slip disc (L3–L5)", emoji: "🧍" },
+  { value: "neck", label: "Neck / cervical problem", emoji: "🧑‍⚕️" },
+  { value: "shoulder", label: "Shoulder pain or injury", emoji: "💪" },
+  { value: "prostate", label: "Prostate problem", emoji: "🚹" },
+];
+
 const conditions: { value: Condition; label: string }[] = [
   { value: "type1", label: "Type 1 diabetes" },
   { value: "type2", label: "Type 2 diabetes" },
   { value: "hypertension", label: "High blood pressure" },
-  { value: "heart", label: "Heart condition / bypass / angioplasty" },
+  { value: "heart", label: "Heart condition / stent / bypass / angioplasty" },
   { value: "kidney", label: "Kidney condition" },
   { value: "pregnant", label: "Pregnant / breastfeeding" },
   { value: "eating-disorder", label: "Eating-disorder history" },
@@ -304,10 +313,20 @@ export default function Onboarding() {
             accessibilityLabel="Other prescribed medicines" multiline style={s.textArea} />
         </>);
     case "injuries":
-      return shell("Any injuries or movement limits?", "Optional. This helps us keep exercise suggestions comfortable.",
-        <TextInput value={p.injuries} onChangeText={(v) => change("injuries", v)} placeholder="For example: knee pain, lower back"
-          placeholderTextColor={theme.muted} accessibilityLabel="Injuries or movement limitations" multiline style={s.textArea} />,
-        p.injuries.trim() ? "Continue" : "Skip — none");
+      return shell("Any injuries or movement limits?", "Optional. We show safety guides for these in Gym Truth and do not assign exercise intensity — your doctor or physical therapist does.",
+        <>
+          {limitChoices.map((l) => {
+            const on = (p.limits || []).includes(l.value);
+            return (
+              <OptionCard key={l.value} multi emoji={l.emoji} label={l.label} selected={on}
+                onPress={() => change("limits", on ? (p.limits || []).filter((x) => x !== l.value) : [...(p.limits || []), l.value])} />
+            );
+          })}
+          <Text style={s.group}>Anything else (optional)</Text>
+          <TextInput value={p.injuries} onChangeText={(v) => change("injuries", v)} placeholder="For example: hip surgery last year"
+            placeholderTextColor={theme.muted} accessibilityLabel="Injuries or movement limitations" multiline style={s.textArea} />
+        </>,
+        p.injuries.trim() || p.limits?.length ? "Continue" : "Skip — none");
     case "diet":
       return shell("How do you eat?", undefined,
         <>

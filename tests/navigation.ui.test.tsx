@@ -1,10 +1,10 @@
 import React from "react";
 import { test, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
-const nav = vi.hoisted(() => ({ path: "/", navigate: vi.fn() }));
+const nav = vi.hoisted(() => ({ path: "/", navigate: vi.fn(), back: vi.fn(), canGoBack: vi.fn(() => true) }));
 vi.mock("expo-router", () => ({
   usePathname: () => nav.path,
-  router: { navigate: nav.navigate, push: vi.fn(), replace: vi.fn() },
+  router: { navigate: nav.navigate, back: nav.back, canGoBack: nav.canGoBack, push: vi.fn(), replace: vi.fn() },
 }));
 vi.mock("@expo/vector-icons", () => ({ Ionicons: () => null }));
 import { Screen } from "../src/components/ui";
@@ -74,4 +74,22 @@ test("before a profile exists tabs are hidden and the menu only offers setup rou
   expect(await screen.findByRole("link", { name: "Set up my profile" })).toBeTruthy();
   expect(screen.queryByRole("link", { name: "Food" })).toBeNull();
   expect(screen.getAllByText(doctorNotice).length).toBeGreaterThan(0);
+});
+
+test("screens opened from a card show a Back button; main tabs do not", async () => {
+  await renderScreen(true);
+  await waitFor(() => screen.getByRole("tab", { name: "Today" }));
+  expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
+  cleanup();
+  nav.path = "/meal-plan";
+  await renderScreen(true);
+  fireEvent.click(await screen.findByRole("button", { name: "Back" }));
+  expect(nav.back).toHaveBeenCalled();
+  cleanup();
+  nav.back.mockClear();
+  nav.canGoBack.mockReturnValue(false);
+  await renderScreen(true);
+  fireEvent.click(await screen.findByRole("button", { name: "Back" }));
+  expect(nav.back).not.toHaveBeenCalled();
+  expect(nav.navigate).toHaveBeenLastCalledWith("/");
 });

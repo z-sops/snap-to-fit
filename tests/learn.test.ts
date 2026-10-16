@@ -39,3 +39,38 @@ test("search finds topics by body text", () => {
   assert.ok(searchArticles("tea-coloured").map((a) => a.id).includes("rhabdo"));
   assert.equal(searchArticles("").length, articles.length);
 });
+
+import { topicsFor } from "../src/core/learn";
+import { newProfile, validateProfile } from "../src/core/model";
+import { exerciseRestricted } from "../src/core/safety";
+
+test("50+ and condition topics match the profile", () => {
+  const ids = (p: Parameters<typeof topicsFor>[0]) => topicsFor(p).map((a) => a.id);
+  assert.deepEqual(ids({ age: 25, conditions: [], limits: [] }), []);
+  const older = ids({ age: 62, sex: "male", conditions: ["heart", "kidney"], limits: ["lower-back", "neck", "knee-replacement"] });
+  for (const id of ["muscle-loss-50", "start-50", "heart-stent", "kidney-exercise", "protein-urine", "slip-disc", "cervical", "knee-replacement", "prostate"])
+    assert.ok(older.includes(id), id);
+  assert.ok(!ids({ age: 55, sex: "female", conditions: [], limits: [] }).includes("prostate"));
+});
+
+test("muscle-loss topic explains what and why, with the kidney exception for protein", () => {
+  const a = articles.find((x) => x.id === "muscle-loss-50")!;
+  const t = text(a);
+  assert.match(t, /3–8% per decade/);
+  assert.match(t, /Why it happens/);
+  assert.match(t, /kidney disease who are not on dialysis/);
+});
+
+test("emergency red flags are present for heart, back, neck and kidney-urine topics", () => {
+  assert.match(text(articles.find((a) => a.id === "heart-stent")!), /call 911/);
+  assert.match(text(articles.find((a) => a.id === "slip-disc")!), /bladder or bowel/);
+  assert.match(text(articles.find((a) => a.id === "cervical")!), /clumsy hands/);
+  assert.match(text(articles.find((a) => a.id === "protein-urine")!), /foamy/);
+});
+
+test("movement limits validate and pause exercise intensity", () => {
+  const p = { ...newProfile, name: "A", age: 60, height: 175, weight: 80, targetWeight: 80, consent: true, limits: ["lower-back" as const] };
+  validateProfile(p);
+  assert.equal(exerciseRestricted(p), true);
+  assert.throws(() => validateProfile({ ...p, limits: ["spleen" as never] }));
+});

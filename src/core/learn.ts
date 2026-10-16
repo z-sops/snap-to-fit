@@ -2,7 +2,7 @@
 // public health sources (NIH ODS, FDA, NIDA, ISSN position stands). No brand names,
 // no dosing for drugs or prescription medicines, no medical advice.
 
-export type LearnCategory = "danger" | "supplements" | "body" | "fuel" | "faq";
+export type LearnCategory = "danger" | "supplements" | "body" | "fuel" | "conditions" | "faq";
 export type Verdict = "avoid" | "helpful" | "food-first" | "waste" | "know";
 
 export interface Source { title: string; url: string }
@@ -23,6 +23,7 @@ export const categories: { id: LearnCategory; label: string; detail: string }[] 
   { id: "supplements", label: "Supplements: the science", detail: "Useful, food first, or a waste of money" },
   { id: "body", label: "Your body", detail: "Muscle, tendons, soreness and warning signs" },
   { id: "fuel", label: "Fuel basics", detail: "Calories, protein, carbs, fat, fiber, water" },
+  { id: "conditions", label: "Health conditions & 50+", detail: "Heart stent, knees, back, neck, kidneys, prostate, muscle loss" },
   { id: "faq", label: "Beginner questions", detail: "What new gym-goers ask most" },
 ];
 
@@ -51,6 +52,22 @@ const S = {
   rhabdo: { title: "Stony Brook Medicine — Early signs of rhabdomyolysis", url: "https://health.stonybrookmedicine.edu/understanding-the-early-signs-of-rhabdomyolysis/" },
   diureticNews: { title: "TODAY — Young bodybuilder dies of complications of severe dehydration (2025)", url: "https://www.today.com/today/amp/rcna194869" },
   dga: { title: "Dietary Guidelines for Americans", url: "https://www.dietaryguidelines.gov/" },
+  cdcOlder: { title: "CDC — Physical activity for older adults", url: "https://www.cdc.gov/physical-activity-basics/guidelines/older-adults.html" },
+  cdcArthritis: { title: "CDC — Exercise to ease arthritis pain", url: "https://www.cdc.gov/arthritis/communications/features/arthritis-exercise.html" },
+  agingMuscle: { title: "Volpi et al. — Muscle tissue changes with aging (NIH PMC)", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC2804956/" },
+  medlineAging: { title: "MedlinePlus — Aging changes in bones, muscles and joints", url: "https://medlineplus.gov/ency/article/004015.htm" },
+  protAge: { title: "PROT-AGE — Protein intake in older people (JAMDA 2013)", url: "https://doi.org/10.1016/j.jamda.2013.05.021" },
+  pciExercise: { title: "Exercising safely after PCI (stent)", url: "https://healthlibrary.ecuhealth.org/heart-health/gestion/exercising-safely-after-percutaneous-coronary-intervention-pci" },
+  ahaRehab: { title: "American Heart Association — Cardiac rehab", url: "https://www.heart.org/en/health-topics/cardiac-rehab" },
+  nkfFit: { title: "National Kidney Foundation — Exercise and CKD", url: "https://www.kidney.org/atoz/content/stayfit" },
+  niddkCkdDiet: { title: "NIDDK — Eating right for chronic kidney disease", url: "https://www.niddk.nih.gov/health-information/kidney-disease/chronic-kidney-disease-ckd/eating-nutrition" },
+  urineProtein: { title: "MedlinePlus — Protein in urine test", url: "https://medlineplus.gov/lab-tests/protein-in-urine" },
+  bphSelfCare: { title: "MedlinePlus — Enlarged prostate: self-care", url: "https://medlineplus.gov/ency/patientinstructions/000398.htm" },
+  kegel: { title: "MedlinePlus — Kegel exercises", url: "https://medlineplus.gov/ency/patientinstructions/000141.htm" },
+  psa: { title: "UCLA Health — What can affect PSA results", url: "https://www.uclahealth.org/news/psa-test-results-can-be-affected-by-different-factors" },
+  kneeReplacement: { title: "AAOS OrthoInfo — Activities after knee replacement", url: "https://www.orthoinfo.org/recovery/activities-after-knee-replacement/" },
+  lumbarDisc: { title: "AAOS OrthoInfo — Herniated disk in the lower back", url: "https://www.orthoinfo.org/diseases--conditions/herniated-disk-in-the-lower-back/" },
+  cervical: { title: "AAOS OrthoInfo — Cervical spondylosis (neck arthritis)", url: "https://www.orthoinfo.org/diseases--conditions/cervical-spondylosis-arthritis-of-the-neck/" },
 };
 
 export const articles: Article[] = [
@@ -333,6 +350,165 @@ export const articles: Article[] = [
     sources: [S.dga, S.rhabdo],
   },
 
+  // ---------------- Health conditions & 50+ ----------------
+  {
+    id: "muscle-loss-50", category: "conditions", emoji: "📉", verdict: "know",
+    title: "Muscle loss after 50 (sarcopenia): what and why",
+    summary: "From about age 30, adults slowly lose muscle — roughly 3–8% per decade — and the loss speeds up after 60. Strength training and enough protein slow it down at any age.",
+    sections: [
+      { heading: "What it is", body: "Sarcopenia means losing muscle size and strength with age. Muscle fibers shrink, some are replaced by fat and stiffer tissue, and nerves that drive muscle become less efficient. Less muscle means weaker legs, slower walking, poorer balance and a higher chance of falls." },
+      { heading: "Why it happens", body: "Several things together: less physical activity, falling hormone levels (such as testosterone), eating too little protein or too few calories, illness or bed rest, and genes. A few weeks of bed rest can take away muscle that takes months to rebuild." },
+      { heading: "What slows it", body: "Muscle-strengthening on at least 2 days a week for all major muscle groups (bands, machines, body weight or weights), plus regular walking and balance practice. Older muscles still grow when trained — it is never too late to start." },
+      { heading: "Protein matters more after 50", body: "Experts on ageing suggest at least 1.0–1.2 g of protein per kg of body weight a day for older adults, and 1.2 g/kg or more if you exercise — spread across meals. People with kidney disease who are not on dialysis are the exception and may need less: ask your doctor or dietitian." },
+      { heading: "Warning sign", body: "Struggling to stand up from a chair without your hands, slower walking, or unplanned weight loss are worth mentioning to your doctor." },
+    ],
+    caution: "Testosterone or 'boosters' are not a shortcut for muscle loss. Testosterone is a prescription medicine with real risks — only use it if your doctor prescribes it.",
+    sources: [S.agingMuscle, S.medlineAging, S.cdcOlder, S.protAge],
+  },
+  {
+    id: "start-50", category: "conditions", emoji: "🧓", verdict: "know",
+    title: "Starting the gym after 50",
+    summary: "Your weekly target is the same as younger adults, plus balance work: about 150 minutes of moderate activity and strength training on 2 or more days.",
+    sections: [
+      { heading: "A simple week", body: "Brisk walking or cycling 30 minutes on 5 days, two short full-body strength sessions, and a few minutes of balance practice (heel-to-toe walking, standing from a chair, single-leg stands holding support)." },
+      { heading: "Go slower than younger lifters", body: "Use lighter weights with more reps (10–15), warm up for 5–10 minutes, rest longer between sets and add load in small steps. Machines with back support are a good start." },
+      { heading: "Breathing", body: "Breathe out as you push or lift, and never hold your breath during a heavy effort — it sharply raises blood pressure." },
+      { heading: "Recovery", body: "Muscles and tendons recover more slowly with age. A rest or light day between strength sessions is normal and helpful." },
+    ],
+    caution: "Ask your doctor before starting if you have heart disease, high blood pressure, diabetes, kidney disease, joint replacements or take regular medicines.",
+    sources: [S.cdcOlder, S.medlineAging],
+  },
+  {
+    id: "heart-stent", category: "conditions", emoji: "❤️", verdict: "know",
+    title: "Heart stent, angioplasty or bypass: how to exercise",
+    summary: "Exercise is part of recovery, but it should start under a supervised cardiac rehab program, with your cardiologist setting your limits.",
+    sections: [
+      { heading: "Start with cardiac rehab", body: "Cardiac rehab is a medically supervised program designed by your heart team. It tests what your heart can safely do and teaches you how hard to work. Ask your cardiologist for a referral — it is the safest place to begin." },
+      { heading: "Cardio", body: "Walking, stationary cycling and swimming are good choices. Start gently and build up over weeks toward about 150 minutes a week, at a pace where you can still talk." },
+      { heading: "Strength", body: "Light to moderate strength training with bands, body weight or light machines on 2 or more days a week is usually part of the plan once your team clears it. Use more reps with lighter weight, breathe out on effort and avoid straining or breath-holding. Ask when you may lift heavier, and about any short-term limits after the procedure." },
+      { heading: "Medicines change how exercise feels", body: "Some heart medicines lower your heart rate, so heart-rate targets on a watch may not apply — your rehab team can give you the right effort level. Blood thinners make bruising and bleeding easier, so ask about contact sports." },
+      { heading: "Stop and get help", body: "Chest pain, pressure or tightness, pain spreading to the arm, jaw or back, unusual shortness of breath, dizziness, fainting or a racing or irregular heartbeat: stop and call 911." },
+    ],
+    caution: "Do not use stimulant pre-workouts, fat burners or energy drinks without asking your cardiologist.",
+    sources: [S.ahaRehab, S.pciExercise],
+  },
+  {
+    id: "blood-pressure", category: "conditions", emoji: "🩺", verdict: "know",
+    title: "High blood pressure and lifting",
+    summary: "Regular exercise helps lower blood pressure. The key is to avoid straining and breath-holding with heavy weights.",
+    sections: [
+      { heading: "What helps", body: "Daily walking or cycling and moderate strength training with controlled breathing." },
+      { heading: "What to avoid", body: "Maximum lifts, holding your breath while pushing, and stimulant pre-workouts or fat burners, which raise blood pressure." },
+      { heading: "Ask first if", body: "Your blood pressure is very high or not yet controlled — your doctor may want it treated before you train hard." },
+    ],
+    caution: "Never change blood-pressure medicines because you have started exercising — talk to your doctor.",
+    sources: [S.cdcOlder, S.fdaDmaa],
+  },
+  {
+    id: "diabetes-exercise", category: "conditions", emoji: "🩸", verdict: "know",
+    title: "Diabetes and exercise",
+    summary: "Exercise improves blood sugar control. If you use insulin or some diabetes pills, low blood sugar during or after exercise is the main risk.",
+    sections: [
+      { heading: "Be prepared", body: "Check your glucose before and after exercise if your care team advises it, and carry fast-acting sugar. Low blood sugar can appear hours after a workout." },
+      { heading: "Feet", body: "Wear well-fitting shoes and check your feet for blisters or cuts, especially if you have reduced feeling in them." },
+    ],
+    caution: "Follow your care team's plan for insulin and food around exercise. Snap to Fit cannot adjust your medicine.",
+    sources: [S.cdcOlder],
+  },
+  {
+    id: "kidney-exercise", category: "conditions", emoji: "🫘", verdict: "know",
+    title: "Kidney disease: exercise, protein and supplements",
+    summary: "Exercise is recommended at every stage of kidney disease. Protein, fluids and supplements need your kidney team's guidance.",
+    sections: [
+      { heading: "Exercise", body: "Walking, cycling and light strength training with bands or weights help keep muscles and bones strong. Start slowly, warm up, and ask your team which exercises suit you — especially if you have a dialysis access in your arm." },
+      { heading: "Protein", body: "If you are not on dialysis, a lower-protein diet is usually advised to reduce strain on the kidneys. If you are on dialysis, you often need more protein. Too little can cause malnutrition, so a kidney dietitian should set your amount." },
+      { heading: "Fluids", body: "Some people with kidney disease must limit fluids. Ask your team how much to drink before, during and after exercise." },
+      { heading: "Avoid without your team's OK", body: "Creatine, protein shakes and mass gainers, high-dose vitamins, herbal products and regular pain relievers such as ibuprofen or naproxen, which can harm kidneys." },
+    ],
+    caution: "Talk to your kidney doctor before starting any exercise program or supplement.",
+    sources: [S.nkfFit, S.niddkCkdDiet, S.urineProtein],
+  },
+  {
+    id: "protein-urine", category: "conditions", emoji: "🧫", verdict: "know",
+    title: "Will protein powder put protein in my urine?",
+    summary: "Healthy kidneys keep protein in the blood. Protein that keeps showing up in urine is a sign to check the kidneys — not something normal eating causes.",
+    sections: [
+      { heading: "Why protein appears in urine", body: "When kidney filters are damaged, protein (often albumin) leaks into urine. Diabetes, high blood pressure, heart disease and a family history of kidney disease raise the risk." },
+      { heading: "Short-term causes", body: "Hard exercise, dehydration, stress and some diets can raise urine protein for a short time. Avoid a hard workout before a urine test and tell your doctor if you trained the day before." },
+      { heading: "If you are over 50 and take protein", body: "If your kidneys are healthy, a sensible protein intake is not what causes protein in urine. If you have diabetes, high blood pressure or kidney disease, ask your doctor for a urine albumin test and how much protein is right for you." },
+      { heading: "See your doctor if", body: "Your urine is persistently foamy or bloody, or you have swelling of the feet, ankles or face." },
+    ],
+    caution: "One test result does not diagnose kidney disease — your doctor will repeat or add tests.",
+    sources: [S.urineProtein, S.niddkCkdDiet],
+  },
+  {
+    id: "prostate", category: "conditions", emoji: "🚹", verdict: "know",
+    title: "Prostate problems and exercise",
+    summary: "Staying active helps urinary symptoms of an enlarged prostate. A few simple changes make training more comfortable.",
+    sections: [
+      { heading: "What helps", body: "Regular exercise and keeping warm — cold and inactivity can make enlarged-prostate symptoms worse. Walking, strength training and swimming are all fine for most men." },
+      { heading: "Drinks and pre-workouts", body: "Caffeine and alcohol can worsen urgency, especially later in the day, and many pre-workouts are high in caffeine. Spread fluids through the day instead of drinking a lot at once, and avoid drinking within 2 hours of bed." },
+      { heading: "Cold and sinus medicines", body: "Decongestants and antihistamines can make urinating harder. Ask your pharmacist before using them." },
+      { heading: "Cycling", body: "Long rides put pressure on the area. Use a padded or split saddle, stand up on the pedals now and then, and tell your doctor about recent long rides before a PSA test — cycling and ejaculation can temporarily raise PSA." },
+      { heading: "Pelvic floor (Kegel) exercises", body: "These can help with urine leakage, including after prostate surgery. Ask your doctor or a pelvic-floor physical therapist to teach you the right technique." },
+      { heading: "Testosterone and steroids", body: "Men with prostate cancer or on prostate-cancer treatment must not use testosterone, 'boosters' or steroids unless their cancer doctor approves." },
+    ],
+    caution: "See your doctor if you have trouble passing urine, blood in urine, fever or pain — and get checked before assuming symptoms are 'just age'.",
+    sources: [S.bphSelfCare, S.kegel, S.psa],
+  },
+  {
+    id: "knee-pain", category: "conditions", emoji: "🦵", verdict: "know",
+    title: "Knee pain and knee arthritis",
+    summary: "Exercise is one of the best treatments for knee arthritis. Low-impact cardio and leg strengthening reduce pain and improve how you move.",
+    sections: [
+      { heading: "What helps", body: "Walking, stationary cycling, swimming and water exercise. Strong thigh and hip muscles take load off the knee: sit-to-stands from a chair, low step-ups, leg press in a comfortable range, glute bridges and side-lying leg raises." },
+      { heading: "Go easy on", body: "Jumping, running on hard surfaces, deep loaded squats and lunges that cause pain, and twisting on a planted foot." },
+      { heading: "A useful pain check", body: "Many physical therapists use this rule: mild discomfort that settles within 24 hours is usually acceptable; pain that is sharp, causes limping or is worse the next day means reduce the load." },
+      { heading: "Weight", body: "Each pound of body weight adds load to the knees with every step, so steady weight loss often eases knee pain." },
+    ],
+    caution: "A swollen, hot, locking or giving-way knee needs a doctor's check before you train it.",
+    sources: [S.cdcArthritis, S.cdcOlder],
+  },
+  {
+    id: "knee-replacement", category: "conditions", emoji: "🦿", verdict: "know",
+    title: "Knee replacement — before and after",
+    summary: "Before surgery, staying as strong and active as you comfortably can helps recovery. After surgery, your physical therapy plan comes first.",
+    sections: [
+      { heading: "Waiting for surgery", body: "Ask your surgeon about 'prehab': gentle strengthening for thighs and hips, a stationary bike and walking as tolerated. Stronger muscles before surgery usually make the first weeks easier." },
+      { heading: "After surgery", body: "Keep doing the exercises your physical therapist prescribes for at least 2 months. Walking is encouraged but does not replace them. Swelling can last 3–6 months." },
+      { heading: "Good long-term activities", body: "Walking, cycling, swimming (once the wound has healed and your doctor approves), golf and similar lower-impact activities." },
+      { heading: "Avoid", body: "High-impact activities such as jumping, jogging and skiing, and doing too much too soon. Keep your weight steady to protect the new joint." },
+    ],
+    caution: "Your surgeon and physical therapist decide when you may return to the gym, drive or play sports.",
+    sources: [S.kneeReplacement],
+  },
+  {
+    id: "slip-disc", category: "conditions", emoji: "🧍", verdict: "know",
+    title: "Slip disc and lower-back pain (L3, L4, L5)",
+    summary: "Most lower-back disc problems happen at the lowest levels of the spine and improve within a few months with movement and physical therapy.",
+    sections: [
+      { heading: "What it is", body: "A 'slip disc' is a herniated disc: the soft centre of a disc pushes out and can press on a nerve, causing back pain or pain down the leg (sciatica). The lowest discs (around L4–L5 and L5–S1) carry the most load and are affected most often." },
+      { heading: "Keep moving", body: "Limit bed rest to 1–2 days. Short walks, breaks from long sitting and slow, controlled movement help. Most people are symptom-free within 3–4 months." },
+      { heading: "In the gym", body: "A physical therapist can give you a core and back-strengthening program. Start with supported machines, bridges, bird-dogs and walking. Avoid heavy deadlifts, heavy squats with a bar on your back, sit-ups, twisting with weights and fast bending until your therapist clears you." },
+      { heading: "Lifting at home and work", body: "Bend your knees, keep the load close, and avoid twisting while lifting." },
+      { heading: "Emergency signs", body: "Loss of bladder or bowel control, numbness in the groin or inner thighs, or rapidly worsening leg weakness: go to the emergency room immediately." },
+    ],
+    caution: "Get a doctor's or physical therapist's assessment before training with back pain that spreads down the leg.",
+    sources: [S.lumbarDisc],
+  },
+  {
+    id: "cervical", category: "conditions", emoji: "🧑‍⚕️", verdict: "know",
+    title: "Neck problems (cervical spondylosis or disc)",
+    summary: "Physical therapy is usually the first treatment: exercises to ease pain and build neck strength and flexibility, plus posture work.",
+    sections: [
+      { heading: "What helps", body: "Gentle neck range-of-motion and strengthening exercises from a therapist (often 6–8 weeks), upper-back and shoulder-blade strengthening, and good posture at the desk and phone." },
+      { heading: "Avoid until cleared", body: "Heavy overhead pressing, heavy shrugs, behind-the-neck presses or pulldowns, headstands and neck bridges, and jerky or bouncing neck movements." },
+      { heading: "See a doctor promptly if", body: "You have clumsy hands (trouble buttoning or writing), loss of balance or falls, or weakness or numbness in the arms or legs that is getting worse — these can mean the spinal cord is being pressed." },
+    ],
+    caution: "Ask your doctor or physical therapist before lifting weights with neck pain that spreads to the arm.",
+    sources: [S.cervical],
+  },
+
   // ---------------- Beginner questions ----------------
   {
     id: "faq-supplements", category: "faq", emoji: "🛒", verdict: "know",
@@ -378,6 +554,25 @@ export const articles: Article[] = [
 
 export function articlesIn(category: LearnCategory) {
   return articles.filter((a) => a.category === category);
+}
+
+/** Topics matched to a profile's own health details, ages 50+ and movement limits. */
+export function topicsFor(p: { age: number; conditions: string[]; limits?: string[]; sex?: string }) {
+  const ids: string[] = [];
+  const add = (...x: string[]) => x.forEach((id) => !ids.includes(id) && ids.push(id));
+  if (p.age >= 50) add("muscle-loss-50", "start-50");
+  if (p.conditions.includes("heart")) add("heart-stent");
+  if (p.conditions.includes("hypertension")) add("blood-pressure");
+  if (p.conditions.includes("type1") || p.conditions.includes("type2")) add("diabetes-exercise", "protein-urine");
+  if (p.conditions.includes("kidney")) add("kidney-exercise", "protein-urine");
+  const l = p.limits || [];
+  if (l.includes("knee")) add("knee-pain");
+  if (l.includes("knee-replacement")) add("knee-replacement");
+  if (l.includes("lower-back")) add("slip-disc");
+  if (l.includes("neck")) add("cervical");
+  if (l.includes("prostate")) add("prostate");
+  if (p.age >= 50 && p.sex === "male") add("prostate");
+  return ids.map((id) => articles.find((a) => a.id === id)!).filter(Boolean);
 }
 
 export function searchArticles(query: string) {

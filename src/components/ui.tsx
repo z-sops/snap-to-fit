@@ -16,6 +16,7 @@ import {
   Modal,
   AccessibilityInfo,
   Image,
+  BackHandler,
 } from "react-native";
 import { router, usePathname } from "expo-router";
 import { useOptionalStore } from "../services/store";
@@ -24,6 +25,7 @@ import {
   isActive,
   mainTabs,
   menuSections,
+  normalizePath,
   type AppRoute,
 } from "./navigation";
 import { Ionicons } from "@expo/vector-icons";
@@ -47,14 +49,22 @@ export async function act(fn: () => Promise<unknown>) {
     notify(e instanceof Error ? e.message : "Something went wrong. Try again.");
   }
 }
+/** Screens without their own back step: main tabs and first-run onboarding. */
+const noBackBar = ["/", "/food", "/move", "/health", "/onboarding"];
+
 export function Screen({
   children,
   title,
   subtitle,
+  onBack,
+  backLabel,
 }: {
   children: React.ReactNode;
   title: string;
   subtitle?: string;
+  /** In-screen back step (e.g. topic → list). Also handles the Android back key. */
+  onBack?: () => void;
+  backLabel?: string;
 }) {
   const path = usePathname();
   const store = useOptionalStore();
@@ -67,6 +77,20 @@ export function Screen({
     setMenu(false);
     if (!isActive(path, href)) router.navigate(href);
   };
+  const showBack = !!onBack || (hasProfile && !noBackBar.includes(normalizePath(path)));
+  const back = () => {
+    if (onBack) return onBack();
+    if (router.canGoBack?.()) router.back();
+    else router.navigate("/");
+  };
+  useEffect(() => {
+    if (!onBack || Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      onBack();
+      return true;
+    });
+    return () => sub.remove();
+  }, [onBack]);
   return (
     <KeyboardAvoidingView
       style={s.root}
@@ -102,6 +126,20 @@ export function Screen({
             <View style={s.iconButton} />
           )}
         </View>
+        {showBack ? (
+          <View style={s.backBar}>
+            <Pressable
+              onPress={back}
+              accessibilityRole="button"
+              accessibilityLabel={backLabel || "Back"}
+              hitSlop={8}
+              style={s.backBtn}
+            >
+              <Ionicons name="chevron-back" size={20} color={colors.green} />
+              <Text style={s.backText}>{backLabel || "Back"}</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <ScrollView
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={s.content}
@@ -593,6 +631,9 @@ const s = StyleSheet.create({
   navLabel: { fontSize: 12, color: colors.muted, fontWeight: "600" },
   navLabelActive: { fontSize: 12, color: colors.green, fontWeight: "700" },
   iconButton: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBar: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 2, backgroundColor: colors.bg },
+  backBtn: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 2, paddingVertical: 6, paddingHorizontal: 8, borderRadius: 999, backgroundColor: colors.lime },
+  backText: { color: colors.green, fontSize: 15, fontWeight: "700" },
   notice: { padding: 12, borderRadius: 12, borderLeftWidth: 3, borderLeftColor: "#D89D36", backgroundColor: colors.amber, marginBottom: 18 },
   noticeMain: { color: colors.ink, fontSize: 12, lineHeight: 18, fontWeight: "600" },
   noticeSub: { color: colors.ink, fontSize: 11, lineHeight: 17, marginTop: 6 },

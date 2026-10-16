@@ -141,3 +141,9 @@ logged meal (no page errors). Not yet tested on the Pixel 6a.
 - `/education` is now **Gym Truth**: 5 card categories (Dangerous shortcuts, Supplements: the science, Your body, Fuel basics, Beginner questions), 30 topics, search, verdict pills (Avoid / Can help / Food first / Usually not worth it), doctor notice + sources on every topic. No brand names.
 - Content lives in `src/core/learn.ts` (NIH ODS, FDA, NIDA, ISSN sources). Reminder settings moved to `src/components/EducationReminders.tsx`.
 - Home tile and menu renamed to "Gym Truth" and shown at every age. JS-only change: no prebuild needed.
+
+## Progress 2026-10-16 — Health conditions & 50+, Back button everywhere
+- Gym Truth gains a "Health conditions & 50+" category (12 topics): muscle loss after 50 (sarcopenia), starting after 50, heart stent/bypass, blood pressure, diabetes, kidney disease, protein in urine, prostate, knee arthritis, knee replacement, slip disc L3–L5, neck/cervical. Each has red-flag signs and sources (CDC, AHA, NKF, NIDDK, MedlinePlus, AAOS, PROT-AGE).
+- Onboarding "injuries" step now has structured movement limits (knee, knee replacement, lower back, neck, shoulder, prostate) saved as `profile.limits`; they pause exercise intensity like other health details.
+- "For you" list on Gym Truth and "Exercise safety guides for you" card on Move, matched to age 50+, conditions and limits; `/education?topic=<id>` opens a topic.
+- Every non-tab screen shows a Back button under the header (router.back, or Home when there is no history). In-screen steps (topic → list → hub) use the same button and the Android back key.
