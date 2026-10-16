@@ -375,7 +375,7 @@ export const server = createServer(async (req, res) => {
       const text = await generate(
         [
           {
-            text: 'Estimate the entire visible meal, not per 100 g. Return only JSON {name,calories,protein,carbs,fat,fibre,uncertainty}. Grams for macros, kcal for energy. Explain portion uncertainty and hidden ingredients. If no identifiable food, return name="Unrecognized food", all numbers=0 and ask for manual entry. Never claim allergen or diabetes safety.',
+            text: 'Identify every food in the photo and estimate the portion of each in grams as served (cooked weight). Return only JSON {name,items:[{name,grams}],cookingFat,calories,protein,carbs,fat,fibre,uncertainty}. items: plain generic food names a US nutrition database would use (e.g. "white rice, cooked", "chicken breast, grilled", "naan"), one entry per food. cookingFat: visible or likely added oil/butter/ghee beyond the foods themselves, one of "none","tsp","tbsp","lots". Totals are for the entire visible meal in kcal and grams. uncertainty: one or two sentences on portion size and hidden ingredients (oil, sauces, sugar). If no identifiable food, return name="Unrecognized food", items=[], all numbers=0 and ask for manual entry. Never claim allergen or diabetes safety.',
           },
           { inlineData: { mimeType: "image/jpeg", data: body.image } },
         ],

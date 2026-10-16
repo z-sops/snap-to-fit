@@ -98,3 +98,31 @@ test("meal sections use saved slots, else time of day; micronutrient totals add 
   assert.equal(t.totals.sodium, 100);
   assert.equal(t.coverage, 0.5);
 });
+
+import { photoFood } from "../src/core/photo-estimate";
+test("photo estimate is priced from USDA when every AI item matches, AI totals otherwise", () => {
+  const f = photoFood({ name: "Chicken and rice", calories: 999, protein: 1, carbs: 1, fat: 1, fibre: 0, uncertainty: "x",
+    items: [{ name: "chicken breast, grilled", grams: 150 }, { name: "white rice, cooked", grams: 200 }] });
+  assert.equal(f.per100.calories, Math.round((150 * 1.51 + 200 * 1.3) * 10) / 10);
+  assert.equal(f.uncertainty, 0.2);
+  assert.equal(f.items![0].matched, "Chicken breast, grilled");
+  const g = photoFood({ name: "Mystery", calories: 450, protein: 20, carbs: 40, fat: 20, fibre: 3, uncertainty: "x", items: [{ name: "zzqx", grams: 100 }] });
+  assert.equal(g.per100.calories, 450);
+  assert.equal(g.uncertainty, 0.3);
+});
+
+import { streak, weekReport, achievements } from "../src/core/streaks";
+test("streak counts consecutive active days and survives until today's first log", () => {
+  const now = new Date("2026-10-20T15:00:00");
+  const day = (n: number) => { const d = new Date(now); d.setDate(d.getDate() - n); return d.toISOString(); };
+  const meal = (n: number, protein = 20) => ({ id: `m${n}`, at: day(n), name: "x", calories: 500, protein, carbs: 0, fat: 0, fibre: 0, source: "manual" as const });
+  const s = { ...emptyState, profile: { ...newProfile, name: "A", age: 30, height: 175, weight: 80, targetWeight: 80, consent: true }, meals: [meal(1), meal(2), meal(3), meal(5)] };
+  assert.deepEqual(streak(s, now), { current: 3, best: 3, loggedToday: false });
+  const withToday = { ...s, meals: [...s.meals, meal(0, 200)] };
+  assert.equal(streak(withToday, now).current, 4);
+  const r = weekReport(withToday, now);
+  assert.equal(r.daysLogged, 5);
+  assert.equal(r.proteinDays, 1);
+  assert.ok(r.highlights.some((h) => h.includes("4-day")));
+  assert.equal(achievements(withToday, now).find((a) => a.id === "streak-3")!.done, true);
+});

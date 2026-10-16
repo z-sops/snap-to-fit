@@ -52,7 +52,7 @@ function Root() {
 }
 const guardedScreens = [
   "food", "move", "health", "meal-plan", "metabolic", "journey", "medicines",
-  "cgm", "coach", "education", "music", "settings", "subscription",
+  "cgm", "coach", "education", "music", "settings", "subscription", "numbers", "report",
 ] as const;
 export default function Layout() {
   return (

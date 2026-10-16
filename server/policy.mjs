@@ -43,6 +43,14 @@ export function validatePhotoResult(r) {
       r[k] > (k === "calories" ? 5000 : 500)
     )
       throw new Error("Food values outside supported range.");
+  // Optional itemised breakdown so the app can price each item from USDA data.
+  const items = Array.isArray(r.items)
+    ? r.items
+        .filter((i) => i && typeof i.name === "string" && typeof i.grams === "number" && Number.isFinite(i.grams) && i.grams > 0 && i.grams <= 2000)
+        .slice(0, 12)
+        .map((i) => ({ name: i.name.slice(0, 120), grams: Math.round(i.grams) }))
+    : [];
+  const cookingFat = ["none", "tsp", "tbsp", "lots"].includes(r.cookingFat) ? r.cookingFat : "none";
   return {
     name: r.name,
     calories: r.calories,
@@ -51,5 +59,7 @@ export function validatePhotoResult(r) {
     fat: r.fat,
     fibre: r.fibre,
     uncertainty: r.uncertainty.slice(0, 1500),
+    items,
+    cookingFat,
   };
 }

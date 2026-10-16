@@ -18,17 +18,9 @@ import { bySlot, mealsOn, nutrientTotals, sumCalories } from "../core/food-log";
 import { nutrientInfo, type Food, type NutrientKey } from "../core/foods";
 import { uid, numeric, defaultSlot, mealSlotNames, type Meal, type MealSlotName } from "../core/model";
 import { proteinGuidance } from "../core/targets";
+import { photoFood, type PhotoResult } from "../core/photo-estimate";
 
 type Flow = null | "search" | "barcode" | "detail" | "quick";
-
-/** Photo estimate from the AI service, shaped like a food so it uses the same review sheet. */
-function photoFood(r: { name: string; calories: number; protein: number; carbs: number; fat: number; fibre: number }): Food {
-  return {
-    id: "photo", name: r.name, detail: "Estimated from your photo", group: "Photo", source: "usda",
-    per100: { calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat, fibre: r.fibre },
-    servings: [{ label: "Whole meal as photographed", grams: 100 }], uncertainty: 0.3,
-  };
-}
 
 export default function FoodScreen() {
   const { state, update } = useStore();
@@ -41,7 +33,7 @@ export default function FoodScreen() {
   const [flow, setFlow] = useState<Flow>(null);
   const [slot, setSlot] = useState<MealSlotName>(defaultSlot());
   const [food, setFood] = useState<Food | null>(null);
-  const [photo, setPhoto] = useState<{ uri: string; estimate: boolean; note?: string } | null>(null);
+  const [photo, setPhoto] = useState<{ uri: string; thumb?: string; estimate: boolean; note?: string; fat?: PhotoResult["cookingFat"] } | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [showMicros, setShowMicros] = useState(false);
@@ -77,18 +69,16 @@ export default function FoodScreen() {
         if (!img) return;
         if (!p.aiConsent || !process.env.EXPO_PUBLIC_API_URL) {
           setPhoto({
-            uri: img.uri, estimate: false,
+            uri: img.uri, thumb: img.thumb, estimate: false,
             note: !p.aiConsent
               ? "Photo added. Automatic calories need AI analysis, which is off. Turn it on in Settings, or find what you ate below."
               : "Photo added. AI meal analysis is not connected in this test build yet, so find what you ate below.",
           });
           return;
         }
-        const result = await api<{ name: string; calories: number; protein: number; carbs: number; fat: number; fibre: number; uncertainty: string }>(
-          "/food", { image: img.data, mimeType: img.mimeType },
-        );
+        const result = await api<PhotoResult>("/food", { image: img.data, mimeType: img.mimeType });
         validateMeal({ ...result, source: "photo" });
-        setPhoto({ uri: img.uri, estimate: true, note: result.uncertainty });
+        setPhoto({ uri: img.uri, thumb: img.thumb, estimate: true, note: result.uncertainty, fat: result.cookingFat });
         setFood(photoFood(result));
         setFlow("detail");
       } finally {
@@ -230,9 +220,10 @@ export default function FoodScreen() {
       <BarcodeScanner visible={flow === "barcode"} onClose={() => setFlow(null)}
         onFound={(f) => { setFood(f); setFlow("detail"); }} onSearchInstead={() => setFlow("search")} />
       <FoodDetail key={food?.id || "none"} food={food} visible={flow === "detail"} initialSlot={slot}
-        photo={food?.id === "photo"} photoUri={photo?.uri} note={food?.id === "photo" ? photo?.note : undefined}
+        photo={food?.id === "photo"} photoUri={photo?.uri} photoThumb={photo?.thumb} note={food?.id === "photo" ? photo?.note : undefined}
+        initialFat={food?.id === "photo" ? photo?.fat : undefined}
         review={review} onClose={() => setFlow(food?.id === "photo" ? null : "search")} onAdd={add} />
-      <QuickAdd visible={flow === "quick"} slot={slot} onClose={() => setFlow(null)} onAdd={add} photoUri={photo && !photo.estimate ? photo.uri : undefined} />
+      <QuickAdd visible={flow === "quick"} slot={slot} onClose={() => setFlow(null)} onAdd={add} photoUri={photo && !photo.estimate ? photo.thumb || photo.uri : undefined} />
     </Screen>
   );
 }

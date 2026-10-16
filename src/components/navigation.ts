@@ -19,7 +19,10 @@ export type AppRoute =
   | "/account"
   | "/subscription"
   | "/legal"
-  | "/onboarding";
+  | "/onboarding"
+  | "/numbers"
+  | "/report"
+  | "/exercises";
 
 export interface NavItem {
   href: AppRoute;
@@ -52,6 +55,8 @@ const profiledSections: NavSection[] = [
   {
     title: "Plan and track",
     items: [
+      { href: "/report", label: "Weekly report", icon: "bar-chart-outline" },
+      { href: "/numbers", label: "My numbers (BMR, TDEE, BMI)", icon: "calculator-outline" },
       { href: "/meal-plan", label: "Meal plan", icon: "calendar-outline" },
       { href: "/metabolic", label: "Tracker", icon: "stats-chart-outline" },
       { href: "/journey", label: "Journey", icon: "trending-up-outline" },

@@ -46,6 +46,8 @@ export interface Food {
   /** Typical estimate error, as a fraction (0.1 = ±10 %). */
   uncertainty: number;
   brand?: string;
+  /** Photo estimates: what the AI saw and how each item was priced. */
+  items?: { name: string; grams: number; matched?: string; calories?: number }[];
 }
 
 type Row = [number, string, string, number[], [number, string][]];

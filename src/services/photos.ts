@@ -23,9 +23,14 @@ export async function pickPhoto(camera: boolean) {
   );
   if (!image.base64)
     throw new Error("The selected photo could not be processed.");
+  // Small copy kept with log entries and avatars so saved data stays light.
+  const thumb = await manipulateAsync(result.assets[0].uri, [{ resize: { width: 160 } }], {
+    compress: 0.6, format: SaveFormat.JPEG, base64: true,
+  });
   return {
     data: image.base64,
     mimeType: "image/jpeg",
     uri: `data:image/jpeg;base64,${image.base64}`,
+    thumb: thumb.base64 ? `data:image/jpeg;base64,${thumb.base64}` : undefined,
   };
 }

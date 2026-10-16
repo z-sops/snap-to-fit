@@ -35,16 +35,16 @@ export function mealFromFood(food: Food, grams: number, servings: number, servin
   };
 }
 
-export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUri, photo, note, review }: {
+export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUri, photoThumb, photo, note, review, initialFat }: {
   food: Food | null; visible: boolean; onClose: () => void; onAdd: (meal: NewMeal) => void;
-  initialSlot: MealSlotName; photoUri?: string; photo?: boolean; note?: string;
+  initialSlot: MealSlotName; photoUri?: string; photoThumb?: string; photo?: boolean; note?: string; initialFat?: AddedFat;
   /** Diet, allergy or medical concerns that must be acknowledged before adding. */
   review?: (meal: NewMeal) => { messages: string[]; alternative: string } | null;
 }) {
   const [ack, setAck] = useState(false);
   const [servingIndex, setServingIndex] = useState(0);
   const [qty, setQty] = useState(1);
-  const [fat, setFat] = useState<AddedFat>("none");
+  const [fat, setFat] = useState<AddedFat>(initialFat || "none");
   const [slot, setSlot] = useState<MealSlotName>(initialSlot);
   const [showMicros, setShowMicros] = useState(false);
   const serving = food?.servings[Math.min(servingIndex, (food?.servings.length || 1) - 1)];
@@ -59,7 +59,7 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
   const slotLabel = mealSlotNames.find((s) => s.id === slot)!.label;
   return (
     <Sheet visible={visible} title={photo ? "Review your meal" : "Add food"} onClose={onClose} closeLabel="Back"
-      footer={<PrimaryButton title={`Add to ${slotLabel}`} icon="add-circle" disabled={blocked} onPress={() => onAdd({ ...meal, photoUri })} />}>
+      footer={<PrimaryButton title={`Add to ${slotLabel}`} icon="add-circle" disabled={blocked} onPress={() => onAdd({ ...meal, photoUri: photoThumb || photoUri })} />}>
       {photoUri ? <Image source={{ uri: photoUri }} style={s.photo} resizeMode="cover" accessibilityLabel="Your meal photo" /> : null}
       <Surface>
         <Pill label={badge.label} icon={badge.icon} color={badge.color} bg={badge.bg} />
@@ -95,6 +95,22 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
             <Ionicons name={ack ? "checkbox" : "square-outline"} size={24} color={palette.ink} />
             <Text style={[s.concern, { flex: 1 }]}>I reviewed the concerns and ingredients. This does not certify food safety; I can still record what I actually ate.</Text>
           </Pressable>
+        </Surface>
+      ) : null}
+
+      {food.items?.length ? (
+        <Surface>
+          <Text style={s.h}>What we found</Text>
+          {food.items.map((i) => (
+            <View key={`${i.name}-${i.grams}`} style={s.itemRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.itemName}>{i.name} · {i.grams} g</Text>
+                {i.matched ? <Text style={s.note}>USDA: {i.matched}</Text> : <Text style={s.note}>No database match — AI estimate used</Text>}
+              </View>
+              <Text style={s.itemName}>{i.calories !== undefined ? `${i.calories} kcal` : "—"}</Text>
+            </View>
+          ))}
+          <Text style={s.note}>Wrong item or portion? Go back and search the food instead — database entries are more accurate than any photo.</Text>
         </Surface>
       ) : null}
 
@@ -171,6 +187,8 @@ const s = StyleSheet.create({
   qtyLabel: { color: palette.ink, fontSize: 16, fontWeight: "700" },
   note: { color: palette.muted, fontSize: 13, lineHeight: 18 },
   concern: { color: "#6B4300", fontSize: 14, lineHeight: 20 },
+  itemRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4, borderTopWidth: 1, borderColor: "#F0F2F7" },
+  itemName: { color: palette.ink, fontSize: 15, fontWeight: "700" },
   ackRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
   microHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   microRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4 },

@@ -1,8 +1,13 @@
 import React, { useState } from "react";
+import { Avatar, AvatarPicker } from "../components/Avatar";
+import { WeekBars } from "../components/charts";
+import { pickPhoto } from "../services/photos";
+import { streak, weekReport, proteinTarget } from "../core/streaks";
+import { bodyNumbers, adaptiveTdee } from "../core/targets";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Screen } from "../components/ui";
+import { Screen, act } from "../components/ui";
 import { ProgressRing, theme } from "../components/onboarding-ui";
 import { useStore } from "../services/store";
 import { effectiveProfile } from "../core/progress";
@@ -14,10 +19,21 @@ import type { AppRoute } from "../components/navigation";
 type Tile = { href: AppRoute; title: string; detail: string; icon: keyof typeof Ionicons.glyphMap; tint: string };
 
 export default function Today() {
-  const { state } = useStore();
+  const { state, update } = useStore();
   const p = effectiveProfile(state);
   const [day, setDay] = useState(() => localDay());
+  const [picker, setPicker] = useState(false);
   if (!p) return null;
+  const st = streak(state);
+  const report = weekReport(state);
+  const pTarget = proteinTarget(state);
+  const numbers = bodyNumbers(p);
+  const adaptive = adaptiveTdee(state);
+  const saveAvatar = (avatar: NonNullable<typeof p.avatar>) =>
+    act(async () => {
+      await update((s) => ({ ...s, profile: s.profile ? { ...s.profile, avatar } : null }));
+      setPicker(false);
+    });
   const targets = nutritionTargets(p);
   const selected = new Date(`${day}T12:00:00`);
   const totals = todayTotals(state.meals, selected);
@@ -30,20 +46,34 @@ export default function Today() {
     .slice(0, 3);
   const left = Math.round(targets.calories - totals.calories);
 
-  const tiles: Tile[] = [
+  const featured: Tile[] = [
+    { href: "/medicines", title: "GLP-1 companion", detail: p.glp1 ? `${p.glp1.split(" (")[0]} · shots, side effects, protein` : "Ozempic, Wegovy, Mounjaro, Zepbound", icon: "medkit", tint: "#F3EDFF" },
+    { href: "/education", title: "Gym Truth", detail: "Supplements, steroids, soreness — the science", icon: "school", tint: "#EAF7EF" },
+    { href: "/coach", title: "AI Coach", detail: "Ask about food and moving", icon: "chatbubbles", tint: "#E9F6FF" },
+  ];
+  const more: Tile[] = [
     { href: "/meal-plan", title: "Meal plan", detail: "Your week of meals", icon: "calendar", tint: "#FFF1E6" },
-    { href: "/metabolic", title: "Tracker", detail: "Meal and routine times", icon: "time", tint: "#EAF7EF" },
     { href: "/journey", title: "Journey", detail: "Weight and photos", icon: "trending-up", tint: "#EEF2FF" },
     { href: "/health", title: "Health & watch", detail: "Steps, weight, readings", icon: "pulse", tint: "#FDEBEC" },
-    { href: "/medicines", title: "GLP-1 companion", detail: p.glp1 ? `${p.glp1.split(" (")[0]} · shots and reminders` : "Ozempic, Wegovy, Mounjaro, Zepbound", icon: "medkit", tint: "#F3EDFF" },
-    { href: "/coach", title: "Coach", detail: "Ask about food and moving", icon: "chatbubbles", tint: "#E9F6FF" },
+    { href: "/metabolic", title: "Tracker", detail: "Meal and routine times", icon: "time", tint: "#EAF7EF" },
     { href: "/gyms", title: "Gyms", detail: "Find one nearby", icon: "location", tint: "#FFF8DD" },
     { href: "/music", title: "Music", detail: "Your workout songs", icon: "musical-notes", tint: "#F0F4F8" },
-    { href: "/education", title: "Gym Truth", detail: "Supplements, steroids, soreness — the science", icon: "school", tint: "#EAF7EF" },
   ];
+
 
   return (
     <Screen title={`Hi, ${p.name} 👋`} subtitle={dateLine(selected, isToday)}>
+      <View style={s.topRow}>
+        <Avatar profile={p} size={52} onPress={() => setPicker(true)} />
+        <View style={{ flex: 1 }}>
+          <Text style={s.topTitle}>{st.loggedToday ? "Nice — you’re on track today" : st.current ? "Keep your streak alive" : "Let’s start your streak"}</Text>
+          <Text style={s.topText}>{st.loggedToday ? "Every log makes your estimates smarter." : "Log one meal to count today."}</Text>
+        </View>
+        <View style={s.streak} accessibilityLabel={`${st.current} day streak`}>
+          <Text style={s.streakNum}>🔥 {st.current}</Text>
+          <Text style={s.streakLabel}>day streak</Text>
+        </View>
+      </View>
       <WeekStrip selected={day} onSelect={setDay} meals={state.meals} />
 
       <View style={s.hero} accessibilityRole="summary">
@@ -77,14 +107,22 @@ export default function Today() {
         </View>
       </View>
 
-      <Pressable onPress={() => router.navigate({ pathname: "/food", params: { snap: String(Date.now()) } })} accessibilityRole="button" accessibilityLabel="Snap your meal now" style={s.snap}>
-        <View style={s.snapIcon}><Ionicons name="camera" size={30} color="white" /></View>
-        <View style={{ flex: 1 }}>
-          <Text style={s.snapTitle}>Snap your meal</Text>
-          <Text style={s.snapText}>Take a photo and check calories and macros in seconds.</Text>
+      {isToday && pTarget > 0 && totals.protein >= pTarget ? (
+        <View style={s.win} accessibilityRole="alert">
+          <Text style={s.winEmoji}>🎉</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={s.winTitle}>Protein goal reached!</Text>
+            <Text style={s.winText}>{Math.round(totals.protein)} g today — that’s how you keep muscle while you get lean.</Text>
+          </View>
         </View>
-        <Ionicons name="chevron-forward" size={22} color="white" />
-      </Pressable>
+      ) : null}
+
+      <View style={s.quickRow}>
+        <QuickAction icon="camera" label="Snap" tint={theme.brand} dark onPress={() => router.navigate({ pathname: "/food", params: { snap: String(Date.now()) } })} a11y="Snap your meal now" />
+        <QuickAction icon="barcode-outline" label="Barcode" tint="#E7F6EE" onPress={() => router.navigate("/food")} a11y="Scan a barcode" />
+        <QuickAction icon="search" label="Search" tint="#FFF4DE" onPress={() => router.navigate("/food")} a11y="Search foods" />
+        <QuickAction icon="barbell" label="Workout" tint="#EEF2FF" onPress={() => router.navigate("/move")} a11y="Start a workout" />
+      </View>
 
       <Pressable onPress={() => router.navigate("/move")} accessibilityRole="button" accessibilityLabel="Today's workout" style={s.card}>
         <View style={[s.tileIcon, { backgroundColor: "#EEF2FF" }]}><Ionicons name="barbell" size={22} color={theme.brand} /></View>
@@ -102,6 +140,25 @@ export default function Today() {
         <Ionicons name="chevron-forward" size={20} color={theme.muted} />
       </Pressable>
 
+      <Pressable onPress={() => router.navigate("/report")} accessibilityRole="button" accessibilityLabel="Open weekly report" style={s.reportCard}>
+        <View style={s.reportHead}>
+          <View style={{ flex: 1 }}>
+            <Text style={s.cardKicker}>This week</Text>
+            <Text style={s.cardTitle}>{report.daysLogged ? `${report.avgCalories.toLocaleString()} kcal · ${report.avgProtein} g protein avg` : "Your weekly report starts today"}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.muted} />
+        </View>
+        <WeekBars values={report.days.map((d) => d.calories)} labels={report.days.map((d) => d.label)} target={report.calorieTarget} />
+        <Text style={s.cardText}>{report.highlights[0] || "Log meals for a few days to see your trends."}</Text>
+      </Pressable>
+
+      <Pressable onPress={() => router.navigate("/numbers")} accessibilityRole="button" accessibilityLabel="Open my numbers" style={s.numbers}>
+        <Num label="BMR" value={numbers.bmr.toLocaleString()} unit="kcal" />
+        <Num label={adaptive ? "TDEE (adaptive)" : "TDEE"} value={(adaptive?.tdee || numbers.tdee).toLocaleString()} unit="kcal" />
+        <Num label="BMI" value={String(numbers.bmi)} />
+        <Ionicons name="chevron-forward" size={18} color={theme.muted} />
+      </Pressable>
+
       <View style={s.sectionHead}>
         <Text style={s.section}>{isToday ? "Recently logged" : "Logged this day"}</Text>
         <Pressable onPress={() => router.navigate("/food")} accessibilityRole="button"><Text style={s.link}>Add food</Text></Pressable>
@@ -112,16 +169,32 @@ export default function Today() {
         </View>
       )}
 
-      <Text style={[s.section, { marginTop: 10 }]}>Explore</Text>
+      <Text style={[s.section, { marginTop: 10 }]}>For you</Text>
+      {featured.map((f) => (
+        <Pressable key={f.href} onPress={() => router.navigate(f.href)} accessibilityRole="button" accessibilityLabel={f.title} style={s.card}>
+          <View style={[s.tileIcon, { backgroundColor: f.tint }]}><Ionicons name={f.icon} size={22} color={theme.ink} /></View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.cardTitle}>{f.title}</Text>
+            <Text style={s.cardText}>{f.detail}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.muted} />
+        </Pressable>
+      ))}
+      <Text style={[s.section, { marginTop: 10 }]}>More</Text>
       <View style={s.grid}>
-        {tiles.map((t) => (
+        {more.map((t) => (
           <Pressable key={t.href} onPress={() => router.navigate(t.href)} accessibilityRole="button" accessibilityLabel={t.title} style={s.tile}>
-            <View style={[s.tileIcon, { backgroundColor: t.tint }]}><Ionicons name={t.icon} size={22} color={theme.ink} /></View>
+            <View style={[s.tileIconSm, { backgroundColor: t.tint }]}><Ionicons name={t.icon} size={18} color={theme.ink} /></View>
             <Text style={s.tileTitle}>{t.title}</Text>
             <Text style={s.tileText}>{t.detail}</Text>
           </Pressable>
         ))}
       </View>
+      <AvatarPicker visible={picker} profile={p} onClose={() => setPicker(false)} onSave={(a) => saveAvatar(a || {})}
+        onPickPhoto={() => act(async () => {
+          const img = await pickPhoto(false);
+          if (img) await saveAvatar({ photoUri: img.thumb || img.uri });
+        })} />
     </Screen>
   );
 }
@@ -156,6 +229,24 @@ function WeekStrip({ selected, onSelect, meals }: { selected: string; onSelect: 
           </Pressable>
         );
       })}
+    </View>
+  );
+}
+
+function QuickAction({ icon, label, tint, onPress, a11y, dark }: { icon: keyof typeof Ionicons.glyphMap; label: string; tint: string; onPress: () => void; a11y: string; dark?: boolean }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={a11y} style={[s.quick, dark && { backgroundColor: theme.ink, borderColor: theme.ink }]}>
+      <View style={[s.quickIcon, { backgroundColor: tint }]}><Ionicons name={icon} size={22} color={dark ? "white" : theme.ink} /></View>
+      <Text style={[s.quickText, dark && { color: "white" }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function Num({ label, value, unit }: { label: string; value: string; unit?: string }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={s.statLabel}>{label}</Text>
+      <Text style={s.numValue}>{value}{unit ? <Text style={s.numUnit}> {unit}</Text> : null}</Text>
     </View>
   );
 }
@@ -213,6 +304,26 @@ function Chip({ text, color }: { text: string; color: string }) {
 }
 
 const s = StyleSheet.create({
+  topRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 },
+  topTitle: { fontSize: 15, fontWeight: "800", color: theme.ink },
+  topText: { fontSize: 12, color: theme.muted, marginTop: 2 },
+  streak: { alignItems: "center", backgroundColor: "#FFF4DE", borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
+  streakNum: { fontSize: 17, fontWeight: "900", color: "#9A5B00" },
+  streakLabel: { fontSize: 10, fontWeight: "700", color: "#9A5B00" },
+  win: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#E7F6EE", borderRadius: 22, padding: 16, marginBottom: 14 },
+  winEmoji: { fontSize: 30 },
+  winTitle: { fontSize: 16, fontWeight: "800", color: "#1E7A47" },
+  winText: { fontSize: 13, color: "#1E7A47", marginTop: 2, lineHeight: 18 },
+  quickRow: { flexDirection: "row", gap: 10, marginBottom: 14 },
+  quick: { flex: 1, alignItems: "center", gap: 8, backgroundColor: "white", borderRadius: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.line },
+  quickIcon: { width: 46, height: 46, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  quickText: { fontSize: 13, fontWeight: "800", color: theme.ink },
+  reportCard: { backgroundColor: "white", borderRadius: 24, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line, gap: 10 },
+  reportHead: { flexDirection: "row", alignItems: "center" },
+  numbers: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "white", borderRadius: 22, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line },
+  numValue: { fontSize: 18, fontWeight: "800", color: theme.ink, marginTop: 2 },
+  numUnit: { fontSize: 11, color: theme.muted, fontWeight: "700" },
+  tileIconSm: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   week: { flexDirection: "row", justifyContent: "space-between", marginBottom: 14 },
   day: { width: 42, paddingVertical: 8, borderRadius: 16, alignItems: "center", backgroundColor: "white" },
   dayOn: { width: 42, paddingVertical: 8, borderRadius: 16, alignItems: "center", backgroundColor: theme.brand },
@@ -253,8 +364,8 @@ const s = StyleSheet.create({
   chip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   chipText: { fontSize: 11, fontWeight: "800" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  tile: { width: "47.5%", flexGrow: 1, backgroundColor: "white", borderRadius: 22, padding: 16, borderWidth: 1, borderColor: theme.line, minHeight: 128 },
+  tile: { width: "30%", flexGrow: 1, backgroundColor: "white", borderRadius: 20, padding: 12, borderWidth: 1, borderColor: theme.line, minHeight: 112 },
   tileIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  tileTitle: { fontSize: 16, fontWeight: "800", color: theme.ink, marginTop: 12 },
+  tileTitle: { fontSize: 14, fontWeight: "800", color: theme.ink, marginTop: 10 },
   tileText: { fontSize: 12, lineHeight: 17, color: theme.muted, marginTop: 3 },
 });

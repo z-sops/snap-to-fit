@@ -23,6 +23,8 @@ export type Condition =
 export interface Profile {
   /** Display/input units; values are always stored in kg and cm. */
   units?: "imperial" | "metric";
+  /** Profile picture: an emoji avatar on a colour, or a local photo. */
+  avatar?: { emoji?: string; color?: string; photoUri?: string };
   /** GLP-1 medication named by the user from their prescription (record only). */
   glp1?: string;
   cuisine?: CuisinePreference;
@@ -261,6 +263,11 @@ export function validateProfile(p: Profile) {
     p.conditions.some((c) => !conditions.includes(c))
   )
     throw new Error("Invalid health context.");
+  if (p.avatar !== undefined && (typeof p.avatar !== "object" || p.avatar === null ||
+      (p.avatar.emoji !== undefined && (typeof p.avatar.emoji !== "string" || p.avatar.emoji.length > 16)) ||
+      (p.avatar.color !== undefined && !/^#[0-9A-Fa-f]{6}$/.test(p.avatar.color)) ||
+      (p.avatar.photoUri !== undefined && (typeof p.avatar.photoUri !== "string" || p.avatar.photoUri.length > 4096))))
+    throw new Error("Invalid avatar.");
   if (p.limits !== undefined && (!Array.isArray(p.limits) || p.limits.some((l) => !movementLimits.includes(l))))
     throw new Error("Invalid movement limits.");
   for (const name of ["medicines", "allergies", "diet", "injuries"] as const)
