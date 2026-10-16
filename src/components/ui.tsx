@@ -204,12 +204,19 @@ function NavTab({ item, selected, onPress }: { item: (typeof mainTabs)[number]; 
     </Pressable>
   );
 }
+/** Compact doctor notice on every screen: one line, tap to read the full text. */
 function SafetyNotice() {
+  const [open, setOpen] = useState(false);
   return (
-    <View accessibilityRole="summary" style={s.notice}>
-      <Text style={s.noticeMain}>{doctorNotice}</Text>
-      <Text style={s.noticeSub}>{steroidNotice}</Text>
-    </View>
+    <Pressable accessibilityRole="button" aria-expanded={open} accessibilityLabel={open ? "Hide safety notice" : "Show safety notice"}
+      onPress={() => setOpen(!open)} style={[s.notice, !open && s.noticeCompact]}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <Ionicons name="information-circle-outline" size={18} color="#9A5B00" />
+        <Text style={[s.noticeMain, { flex: 1 }]} numberOfLines={open ? undefined : 1}>{doctorNotice}</Text>
+        <Ionicons name={open ? "chevron-up" : "chevron-down"} size={16} color="#9A5B00" />
+      </View>
+      {open ? <Text style={s.noticeSub}>{steroidNotice}</Text> : null}
+    </Pressable>
   );
 }
 const MENU_WIDTH = 300;
@@ -634,7 +641,8 @@ const s = StyleSheet.create({
   backBar: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 2, backgroundColor: colors.bg },
   backBtn: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 2, paddingVertical: 6, paddingHorizontal: 8, borderRadius: 999, backgroundColor: colors.lime },
   backText: { color: colors.green, fontSize: 15, fontWeight: "700" },
-  notice: { padding: 12, borderRadius: 12, borderLeftWidth: 3, borderLeftColor: "#D89D36", backgroundColor: colors.amber, marginBottom: 18 },
+  notice: { padding: 12, borderRadius: 14, backgroundColor: colors.amber, marginBottom: 16 },
+  noticeCompact: { paddingVertical: 8 },
   noticeMain: { color: colors.ink, fontSize: 12, lineHeight: 18, fontWeight: "600" },
   noticeSub: { color: colors.ink, fontSize: 11, lineHeight: 17, marginTop: 6 },
   menuRoot: { flex: 1, flexDirection: "row" },

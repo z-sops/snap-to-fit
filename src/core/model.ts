@@ -74,7 +74,37 @@ export interface Meal {
   carbs: number;
   fat: number;
   fibre: number;
-  source: "manual" | "photo";
+  source: "manual" | "photo" | "database" | "barcode" | "quick";
+  /** Meal section; older entries without one are grouped by time of day. */
+  slot?: MealSlotName;
+  /** Database or barcode reference (usda:123, recipe:dal, off:0123456789). */
+  foodId?: string;
+  grams?: number;
+  servingLabel?: string;
+  servings?: number;
+  /** Honest calorie range [low, high] for estimates. */
+  range?: [number, number];
+  addedFat?: "none" | "tsp" | "tbsp" | "lots";
+  /** Micronutrients for the logged amount (keys from core/foods nutrientKeys). */
+  micros?: Record<string, number>;
+  photoUri?: string;
+}
+export type MealSlotName = "breakfast" | "lunch" | "dinner" | "snack";
+export const mealSlotNames: { id: MealSlotName; label: string; emoji: string }[] = [
+  { id: "breakfast", label: "Breakfast", emoji: "🍳" },
+  { id: "lunch", label: "Lunch", emoji: "🥗" },
+  { id: "dinner", label: "Dinner", emoji: "🍽️" },
+  { id: "snack", label: "Snacks", emoji: "🍎" },
+];
+/** Section for a meal: its saved slot, or a time-of-day guess for older entries. */
+export function mealSlotOf(m: Pick<Meal, "slot" | "at">): MealSlotName {
+  if (m.slot) return m.slot;
+  const h = new Date(m.at).getHours();
+  return h < 11 ? "breakfast" : h < 16 ? "lunch" : h < 21 ? "dinner" : "snack";
+}
+export function defaultSlot(date = new Date()): MealSlotName {
+  const h = date.getHours();
+  return h < 11 ? "breakfast" : h < 15 ? "lunch" : h >= 17 && h < 22 ? "dinner" : "snack";
 }
 export interface Reading {
   id: string;

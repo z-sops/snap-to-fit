@@ -1,94 +1,107 @@
-import { foodReview } from "../core/food-review";
-import { router, useLocalSearchParams } from "expo-router";
-import { effectiveProfile } from "../core/progress";
 import React, { useEffect, useRef, useState } from "react";
-import { Image } from "react-native";
-import {
-  Screen,
-  Card,
-  Check,
-  H,
-  P,
-  Field,
-  Button,
-  Row,
-  Metric,
-  act,
-} from "../components/ui";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { Screen, act } from "../components/ui";
+import { Surface, SectionHeader, Bar, Sheet, PrimaryButton, Chip, palette } from "../components/design";
+import { FoodSearch } from "../components/food/FoodSearch";
+import { FoodDetail, type NewMeal } from "../components/food/FoodDetail";
+import { BarcodeScanner } from "../components/food/BarcodeScanner";
 import { useStore } from "../services/store";
 import { api } from "../services/api";
 import { pickPhoto } from "../services/photos";
-import { todayTotals, nutritionTargets, validateMeal } from "../core/nutrition";
-import { uid, localDay, numeric, type Meal } from "../core/model";
-export default function Food() {
+import { haptic } from "../services/feedback";
+import { foodReview } from "../core/food-review";
+import { effectiveProfile } from "../core/progress";
+import { nutritionTargets, validateMeal } from "../core/nutrition";
+import { bySlot, mealsOn, nutrientTotals, sumCalories } from "../core/food-log";
+import { nutrientInfo, type Food, type NutrientKey } from "../core/foods";
+import { uid, numeric, defaultSlot, mealSlotNames, type Meal, type MealSlotName } from "../core/model";
+import { proteinGuidance } from "../core/targets";
+
+type Flow = null | "search" | "barcode" | "detail" | "quick";
+
+/** Photo estimate from the AI service, shaped like a food so it uses the same review sheet. */
+function photoFood(r: { name: string; calories: number; protein: number; carbs: number; fat: number; fibre: number }): Food {
+  return {
+    id: "photo", name: r.name, detail: "Estimated from your photo", group: "Photo", source: "usda",
+    per100: { calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat, fibre: r.fibre },
+    servings: [{ label: "Whole meal as photographed", grams: 100 }], uncertainty: 0.3,
+  };
+}
+
+export default function FoodScreen() {
   const { state, update } = useStore();
   const p = effectiveProfile(state)!;
   const targets = nutritionTargets(p);
-  const total = todayTotals(state.meals);
-  const [name, setName] = useState("");
-  const [values, setValues] = useState({
-    calories: "",
-    protein: "",
-    carbs: "",
-    fat: "",
-    fibre: "",
-  });
-  const [photo, setPhoto] = useState("");
+  const protein = proteinGuidance(p);
+  const today = mealsOn(state.meals);
+  const sections = bySlot(today);
+  const { totals } = nutrientTotals(today);
+  const [flow, setFlow] = useState<Flow>(null);
+  const [slot, setSlot] = useState<MealSlotName>(defaultSlot());
+  const [food, setFood] = useState<Food | null>(null);
+  const [photo, setPhoto] = useState<{ uri: string; estimate: boolean; note?: string } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [source, setSource] = useState<Meal["source"]>("manual");
-  const [note, setNote] = useState("");
-  const [reviewed, setReviewed] = useState(false);
-  const review =
-    source === "photo"
-      ? foodReview(
-          p,
-          { name, carbs: Number(values.carbs) || 0 },
-          state.carePlan?.acknowledged ? state.carePlan.targets : undefined,
-          total.carbs,
-        )
-      : null;
-  // The camera opens first, whatever the AI settings: the photo is kept with the
-  // entry and AI analysis runs only when consented and the online service exists.
+  const [notice, setNotice] = useState("");
+  const [showMicros, setShowMicros] = useState(false);
+
+  const add = (meal: NewMeal) =>
+    act(async () => {
+      validateMeal(meal);
+      await update((s) => ({ ...s, meals: [...s.meals, { ...meal, id: uid(), at: new Date().toISOString() } as Meal] }));
+      haptic("success");
+      setFlow(null);
+      setFood(null);
+      setPhoto(null);
+      setNotice(`Added ${meal.name} · ${meal.calories} kcal`);
+    });
+
+  const review = (meal: NewMeal) => {
+    const r = foodReview(p, { name: meal.name, carbs: meal.carbs }, state.carePlan?.acknowledged ? state.carePlan.targets : undefined, totals.carbs || 0);
+    return r.requiresReview ? r : null;
+  };
+
+  const open = (s: MealSlotName, f: Flow) => {
+    setSlot(s);
+    setFlow(f);
+  };
+
+  // The camera opens first, whatever the AI settings: the photo is kept with the entry and
+  // AI analysis runs only when consented and the online service exists.
   const scan = (camera: boolean) =>
     act(async () => {
       setBusy(true);
       try {
         const img = await pickPhoto(camera);
         if (!img) return;
-        setPhoto(img.uri);
-        setSource("photo");
-        setReviewed(false);
-        if (!p.aiConsent) {
-          setNote("Photo added. Automatic calories need AI analysis, which is off. Turn it on in Settings, or enter the values below.");
+        if (!p.aiConsent || !process.env.EXPO_PUBLIC_API_URL) {
+          setPhoto({
+            uri: img.uri, estimate: false,
+            note: !p.aiConsent
+              ? "Photo added. Automatic calories need AI analysis, which is off. Turn it on in Settings, or find what you ate below."
+              : "Photo added. AI meal analysis is not connected in this test build yet, so find what you ate below.",
+          });
           return;
         }
-        if (!process.env.EXPO_PUBLIC_API_URL) {
-          setNote("Photo added. AI meal analysis is not connected in this test build yet, so enter the values below for now.");
-          return;
-        }
-        const result = await api<{
-          name: string;
-          calories: number;
-          protein: number;
-          carbs: number;
-          fat: number;
-          fibre: number;
-          uncertainty: string;
-        }>("/food", { image: img.data, mimeType: img.mimeType });
+        const result = await api<{ name: string; calories: number; protein: number; carbs: number; fat: number; fibre: number; uncertainty: string }>(
+          "/food", { image: img.data, mimeType: img.mimeType },
+        );
         validateMeal({ ...result, source: "photo" });
-        setName(result.name);
-        setValues({
-          calories: String(result.calories),
-          protein: String(result.protein),
-          carbs: String(result.carbs),
-          fat: String(result.fat),
-          fibre: String(result.fibre),
-        });
-        setNote(result.uncertainty);
+        setPhoto({ uri: img.uri, estimate: true, note: result.uncertainty });
+        setFood(photoFood(result));
+        setFlow("detail");
       } finally {
         setBusy(false);
       }
     });
+
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(""), 3500);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
   // The centre Snap button opens /food?snap=<timestamp>; each tap opens the camera once.
   const { snap } = useLocalSearchParams<{ snap?: string }>();
   const handledSnap = useRef<string | undefined>(undefined);
@@ -97,185 +110,216 @@ export default function Food() {
     handledSnap.current = snap;
     scan(true);
   }, [snap]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const eaten = Math.round(totals.calories || 0);
+  const left = targets.restricted ? null : targets.calories - eaten;
+  const micros: NutrientKey[] = ["fibre", "sodium", "satFat", "sugar", "potassium", "calcium", "iron", "magnesium", "vitaminC", "vitaminD", "vitaminB12", "folate"];
+
   return (
-    <Screen
-      title="Fuel your day."
-      subtitle="Snap a meal. Check the portions. Make it count."
-    >
-      <Card tint>
-        <Row>
-          <Metric
-            label="Calories logged"
-            value={Math.round(total.calories)}
-            unit="kcal"
-          />
-          <Metric
-            label="Protein logged"
-            value={Math.round(total.protein)}
-            unit="g"
-          />
-        </Row>
-        {!targets.restricted ? (
-          <P>
-            Estimated daily targets: {targets.calories} kcal · {targets.protein}{" "}
-            g protein · {targets.carbs} g carbs · {targets.fat} g fat ·{" "}
-            {targets.fibre} g fibre.
-          </P>
-        ) : (
-          <P>Automatic targets are paused for your medical context.</P>
-        )}
-      </Card>
-      <Button
-        secondary
-        title="My local weekly meal plan"
-        onPress={() => router.push("/meal-plan")}
-      />
-      <Card>
-        <H>Food photo</H>
-        <P>
-          Only the selected food photo is sent for AI analysis. Portions and
-          hidden ingredients are uncertain; review the result before saving.
-        </P>
-        <Row>
-          <Button
-            disabled={busy}
-            title={busy ? "Analyzing…" : "Take a snap"}
-            onPress={() => scan(true)}
-          />
-          <Button
-            secondary
-            disabled={busy}
-            title="Choose photo"
-            onPress={() => scan(false)}
-          />
-        </Row>
-        {photo ? (
-          <Image
-            source={{ uri: photo }}
-            style={{ height: 180, borderRadius: 16, marginTop: 16 }}
-            resizeMode="cover"
-          />
+    <Screen title="Food" subtitle={new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}>
+      <Surface dark>
+        <View style={s.sumRow}>
+          <View>
+            <Text style={s.sumLabel}>Eaten today</Text>
+            <Text style={s.sumBig}>{eaten.toLocaleString()} <Text style={s.sumUnit}>kcal</Text></Text>
+          </View>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={s.sumLabel}>{left === null ? "Calorie target" : left >= 0 ? "Left" : "Over"}</Text>
+            <Text style={s.sumMid}>{left === null ? "Set by your care team" : `${Math.abs(left).toLocaleString()} kcal`}</Text>
+          </View>
+        </View>
+        {left !== null ? <Bar value={eaten} total={targets.calories} color={left >= 0 ? "#6EA8FF" : palette.carbs} height={10} /> : null}
+        <View style={s.macros}>
+          <MacroBarDark label="Protein" value={totals.protein || 0} total={targets.restricted ? protein?.low : targets.protein} color={palette.protein} />
+          <MacroBarDark label="Carbs" value={totals.carbs || 0} total={targets.restricted ? undefined : targets.carbs} color={palette.carbs} />
+          <MacroBarDark label="Fat" value={totals.fat || 0} total={targets.restricted ? undefined : targets.fat} color={palette.fat} />
+        </View>
+        {targets.restricted && protein ? (
+          <Text style={s.sumNote}>Protein range {protein.low}–{protein.high} g/day to protect muscle — confirm with your doctor. Calorie targets stay with your care team.</Text>
         ) : null}
-        {note ? <P>{note}</P> : null}
-      </Card>
-      <Card>
-        <H>
-          {source === "photo"
-            ? "Review your meal estimate"
-            : "Log a meal manually"}
-        </H>
-        <Field
-          label="Meal and portion description"
-          value={name}
-          onChange={(v) => {
-            setReviewed(false);
-            setName(v);
-          }}
-          placeholder="Grilled chicken, rice and salad"
-        />
-        {(["calories", "protein", "carbs", "fat", "fibre"] as const).map(
-          (k) => (
-            <Field
-              key={k}
-              label={`${k[0].toUpperCase() + k.slice(1)} (${k === "calories" ? "kcal" : "g"})`}
-              numeric
-              value={values[k]}
-              onChange={(v) => {
-                setReviewed(false);
-                setValues((prev) => ({ ...prev, [k]: v }));
-              }}
-            />
-          ),
-        )}
-        <P>
-          Enter values for the entire meal. Check packaged-food labels when
-          available.
-        </P>
-        {review?.requiresReview ? (
-          <Card>
-            <H>Check before choosing this meal</H>
-            {review.messages.map((message) => (
-              <P key={message}>{message}</P>
+      </Surface>
+
+      <View style={s.actions}>
+        <Action icon="camera" label={busy ? "Opening…" : "Snap meal"} a11y="Take a snap" tint="#EEF2FF" color={palette.brand} onPress={() => scan(true)} />
+        <Action icon="barcode-outline" label="Barcode" a11y="Scan barcode" tint="#E7F6EE" color={palette.good} onPress={() => open(defaultSlot(), "barcode")} />
+        <Action icon="search" label="Search" a11y="Search food" tint="#FFF4DE" color={palette.warn} onPress={() => open(defaultSlot(), "search")} />
+        <Action icon="flash" label="Quick add" a11y="Quick add calories" tint="#F3EDFF" color="#6D28D9" onPress={() => open(defaultSlot(), "quick")} />
+      </View>
+      <Pressable accessibilityRole="button" accessibilityLabel="Choose photo" onPress={() => scan(false)} style={s.gallery}>
+        <Ionicons name="images-outline" size={16} color={palette.brand} />
+        <Text style={s.galleryText}>Use a photo from your gallery</Text>
+      </Pressable>
+
+      {notice ? (
+        <View style={s.toast} accessibilityRole="alert">
+          <Ionicons name="checkmark-circle" size={20} color={palette.good} />
+          <Text style={s.toastText}>{notice}</Text>
+        </View>
+      ) : null}
+
+      {photo && !photo.estimate ? (
+        <Surface>
+          <Image source={{ uri: photo.uri }} style={s.photo} resizeMode="cover" accessibilityLabel="Your meal photo" />
+          <Text style={s.body}>{photo.note}</Text>
+          <PrimaryButton title="Find what you ate" icon="search" onPress={() => open(defaultSlot(), "search")} />
+        </Surface>
+      ) : null}
+
+      {mealSlotNames.map((m) => {
+        const list = sections[m.id];
+        return (
+          <Surface key={m.id}>
+            <View style={s.slotHead}>
+              <Text style={s.slotTitle}>{m.emoji}  {m.label}</Text>
+              <Text style={s.slotKcal}>{sumCalories(list)} kcal</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel={`Add to ${m.label}`} onPress={() => open(m.id, "search")} hitSlop={8} style={s.plus}>
+                <Ionicons name="add" size={22} color="#fff" />
+              </Pressable>
+            </View>
+            {list.length === 0 ? <Text style={s.empty}>Nothing logged yet.</Text> : null}
+            {list.map((meal) => (
+              <View key={meal.id} style={s.item}>
+                {meal.photoUri ? <Image source={{ uri: meal.photoUri }} style={s.thumb} /> : (
+                  <View style={[s.thumb, s.thumbIcon]}>
+                    <Ionicons name={meal.source === "photo" ? "camera" : meal.source === "barcode" ? "barcode" : meal.source === "quick" || meal.source === "manual" ? "flash" : "leaf"} size={18} color={palette.brand} />
+                  </View>
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={s.itemName} numberOfLines={1}>{meal.name}</Text>
+                  <Text style={s.itemMeta} numberOfLines={1}>
+                    {meal.servingLabel ? `${meal.servings && meal.servings !== 1 ? `${meal.servings} × ` : ""}${meal.servingLabel} · ` : ""}P {Math.round(meal.protein)} · C {Math.round(meal.carbs)} · F {Math.round(meal.fat)}
+                  </Text>
+                </View>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={s.itemKcal}>{Math.round(meal.calories)}</Text>
+                  {meal.range ? <Text style={s.itemRange}>{meal.range[0]}–{meal.range[1]}</Text> : null}
+                </View>
+                <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${meal.name}`} hitSlop={8}
+                  onPress={() => act(() => update((st) => ({ ...st, meals: st.meals.filter((x) => x.id !== meal.id) })))}>
+                  <Ionicons name="trash-outline" size={18} color={palette.muted} />
+                </Pressable>
+              </View>
             ))}
-            <P>{review.alternative}</P>
-            <Check
-              label="I reviewed the concerns and ingredients. This acknowledgment does not certify food safety; I can still record what I actually ate."
-              value={reviewed}
-              onChange={setReviewed}
-            />
-          </Card>
-        ) : null}
-        <Button
-          disabled={busy || !!(review?.requiresReview && !reviewed)}
-          title={source === "photo" ? "Confirm portions & save" : "Save meal"}
-          onPress={() =>
-            act(async () => {
-              if (review?.requiresReview && !reviewed)
-                throw new Error(
-                  "Review the food concerns before confirming this estimate.",
-                );
-              const meal = {
-                name,
-                source,
-                calories: numeric(values.calories, 0, 5000, "Calories"),
-                protein: numeric(values.protein, 0, 500, "Protein"),
-                carbs: numeric(values.carbs, 0, 500, "Carbs"),
-                fat: numeric(values.fat, 0, 500, "Fat"),
-                fibre: numeric(values.fibre, 0, 500, "Fibre"),
-              };
-              validateMeal(meal);
-              await update((s) => ({
-                ...s,
-                meals: [
-                  ...s.meals,
-                  { ...meal, id: uid(), at: new Date().toISOString() },
-                ],
-              }));
-              setName("");
-              setValues({
-                calories: "",
-                protein: "",
-                carbs: "",
-                fat: "",
-                fibre: "",
-              });
-              setPhoto("");
-              setNote("");
-              setSource("manual");
-            })
-          }
-        />
-      </Card>
-      <Card>
-        <H>Today’s food log</H>
-        {state.meals.filter((m) => localDay(m.at) === localDay()).length ===
-        0 ? (
-          <P>No meals yet. Your first entry starts the story.</P>
-        ) : null}
-        {state.meals
-          .filter((m) => localDay(m.at) === localDay())
-          .map((m) => (
-            <Card key={m.id}>
-              <H>{m.name}</H>
-              <P>
-                {m.calories} kcal · P {m.protein} g · C {m.carbs} g · F {m.fat}{" "}
-                g
-              </P>
-              <Button
-                secondary
-                title="Remove entry"
-                onPress={() =>
-                  act(() =>
-                    update((s) => ({
-                      ...s,
-                      meals: s.meals.filter((x) => x.id !== m.id),
-                    })),
-                  )
-                }
-              />
-            </Card>
-          ))}
-      </Card>
+          </Surface>
+        );
+      })}
+
+      <Surface>
+        <Pressable accessibilityRole="button" accessibilityLabel={showMicros ? "Hide vitamins and minerals" : "Show vitamins and minerals"} onPress={() => setShowMicros(!showMicros)} style={s.slotHead}>
+          <Text style={s.slotTitle}>🧪  Vitamins & minerals</Text>
+          <Ionicons name={showMicros ? "chevron-up" : "chevron-down"} size={20} color={palette.muted} />
+        </Pressable>
+        {showMicros ? micros.map((k) => {
+          const info = nutrientInfo[k];
+          const v = totals[k];
+          return (
+            <View key={k} style={s.microRow}>
+              <Text style={s.microName}>{info.label}</Text>
+              <View style={{ flex: 1 }}>{info.dv ? <Bar value={v || 0} total={info.dv} color={info.limit && (v || 0) > info.dv ? palette.bad : info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
+              <Text style={s.microValue}>{v === undefined ? "—" : `${v} ${info.unit}`}</Text>
+            </View>
+          );
+        }) : <Text style={s.empty}>Today’s fiber, sodium, potassium, iron, vitamins and more vs. FDA Daily Values. Foods from search and barcode carry full nutrients; quick adds don’t.</Text>}
+      </Surface>
+
+      <SectionHeader title="Plan ahead" />
+      <PrimaryButton title="My weekly meal plan" icon="calendar" onPress={() => router.push("/meal-plan")} />
+
+      <FoodSearch visible={flow === "search"} meals={state.meals} onClose={() => setFlow(null)}
+        onPick={(f) => { setFood(f); setFlow("detail"); }} onBarcode={() => setFlow("barcode")} />
+      <BarcodeScanner visible={flow === "barcode"} onClose={() => setFlow(null)}
+        onFound={(f) => { setFood(f); setFlow("detail"); }} onSearchInstead={() => setFlow("search")} />
+      <FoodDetail key={food?.id || "none"} food={food} visible={flow === "detail"} initialSlot={slot}
+        photo={food?.id === "photo"} photoUri={photo?.uri} note={food?.id === "photo" ? photo?.note : undefined}
+        review={review} onClose={() => setFlow(food?.id === "photo" ? null : "search")} onAdd={add} />
+      <QuickAdd visible={flow === "quick"} slot={slot} onClose={() => setFlow(null)} onAdd={add} photoUri={photo && !photo.estimate ? photo.uri : undefined} />
     </Screen>
   );
 }
+
+function MacroBarDark(props: { label: string; value: number; total?: number; color: string }) {
+  return (
+    <View style={{ flex: 1, gap: 6 }}>
+      <Text style={s.darkLabel}>{props.label}</Text>
+      <Bar value={props.value} total={props.total || props.value || 1} color={props.color} />
+      <Text style={s.darkValue}>{Math.round(props.value)}<Text style={s.darkTotal}>{props.total ? ` / ${props.total}g` : "g"}</Text></Text>
+    </View>
+  );
+}
+
+function Action({ icon, label, a11y, tint, color, onPress }: { icon: string; label: string; a11y: string; tint: string; color: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={a11y} onPress={onPress} style={s.action}>
+      <View style={[s.actionIcon, { backgroundColor: tint }]}><Ionicons name={icon as never} size={24} color={color} /></View>
+      <Text style={s.actionText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function QuickAdd({ visible, slot, onClose, onAdd, photoUri }: { visible: boolean; slot: MealSlotName; onClose: () => void; onAdd: (m: NewMeal) => void; photoUri?: string }) {
+  const [name, setName] = useState("");
+  const [values, setValues] = useState({ calories: "", protein: "", carbs: "", fat: "", fibre: "" });
+  const [where, setWhere] = useState<MealSlotName>(slot);
+  useEffect(() => { if (visible) setWhere(slot); }, [visible, slot]); // eslint-disable-line react-hooks/set-state-in-effect
+  const fields = [["calories", "Calories (kcal)"], ["protein", "Protein (g)"], ["carbs", "Carbs (g)"], ["fat", "Fat (g)"], ["fibre", "Fiber (g)"]] as const;
+  return (
+    <Sheet visible={visible} title="Quick add" onClose={onClose}
+      footer={<PrimaryButton title="Save meal" icon="checkmark" onPress={() => act(async () => {
+        const meal: NewMeal = {
+          name: name.trim() || "Quick add", source: "quick", slot: where, photoUri,
+          calories: numeric(values.calories, 0, 5000, "Calories"), protein: numeric(values.protein || "0", 0, 500, "Protein"),
+          carbs: numeric(values.carbs || "0", 0, 500, "Carbs"), fat: numeric(values.fat || "0", 0, 500, "Fat"), fibre: numeric(values.fibre || "0", 0, 500, "Fiber"),
+        };
+        onAdd(meal);
+        setName(""); setValues({ calories: "", protein: "", carbs: "", fat: "", fibre: "" });
+      })} />}>
+      <Text style={s.body}>Use this for a package label or a restaurant menu that lists calories.</Text>
+      <TextInput value={name} onChangeText={setName} placeholder="What did you eat?" placeholderTextColor={palette.muted} accessibilityLabel="Meal name" style={s.input} />
+      {fields.map(([k, label]) => (
+        <TextInput key={k} value={values[k]} onChangeText={(v) => setValues((x) => ({ ...x, [k]: v }))} placeholder={label}
+          placeholderTextColor={palette.muted} keyboardType="decimal-pad" accessibilityLabel={label} style={s.input} />
+      ))}
+      <View style={s.wrap}>{mealSlotNames.map((m) => <Chip key={m.id} label={`${m.emoji} ${m.label}`} selected={where === m.id} onPress={() => setWhere(m.id)} />)}</View>
+    </Sheet>
+  );
+}
+
+const s = StyleSheet.create({
+  sumRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
+  sumLabel: { color: "#A9B4CC", fontSize: 13, fontWeight: "700" },
+  sumBig: { color: "#fff", fontSize: 36, fontWeight: "900", letterSpacing: -1 },
+  sumUnit: { color: "#A9B4CC", fontSize: 15, fontWeight: "700" },
+  sumMid: { color: "#fff", fontSize: 18, fontWeight: "800" },
+  sumNote: { color: "#C9D2E5", fontSize: 13, lineHeight: 18 },
+  macros: { flexDirection: "row", gap: 14 },
+  darkLabel: { color: "#A9B4CC", fontSize: 12, fontWeight: "700" },
+  darkValue: { color: "#fff", fontSize: 15, fontWeight: "800" },
+  darkTotal: { color: "#A9B4CC", fontSize: 12, fontWeight: "600" },
+  actions: { flexDirection: "row", gap: 10 },
+  action: { flex: 1, alignItems: "center", gap: 8, backgroundColor: "#fff", borderRadius: 20, paddingVertical: 14, borderWidth: 1, borderColor: "#EDF0F6" },
+  actionIcon: { width: 48, height: 48, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  actionText: { color: palette.ink, fontSize: 13, fontWeight: "800" },
+  gallery: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 4 },
+  galleryText: { color: palette.brand, fontSize: 14, fontWeight: "700" },
+  toast: { flexDirection: "row", gap: 8, alignItems: "center", backgroundColor: palette.goodSoft, borderRadius: 16, padding: 12 },
+  toastText: { color: palette.good, fontWeight: "700", flex: 1 },
+  photo: { width: "100%", height: 200, borderRadius: 18 },
+  body: { color: palette.muted, fontSize: 15, lineHeight: 21 },
+  slotHead: { flexDirection: "row", alignItems: "center", gap: 10 },
+  slotTitle: { flex: 1, color: palette.ink, fontSize: 18, fontWeight: "800" },
+  slotKcal: { color: palette.muted, fontSize: 14, fontWeight: "700" },
+  plus: { width: 34, height: 34, borderRadius: 17, backgroundColor: palette.brand, alignItems: "center", justifyContent: "center" },
+  empty: { color: palette.muted, fontSize: 14, lineHeight: 20 },
+  item: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 6, borderTopWidth: 1, borderColor: "#F0F2F7" },
+  thumb: { width: 44, height: 44, borderRadius: 14 },
+  thumbIcon: { backgroundColor: palette.brandSoft, alignItems: "center", justifyContent: "center" },
+  itemName: { color: palette.ink, fontSize: 15, fontWeight: "700" },
+  itemMeta: { color: palette.muted, fontSize: 12, marginTop: 2 },
+  itemKcal: { color: palette.ink, fontSize: 16, fontWeight: "800" },
+  itemRange: { color: palette.muted, fontSize: 11 },
+  microRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 3 },
+  microName: { width: 110, color: palette.ink, fontSize: 14, fontWeight: "600" },
+  microValue: { width: 96, textAlign: "right", color: palette.muted, fontSize: 13, fontWeight: "600" },
+  input: { backgroundColor: "#fff", borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
+  wrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+});
