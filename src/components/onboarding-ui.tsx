@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useEffect, useRef, useState } from "react";
 import {
   AccessibilityInfo,
@@ -32,11 +33,12 @@ export const theme = {
 };
 
 export function Logo({ size = 72 }: { size?: number }) {
+  const tr = useT();
   return (
     <Image
       source={logoMark}
       style={{ width: size, height: size, borderRadius: size * 0.23 }}
-      accessibilityLabel="Snap to Fit logo"
+      accessibilityLabel={tr("Snap to Fit logo")}
     />
   );
 }
@@ -65,12 +67,13 @@ export function StepShell({
   nextDisabled?: boolean;
   children: React.ReactNode;
 }) {
+  const tr = useT();
   return (
     <View style={st.shell}>
       <View style={st.top}>
         <View style={st.topRow}>
           {onBack ? (
-            <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Previous step" hitSlop={10} style={st.iconBtn}>
+            <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel={tr("Previous step")} hitSlop={10} style={st.iconBtn}>
               <Ionicons name="arrow-back" size={24} color={theme.ink} />
             </Pressable>
           ) : (
@@ -78,7 +81,7 @@ export function StepShell({
           )}
           <Text style={st.stepLabel}>Step {step} of {total}</Text>
           {onClose ? (
-            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close setup" hitSlop={10} style={st.iconBtn}>
+            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={tr("Close setup")} hitSlop={10} style={st.iconBtn}>
               <Ionicons name="close" size={24} color={theme.ink} />
             </Pressable>
           ) : (
@@ -157,6 +160,7 @@ export function Segmented<T extends string>({
   options: { value: T; label: string }[];
   onChange: (v: T) => void;
 }) {
+  const tr = useT();
   return (
     <View style={st.seg} accessibilityRole="radiogroup">
       {options.map((o) => (
@@ -164,11 +168,11 @@ export function Segmented<T extends string>({
           key={o.value}
           onPress={() => onChange(o.value)}
           accessibilityRole="radio"
-          accessibilityLabel={o.label}
+          accessibilityLabel={tr(o.label)}
           aria-checked={value === o.value}
           style={value === o.value ? st.segOn : st.segItem}
         >
-          <Text style={value === o.value ? st.segTextOn : st.segText}>{o.label}</Text>
+          <Text style={value === o.value ? st.segTextOn : st.segText}>{tr(o.label)}</Text>
         </Pressable>
       ))}
     </View>
@@ -193,6 +197,7 @@ export function WheelPicker({
   value: number;
   onChange: (v: number) => void;
 }) {
+  const tr = useT();
   const ref = useRef<ScrollView>(null);
   const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const index = Math.max(0, options.findIndex((o) => o.value === value));
@@ -250,7 +255,7 @@ export function WheelPicker({
               const d = Math.abs(i - index);
               return (
                 <Pressable key={o.value} onPress={() => { pick(i); ref.current?.scrollTo({ y: i * ITEM_H, animated: true }); }} style={st.wheelItem}>
-                  <Text style={[st.wheelText, d === 0 ? st.wheelTextOn : { opacity: d === 1 ? 0.55 : 0.25 }]}>{o.label}</Text>
+                  <Text style={[st.wheelText, d === 0 ? st.wheelTextOn : { opacity: d === 1 ? 0.55 : 0.25 }]}>{tr(o.label)}</Text>
                 </Pressable>
               );
             })}

@@ -1,3 +1,4 @@
+import { activeLanguage, useT } from "../i18n";
 import React, { useState } from "react";
 import { Pressable, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -16,7 +17,7 @@ import { proteinGuidance } from "../core/targets";
 import { mealsOn } from "../core/food-log";
 import { uid, localDay, type Medicine } from "../core/model";
 
-const fmtDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+const fmtDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(activeLanguage() === "es" ? "es-US" : "en-US", { weekday: "short", month: "short", day: "numeric" });
 const nextDays = (n: number) => Array.from({ length: n }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return localDay(d); });
 
 const guides = [
@@ -28,6 +29,7 @@ const guides = [
 ];
 
 export default function Glp1Companion() {
+  const tr = useT();
   const { state, update } = useStore();
   const p = state.profile!;
   const glp1 = state.medicines.find((m) => isGlp1Name(m.name));
@@ -56,95 +58,95 @@ export default function Glp1Companion() {
         {glp1 ? (
           <>
             <Text style={s.darkLabel}>{glp1.name}</Text>
-            <Text style={s.darkBig}>{inDays === null ? "—" : inDays <= 0 ? (inDays === 0 ? "Today" : `${-inDays} day${inDays === -1 ? "" : "s"} past`) : `In ${inDays} day${inDays === 1 ? "" : "s"}`}</Text>
-            <Text style={s.darkText}>Next on your schedule: {fmtDate(next!)} at {glp1.time} · {glp1.dose}</Text>
-            {injectable ? <Text style={s.darkText}>Next site to rotate to: {injectionSites.find((x) => x.id === nextSite(state.doses, glp1.id))?.label}</Text> : null}
-            <PrimaryButton title={injectable ? "Log my shot" : "Log my dose"} icon="checkmark-circle" onPress={() => setLogShot(true)} />
+            <Text style={s.darkBig}>{inDays === null ? "—" : inDays <= 0 ? (inDays === 0 ? tr("Today") : tr("{v0} day{v1} past", { v0: -inDays, v1: inDays === -1 ? "" : "s" })) : `In ${inDays} day${inDays === 1 ? "" : "s"}`}</Text>
+            <Text style={s.darkText}>{tr("Next on your schedule: {date} at {time} · {dose}", { date: fmtDate(next!), time: glp1.time, dose: glp1.dose })}</Text>
+            {injectable ? <Text style={s.darkText}>{tr("Next site to rotate to: {site}", { site: tr(injectionSites.find((x) => x.id === nextSite(state.doses, glp1.id))?.label) })}</Text> : null}
+            <PrimaryButton title={injectable ? tr("Log my shot") : tr("Log my dose")} icon="checkmark-circle" onPress={() => setLogShot(true)} />
           </>
         ) : (
           <>
-            <Text style={s.darkBig}>Set up your GLP-1</Text>
-            <Text style={s.darkText}>Copy your medicine, dose and day from your prescription. Snap to Fit reminds and records — your prescriber decides everything else.</Text>
+            <Text style={s.darkBig}>{tr("Set up your GLP-1")}</Text>
+            <Text style={s.darkText}>{tr("Copy your medicine, dose and day from your prescription. Snap to Fit reminds and records — your prescriber decides everything else.")}</Text>
             <PrimaryButton title="Add my GLP-1 medicine" icon="add-circle" onPress={() => setSetup(true)} />
           </>
         )}
       </Surface>
 
       <View style={s.row2}>
-        <Pressable accessibilityRole="button" accessibilityLabel="How are you feeling? Log side effects" onPress={() => setCheckin(true)} style={s.action}>
+        <Pressable accessibilityRole="button" accessibilityLabel={tr("How are you feeling? Log side effects")} onPress={() => setCheckin(true)} style={s.action}>
           <Text style={s.actionEmoji}>🩺</Text>
-          <Text style={s.actionTitle}>How do you feel?</Text>
-          <Text style={s.actionText}>Log side effects</Text>
+          <Text style={s.actionTitle}>{tr("How do you feel?")}</Text>
+          <Text style={s.actionText}>{tr("Log side effects")}</Text>
         </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Share a summary with my doctor"
+        <Pressable accessibilityRole="button" accessibilityLabel={tr("Share a summary with my doctor")}
           onPress={() => act(async () => { await Share.share({ message: doctorSummary(state) }); })} style={s.action}>
           <Text style={s.actionEmoji}>📋</Text>
-          <Text style={s.actionTitle}>Doctor summary</Text>
-          <Text style={s.actionText}>Share 30 days</Text>
+          <Text style={s.actionTitle}>{tr("Doctor summary")}</Text>
+          <Text style={s.actionText}>{tr("Share 30 days")}</Text>
         </Pressable>
       </View>
 
       <Surface>
-        <Text style={s.h}>This week</Text>
+        <Text style={s.h}>{tr("This week")}</Text>
         <View style={s.metric}>
-          <Text style={s.metricLabel}>Protein (daily avg)</Text>
+          <Text style={s.metricLabel}>{tr("Protein (daily avg)")}</Text>
           <Text style={s.metricValue}>{avgProtein} g{protein ? ` / ${protein.low}–${protein.high} g` : ""}</Text>
         </View>
         <Bar value={avgProtein} total={protein?.low || 100} color={palette.protein} />
         <View style={s.metric}>
-          <Text style={s.metricLabel}>Fiber (daily avg)</Text>
+          <Text style={s.metricLabel}>{tr("Fiber (daily avg)")}</Text>
           <Text style={s.metricValue}>{avgFiber} / 28 g</Text>
         </View>
         <Bar value={avgFiber} total={28} color={palette.fiber} />
         <View style={s.metric}>
-          <Text style={s.metricLabel}>Strength days</Text>
+          <Text style={s.metricLabel}>{tr("Strength days")}</Text>
           <Text style={s.metricValue}>{strengthDays} / 2+</Text>
         </View>
         <Bar value={strengthDays} total={2} color={palette.brand} />
         <Text style={s.p}>
-          {week.worst.length ? `Side effects logged: ${week.worst.slice(0, 3).map((w) => `${w.label} (${severityLabels[w.severity].toLowerCase()})`).join(", ")}.` : "No side effects logged this week."}
+          {week.worst.length ? tr("Side effects logged: {list}.", { list: week.worst.slice(0, 3).map((w) => `${tr(w.label)} (${tr(severityLabels[w.severity]).toLowerCase()})`).join(", ") }) : tr("No side effects logged this week.")}
           {" "}Sip fluids through the day — nausea, vomiting and diarrhea can dehydrate you.
         </Text>
-        {protein ? <Text style={s.small}>Protein range: {protein.perKg} — confirm with your doctor or dietitian.</Text> : <Text style={s.small}>Your care team sets your protein amount.</Text>}
+        {protein ? <Text style={s.small}>Protein range: {protein.perKg} — confirm with your doctor or dietitian.</Text> : <Text style={s.small}>{tr("Your care team sets your protein amount.")}</Text>}
       </Surface>
 
       {weights.length >= 2 ? (
         <Surface>
-          <Text style={s.h}>Weight trend</Text>
+          <Text style={s.h}>{tr("Weight trend")}</Text>
           <Sparkline points={weights.map((w) => w.value)} color={palette.fat} />
           <Text style={s.p}>{shots.length} dose{shots.length === 1 ? "" : "s"} logged · tracking weight with your doses helps your doctor see what’s working.</Text>
         </Surface>
       ) : null}
 
       <Surface style={{ backgroundColor: palette.badSoft, borderColor: palette.badSoft }}>
-        <Text style={[s.h, { color: palette.bad }]}>Call your doctor right away if you have</Text>
-        {labelWarnings.map((w) => <Text key={w} style={s.warn}>• {w}</Text>)}
-        <Text style={s.small}>From the US Medication Guides for GLP-1 medicines. Not a complete list — read the guide that came with your medicine.</Text>
+        <Text style={[s.h, { color: palette.bad }]}>{tr("Call your doctor right away if you have")}</Text>
+        {labelWarnings.map((w) => <Text key={w} style={s.warn}>• {tr(w)}</Text>)}
+        <Text style={s.small}>{tr("From the US Medication Guides for GLP-1 medicines. Not a complete list — read the guide that came with your medicine.")}</Text>
       </Surface>
 
       <SectionHeader title="Good to know" />
       {guides.map((g) => (
-        <Pressable key={g.id} accessibilityRole="button" aria-expanded={open === g.id} accessibilityLabel={g.title} onPress={() => setOpen(open === g.id ? null : g.id)} style={s.guide}>
+        <Pressable key={g.id} accessibilityRole="button" aria-expanded={open === g.id} accessibilityLabel={tr(g.title)} onPress={() => setOpen(open === g.id ? null : g.id)} style={s.guide}>
           <View style={s.guideHead}>
             <Text style={s.guideEmoji}>{g.emoji}</Text>
-            <Text style={s.guideTitle}>{g.title}</Text>
+            <Text style={s.guideTitle}>{tr(g.title)}</Text>
             <Ionicons name={open === g.id ? "chevron-up" : "chevron-down"} size={18} color={palette.muted} />
           </View>
-          {open === g.id ? <Text style={s.p}>{g.text}</Text> : null}
+          {open === g.id ? <Text style={s.p}>{tr(g.text)}</Text> : null}
         </Pressable>
       ))}
 
       {glp1 ? (
         <>
           <SectionHeader title="Dose history" />
-          {shots.length === 0 ? <Text style={s.p}>No doses logged yet.</Text> : null}
+          {shots.length === 0 ? <Text style={s.p}>{tr("No doses logged yet.")}</Text> : null}
           {shots.slice(0, 12).map((d) => (
             <View key={d.id} style={s.histRow}>
               <View style={{ flex: 1 }}>
-                <Text style={s.histTitle}>{new Date(d.at).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} · {d.dose}</Text>
-                <Text style={s.small}>{d.site ? injectionSites.find((x) => x.id === d.site)?.label : "No site recorded"}{d.symptoms ? ` · ${d.symptoms}` : ""}</Text>
+                <Text style={s.histTitle}>{new Date(d.at).toLocaleDateString(tr("en-US"), { weekday: "short", month: "short", day: "numeric" })} · {d.dose}</Text>
+                <Text style={s.small}>{d.site ? injectionSites.find((x) => x.id === d.site)?.label : tr("No site recorded")}{d.symptoms ? ` · ${d.symptoms}` : ""}</Text>
               </View>
-              <Pressable accessibilityRole="button" accessibilityLabel="Remove incorrect dose log" hitSlop={8} onPress={() => act(() => update((x) => ({ ...x, doses: x.doses.filter((y) => y.id !== d.id) })))}>
+              <Pressable accessibilityRole="button" accessibilityLabel={tr("Remove incorrect dose log")} hitSlop={8} onPress={() => act(() => update((x) => ({ ...x, doses: x.doses.filter((y) => y.id !== d.id) })))}>
                 <Ionicons name="trash-outline" size={18} color={palette.muted} />
               </Pressable>
             </View>
@@ -154,14 +156,14 @@ export default function Glp1Companion() {
       ) : null}
 
       <SectionHeader title="Other medicines" action="Add" onAction={() => setAddOther(true)} />
-      {others.length === 0 ? <Text style={s.p}>Add any other prescribed medicines for reminders and a complete doctor summary.</Text> : null}
+      {others.length === 0 ? <Text style={s.p}>{tr("Add any other prescribed medicines for reminders and a complete doctor summary.")}</Text> : null}
       {others.map((m) => (
         <View key={m.id} style={s.histRow}>
           <View style={{ flex: 1 }}>
             <Text style={s.histTitle}>{m.name}</Text>
-            <Text style={s.small}>{m.dose} · {m.kind} · {m.frequency || "as prescribed"} · next {fmtDate(m.nextDate)} {m.time}</Text>
+            <Text style={s.small}>{m.dose} · {tr(m.kind)} · {tr(m.frequency || "as prescribed")} · {tr("next {date}", { date: fmtDate(m.nextDate) })} {m.time}</Text>
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel={`Record ${m.name} taken now`} hitSlop={8}
+          <Pressable accessibilityRole="button" accessibilityLabel={tr("Record {name} taken now", { name: m.name })} hitSlop={8}
             onPress={() => act(async () => {
               await update((x) => ({ ...x, doses: [...x.doses, { id: uid(), at: new Date().toISOString(), medicineId: m.id, name: m.name, dose: m.dose, symptoms: "" }] }));
               haptic("success");
@@ -175,7 +177,7 @@ export default function Glp1Companion() {
           </Pressable>
         </View>
       ))}
-      <Text style={s.small}>Snap to Fit records what you enter. It never recommends a dose, a change, a break, stopping or tapering — those decisions belong to your prescriber.</Text>
+      <Text style={s.small}>{tr("Snap to Fit records what you enter. It never recommends a dose, a change, a break, stopping or tapering — those decisions belong to your prescriber.")}</Text>
 
       <MedicineSetup key={setup ? `glp1-${glp1?.id || "new"}` : `other-${String(addOther)}`} visible={setup || addOther} glp1Mode={setup} existing={setup ? glp1 : undefined} defaultName={setup ? p.glp1 : undefined}
         onClose={() => { setSetup(false); setAddOther(false); }}
@@ -203,7 +205,7 @@ export default function Glp1Companion() {
             }));
             haptic("success");
             setLogShot(false);
-            notify(glp1.frequency === "weekly" ? `Logged. Your weekly schedule now shows ${fmtDate(nextDate)} — change it if your prescriber said otherwise.` : "Logged.");
+            notify(glp1.frequency === "weekly" ? tr("Logged. Your weekly schedule now shows {date} — change it if your prescriber said otherwise.", { date: fmtDate(nextDate) }) : "Logged.");
           })} />
       ) : null}
       <Checkin visible={checkin} onClose={() => setCheckin(false)} onInsulin={p.insulin}
@@ -220,6 +222,7 @@ export default function Glp1Companion() {
 function MedicineSetup({ visible, glp1Mode, existing, defaultName, onClose, onSave }: {
   visible: boolean; glp1Mode: boolean; existing?: Medicine; defaultName?: string; onClose: () => void; onSave: (m: Medicine, remindAt?: Date) => void;
 }) {
+  const tr = useT();
   const [name, setName] = useState(existing?.name || defaultName || "");
   const [dose, setDose] = useState(existing?.dose || "");
   const [kind, setKind] = useState<Medicine["kind"]>(existing?.kind || (glp1Mode ? "injection" : "tablet"));
@@ -228,7 +231,7 @@ function MedicineSetup({ visible, glp1Mode, existing, defaultName, onClose, onSa
   const [time, setTime] = useState(existing?.time || "09:00");
   const [remind, setRemind] = useState(true);
   return (
-    <Sheet visible={visible} title={glp1Mode ? "My GLP-1 medicine" : "Add a medicine"} onClose={onClose}
+    <Sheet visible={visible} title={glp1Mode ? tr("My GLP-1 medicine") : tr("Add a medicine")} onClose={onClose}
       footer={<PrimaryButton title="Save" icon="checkmark" onPress={() => {
         if (!name.trim() || !dose.trim()) { notify("Enter the medicine name and the dose exactly as prescribed."); return; }
         if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) { notify("Use HH:MM for the time, e.g. 09:00."); return; }
@@ -237,25 +240,25 @@ function MedicineSetup({ visible, glp1Mode, existing, defaultName, onClose, onSa
       }} />}>
       {glp1Mode ? (
         <>
-          <Text style={s.h}>Which medicine?</Text>
+          <Text style={s.h}>{tr("Which medicine?")}</Text>
           <View style={s.wrap}>{glp1Choices.map((c) => <Chip key={c} label={c} selected={name === c} onPress={() => { setName(c); setKind(/oral|pill|Rybelsus/i.test(c) ? "tablet" : "injection"); setFrequency(/liraglutide|Rybelsus|pill/i.test(c) ? "daily" : "weekly"); }} />)}</View>
         </>
       ) : (
         <>
-          <TextInput value={name} onChangeText={setName} placeholder="Medicine name" placeholderTextColor={palette.muted} accessibilityLabel="Medication name" style={s.input} />
-          <View style={s.wrap}>{(["tablet", "injection", "insulin"] as const).map((k) => <Chip key={k} label={k === "tablet" ? "Tablet" : k === "injection" ? "Injection" : "Insulin"} selected={kind === k} onPress={() => setKind(k)} />)}</View>
+          <TextInput value={name} onChangeText={setName} placeholder={tr("Medicine name")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Medication name")} style={s.input} />
+          <View style={s.wrap}>{(["tablet", "injection", "insulin"] as const).map((k) => <Chip key={k} label={k === "tablet" ? tr("Tablet") : k === "injection" ? tr("Injection") : tr("Insulin")} selected={kind === k} onPress={() => setKind(k)} />)}</View>
         </>
       )}
-      <Text style={s.h}>Dose — copy it from your prescription</Text>
-      <TextInput value={dose} onChangeText={setDose} placeholder="e.g. 0.5 mg" placeholderTextColor={palette.muted} accessibilityLabel="Prescribed dose (include units)" style={s.input} />
-      <Text style={s.small}>Snap to Fit never suggests or changes doses.</Text>
-      <Text style={s.h}>How often?</Text>
-      <View style={s.wrap}>{(["weekly", "daily", "other"] as const).map((f) => <Chip key={f} label={f === "weekly" ? "Once a week" : f === "daily" ? "Every day" : "Other"} selected={frequency === f} onPress={() => setFrequency(f)} />)}</View>
-      <Text style={s.h}>Next dose</Text>
-      <View style={s.wrap}>{nextDays(8).map((d, i) => <Chip key={d} label={i === 0 ? "Today" : i === 1 ? "Tomorrow" : fmtDate(d)} selected={date === d} onPress={() => setDate(d)} />)}</View>
-      <TextInput value={time} onChangeText={setTime} placeholder="Time (HH:MM)" placeholderTextColor={palette.muted} accessibilityLabel="Local time (HH:MM)" style={s.input} />
+      <Text style={s.h}>{tr("Dose — copy it from your prescription")}</Text>
+      <TextInput value={dose} onChangeText={setDose} placeholder={tr("e.g. 0.5 mg")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Prescribed dose (include units)")} style={s.input} />
+      <Text style={s.small}>{tr("Snap to Fit never suggests or changes doses.")}</Text>
+      <Text style={s.h}>{tr("How often?")}</Text>
+      <View style={s.wrap}>{(["weekly", "daily", "other"] as const).map((f) => <Chip key={f} label={f === "weekly" ? tr("Once a week") : f === "daily" ? tr("Every day") : tr("Other")} selected={frequency === f} onPress={() => setFrequency(f)} />)}</View>
+      <Text style={s.h}>{tr("Next dose")}</Text>
+      <View style={s.wrap}>{nextDays(8).map((d, i) => <Chip key={d} label={i === 0 ? tr("Today") : i === 1 ? tr("Tomorrow") : fmtDate(d)} selected={date === d} onPress={() => setDate(d)} />)}</View>
+      <TextInput value={time} onChangeText={setTime} placeholder={tr("Time (HH:MM)")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Local time (HH:MM)")} style={s.input} />
       <Chip label={remind ? "🔔 Remind me at this time" : "🔕 No reminder"} selected={remind} onPress={() => setRemind(!remind)} />
-      <Text style={s.small}>Reminders can be delayed or missed by your phone. They are a convenience, not a guarantee.</Text>
+      <Text style={s.small}>{tr("Reminders can be delayed or missed by your phone. They are a convenience, not a guarantee.")}</Text>
     </Sheet>
   );
 }
@@ -263,33 +266,35 @@ function MedicineSetup({ visible, glp1Mode, existing, defaultName, onClose, onSa
 function LogShot({ visible, medicine, suggested, injectable, onClose, onSave }: {
   visible: boolean; medicine: Medicine; suggested: InjectionSite; injectable: boolean; onClose: () => void; onSave: (site: string | undefined, note: string) => void;
 }) {
+  const tr = useT();
   const [site, setSite] = useState<InjectionSite>(suggested);
   const [note, setNote] = useState("");
   return (
-    <Sheet visible={visible} title={injectable ? "Log my shot" : "Log my dose"} onClose={onClose}
+    <Sheet visible={visible} title={injectable ? tr("Log my shot") : tr("Log my dose")} onClose={onClose}
       footer={<PrimaryButton title="Save" icon="checkmark" onPress={() => onSave(injectable ? site : undefined, note.trim())} />}>
       <Pill label={`${medicine.name} · ${medicine.dose}`} />
       {injectable ? (
         <>
-          <Text style={s.h}>Where did you inject?</Text>
-          <Text style={s.small}>Your Medication Guide says to change the site each time. Suggested: the one you used longest ago.</Text>
+          <Text style={s.h}>{tr("Where did you inject?")}</Text>
+          <Text style={s.small}>{tr("Your Medication Guide says to change the site each time. Suggested: the one you used longest ago.")}</Text>
           <View style={s.body}>
             {injectionSites.map((x) => (
-              <Pressable key={x.id} accessibilityRole="button" aria-selected={site === x.id} accessibilityLabel={x.label} onPress={() => setSite(x.id)}
+              <Pressable key={x.id} accessibilityRole="button" aria-selected={site === x.id} accessibilityLabel={tr(x.label)} onPress={() => setSite(x.id)}
                 style={[s.site, site === x.id && s.siteOn]}>
-                <Text style={[s.siteText, site === x.id && { color: "#fff" }]}>{x.label}</Text>
-                {x.id === suggested ? <Text style={[s.siteHint, site === x.id && { color: "#DCE4FF" }]}>suggested</Text> : null}
+                <Text style={[s.siteText, site === x.id && { color: "#fff" }]}>{tr(x.label)}</Text>
+                {x.id === suggested ? <Text style={[s.siteHint, site === x.id && { color: "#DCE4FF" }]}>{tr("suggested")}</Text> : null}
               </Pressable>
             ))}
           </View>
         </>
       ) : null}
-      <TextInput value={note} onChangeText={setNote} placeholder="Note (optional)" placeholderTextColor={palette.muted} accessibilityLabel="Dose note" style={s.input} />
+      <TextInput value={note} onChangeText={setNote} placeholder={tr("Note (optional)")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Dose note")} style={s.input} />
     </Sheet>
   );
 }
 
 function Checkin({ visible, onClose, onSave, onInsulin }: { visible: boolean; onClose: () => void; onSave: (e: Record<string, number>, note: string) => void; onInsulin: boolean }) {
+  const tr = useT();
   const [effects, setEffects] = useState<Partial<Record<SideEffectId, number>>>({});
   const [note, setNote] = useState("");
   const alerts = sideEffectAlerts(effects, onInsulin);
@@ -298,7 +303,7 @@ function Checkin({ visible, onClose, onSave, onInsulin }: { visible: boolean; on
       footer={<PrimaryButton title="Save check-in" icon="checkmark" onPress={() => { onSave(effects as Record<string, number>, note.trim()); setEffects({}); setNote(""); }} />}>
       {sideEffects.map((e) => (
         <View key={e.id} style={s.effect}>
-          <Text style={s.effectName}>{e.emoji} {e.label}</Text>
+          <Text style={s.effectName}>{e.emoji} {tr(e.label)}</Text>
           <View style={s.wrap}>
             {severityLabels.map((l, i) => <Chip key={l} label={l} selected={(effects[e.id] || 0) === i} onPress={() => setEffects({ ...effects, [e.id]: i })} />)}
           </View>
@@ -306,11 +311,11 @@ function Checkin({ visible, onClose, onSave, onInsulin }: { visible: boolean; on
       ))}
       {alerts.map((a) => (
         <View key={a.text} style={[s.alert, a.level === "urgent" && { backgroundColor: palette.badSoft }]} accessibilityRole="alert">
-          <Text style={[s.alertText, a.level === "urgent" && { color: palette.bad }]}>{a.text}</Text>
+          <Text style={[s.alertText, a.level === "urgent" && { color: palette.bad }]}>{tr(a.text)}</Text>
         </View>
       ))}
-      <TextInput value={note} onChangeText={setNote} placeholder="Anything else? (optional)" placeholderTextColor={palette.muted} accessibilityLabel="Check-in note" style={s.input} multiline />
-      <Text style={s.small}>Most stomach side effects are mild and ease over time, but tell your doctor about anything that worries you. Snap to Fit can’t judge symptoms.</Text>
+      <TextInput value={note} onChangeText={setNote} placeholder={tr("Anything else? (optional)")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Check-in note")} style={s.input} multiline />
+      <Text style={s.small}>{tr("Most stomach side effects are mild and ease over time, but tell your doctor about anything that worries you. Snap to Fit can’t judge symptoms.")}</Text>
     </Sheet>
   );
 }

@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useState } from "react";
 import { Linking } from "react-native";
 import {
@@ -24,6 +25,7 @@ interface Status {
   libre: { configured: boolean; note: string };
 }
 export default function CGM() {
+  const tr = useT();
   const { state, update } = useStore();
   const [status, setStatus] = useState<Status | null>(null);
   const [busy, setBusy] = useState(false);
@@ -57,7 +59,7 @@ export default function CGM() {
         <P>
           {status
             ? status.dexcom.note
-            : "Check whether your configured service has Dexcom developer access."}
+            : tr("Check whether your configured service has Dexcom developer access.")}
         </P>
         <Button
           disabled={busy}
@@ -152,8 +154,8 @@ export default function CGM() {
                 latest.status === "low"
                   ? "LOW"
                   : latest.status === "high"
-                    ? "HIGH"
-                    : (latest.value ?? "Unavailable")
+                    ? tr("HIGH")
+                    : (latest.value ?? tr("Unavailable"))
               }
             />
             <P>

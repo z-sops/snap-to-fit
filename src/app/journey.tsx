@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
@@ -12,6 +13,7 @@ import { waistRatio, plateauReview } from "../core/trends";
 import { uid } from "../core/model";
 
 export default function Journey() {
+  const tr = useT();
   const { state, update } = useStore();
   const p = state.profile!;
   const imperial = (p.units || "imperial") === "imperial";
@@ -45,30 +47,30 @@ export default function Journey() {
         </View>
         <Bar value={progress} total={1} color={palette.fiber} height={10} />
         <Text style={s.darkText}>
-          {change === 0 ? "Your first weigh-in sets the starting line." : `${change > 0 ? "+" : "−"}${w(Math.abs(change))} ${unit} so far · ${w(toGo)} ${unit} to go`}
+          {change === 0 ? tr("Your first weigh-in sets the starting line.") : `${change > 0 ? "+" : "−"}${w(Math.abs(change))} ${unit} so far · ${w(toGo)} ${unit} to go`}
         </Text>
       </Surface>
 
       <Surface>
-        <View style={s.between}><Text style={s.h}>Weight trend</Text><Pill label={`${weights.length} weigh-ins`} /></View>
-        {weights.length >= 2 ? <Sparkline points={weights.slice(-60).map((r) => w(r.value))} /> : <Text style={s.p}>Add two or more weigh-ins to draw your trend.</Text>}
+        <View style={s.between}><Text style={s.h}>{tr("Weight trend")}</Text><Pill label={tr("{length} weigh-ins", { length: weights.length })} /></View>
+        {weights.length >= 2 ? <Sparkline points={weights.slice(-60).map((r) => w(r.value))} /> : <Text style={s.p}>{tr("Add two or more weigh-ins to draw your trend.")}</Text>}
         <Text style={s.p}>{review.message}</Text>
         <PrimaryButton title="Log weight or waist" icon="scale" onPress={() => router.push("/health")} />
       </Surface>
 
       <Surface>
-        <Text style={s.h}>Planning window</Text>
+        <Text style={s.h}>{tr("Planning window")}</Text>
         <Text style={s.p}>
           {projection
-            ? `About ${projection.minWeeks}–${projection.maxWeeks} weeks at a steady ${imperial ? "0.5–1 lb" : "0.25–0.5 kg"} a week. ${projection.label}`
-            : "No automatic timeline for your current goal or health context. Your logs stay available."}
+            ? tr("About {minWeeks}–{maxWeeks} weeks at a steady {v2} a week. {label}", { minWeeks: projection.minWeeks, maxWeeks: projection.maxWeeks, v2: imperial ? "0.5–1 lb" : "0.25–0.5 kg", label: projection.label })
+            : tr("No automatic timeline for your current goal or health context. Your logs stay available.")}
         </Text>
       </Surface>
 
       <Surface>
-        <View style={s.between}><Text style={s.h}>Waist-to-height</Text><Text style={s.big}>{ratio ?? "—"}</Text></View>
+        <View style={s.between}><Text style={s.h}>{tr("Waist-to-height")}</Text><Text style={s.big}>{ratio ?? "—"}</Text></View>
         <Text style={s.p}>
-          {waist ? `Latest waist: ${imperial ? `${Math.round((waist.value / 2.54) * 10) / 10} in` : `${waist.value} cm`}. ` : "Add a waist measurement in Health. "}
+          {waist ? tr("Latest waist: {w}. ", { w: imperial ? `${Math.round((waist.value / 2.54) * 10) / 10} in` : `${waist.value} cm` }) : tr("Add a waist measurement in Health. ")}
           A screening measure many clinicians use alongside BMI — not a body-fat or visceral-fat reading.
         </Text>
       </Surface>
@@ -76,12 +78,12 @@ export default function Journey() {
       <SectionHeader title="Progress photos" action="Add" onAction={addPhoto} />
       {first && latest && first.id !== latest.id ? (
         <Surface>
-          <Text style={s.h}>Then vs now</Text>
+          <Text style={s.h}>{tr("Then vs now")}</Text>
           <View style={s.compare}>
             {[first, latest].map((ph, i) => (
               <View key={ph.id} style={{ flex: 1, gap: 6 }}>
                 <Image source={{ uri: ph.image }} style={s.compareImg} resizeMode="cover" />
-                <Text style={s.caption}>{i === 0 ? "First" : "Latest"} · {new Date(ph.at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</Text>
+                <Text style={s.caption}>{i === 0 ? tr("First") : tr("Latest")} · {new Date(ph.at).toLocaleDateString(tr("en-US"), { month: "short", day: "numeric" })}</Text>
               </View>
             ))}
           </View>
@@ -92,28 +94,29 @@ export default function Journey() {
           <View key={ph.id} style={s.cell}>
             <Image source={{ uri: ph.image }} style={s.cellImg} resizeMode="cover" />
             <View style={s.cellBar}>
-              <Text style={s.caption}>{new Date(ph.at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</Text>
-              <Pressable accessibilityRole="button" accessibilityLabel="Delete photo" hitSlop={8}
+              <Text style={s.caption}>{new Date(ph.at).toLocaleDateString(tr("en-US"), { month: "short", day: "numeric" })}</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel={tr("Delete photo")} hitSlop={8}
                 onPress={() => act(() => update((x) => ({ ...x, photos: x.photos.filter((y) => y.id !== ph.id) })))}>
                 <Ionicons name="trash-outline" size={16} color={palette.muted} />
               </Pressable>
             </View>
           </View>
         ))}
-        <Pressable accessibilityRole="button" accessibilityLabel="Add progress photo" onPress={addPhoto} style={[s.cell, s.addCell]}>
+        <Pressable accessibilityRole="button" accessibilityLabel={tr("Add progress photo")} onPress={addPhoto} style={[s.cell, s.addCell]}>
           <Ionicons name="camera-outline" size={28} color={palette.brand} />
-          <Text style={s.addText}>Add photo</Text>
+          <Text style={s.addText}>{tr("Add photo")}</Text>
         </Pressable>
       </View>
-      <Text style={s.small}>Photos stay encrypted on this phone, are never sent for AI analysis and are left out of cloud backups. We don’t estimate body fat from photos.</Text>
+      <Text style={s.small}>{tr("Photos stay encrypted on this phone, are never sent for AI analysis and are left out of cloud backups. We don’t estimate body fat from photos.")}</Text>
     </Screen>
   );
 }
 
 function Stat({ label, value, unit, big }: { label: string; value: string; unit: string; big?: boolean }) {
+  const tr = useT();
   return (
     <View style={{ alignItems: "center", flex: 1 }}>
-      <Text style={s.darkLabel}>{label}</Text>
+      <Text style={s.darkLabel}>{tr(label)}</Text>
       <Text style={[s.darkValue, big && { fontSize: 34 }]}>{value}<Text style={s.darkUnit}> {unit}</Text></Text>
     </View>
   );

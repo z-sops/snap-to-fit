@@ -1,3 +1,4 @@
+import { useLang, useT } from "../i18n";
 import { effectiveProfile } from "../core/progress";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -9,6 +10,8 @@ import { nutritionTargets, todayTotals } from "../core/nutrition";
 import { urgentMessage, medicationRequest, restrictedHealthAdvice } from "../core/safety";
 import { uid, type Message } from "../core/model";
 export default function Coach() {
+  const tr = useT();
+  const lang = useLang();
   const { state, update } = useStore();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -22,6 +25,7 @@ export default function Coach() {
       try {
         await update((s) => ({ ...s, messages: [...s.messages, user] }));
         let answer = urgentMessage(question) || restrictedHealthAdvice(question);
+        if (answer) answer = tr(answer);
         if (!answer && medicationRequest(question))
           answer =
             "I can help you record your prescribed schedule and prepare questions for your prescriber. I cannot recommend doses, injection breaks, stopping, tapering, or insulin changes.";
@@ -33,6 +37,7 @@ export default function Coach() {
           const targets = nutritionTargets(p);
           const result = await api<{ text: string }>("/chat", {
             question,
+            language: lang,
             history: state.messages.slice(-8),
             profile: {
               age: p.age,
@@ -102,13 +107,13 @@ export default function Coach() {
         <View style={c.botAvatar}><Text style={{ fontSize: 26 }}>✨</Text></View>
         <View style={{ flex: 1 }}>
           <Text style={c.heroTitle}>Hi {p.name}, I’m your Snap coach</Text>
-          <Text style={c.heroText}>Ask about meals, macros, workouts or habits. I don’t diagnose, change medicines or handle emergencies — call 911 for an emergency.</Text>
+          <Text style={c.heroText}>{tr("Ask about meals, macros, workouts or habits. I don’t diagnose, change medicines or handle emergencies — call 911 for an emergency.")}</Text>
         </View>
       </View>
       <View style={c.prompts}>
         {prompts.map((x) => (
-          <Pressable key={x.q} accessibilityRole="button" accessibilityLabel={x.label} onPress={() => send(x.q)} style={c.prompt}>
-            <Text style={c.promptText}>{x.label}</Text>
+          <Pressable key={x.q} accessibilityRole="button" accessibilityLabel={tr(x.label)} onPress={() => send(x.q)} style={c.prompt}>
+            <Text style={c.promptText}>{tr(x.label)}</Text>
           </Pressable>
         ))}
       </View>
@@ -123,18 +128,18 @@ export default function Coach() {
       {busy ? (
         <View style={c.bubbleRow}>
           <View style={c.miniBot}><Text>✨</Text></View>
-          <View style={[c.bubble, c.botBubble]}><Text style={c.bubbleText}>Thinking…</Text></View>
+          <View style={[c.bubble, c.botBubble]}><Text style={c.bubbleText}>{tr("Thinking…")}</Text></View>
         </View>
       ) : null}
       <View style={c.composer}>
-        <TextInput value={text} onChangeText={setText} placeholder="What can I eat for dinner?" placeholderTextColor={colors.muted}
-          accessibilityLabel="Message your coach" style={c.input} multiline onSubmitEditing={() => send()} />
-        <Pressable accessibilityRole="button" accessibilityLabel="Send message" disabled={busy || !text.trim()} onPress={() => send()}
+        <TextInput value={text} onChangeText={setText} placeholder={tr("What can I eat for dinner?")} placeholderTextColor={colors.muted}
+          accessibilityLabel={tr("Message your coach")} style={c.input} multiline onSubmitEditing={() => send()} />
+        <Pressable accessibilityRole="button" accessibilityLabel={tr("Send message")} disabled={busy || !text.trim()} onPress={() => send()}
           style={[c.send, (busy || !text.trim()) && { opacity: 0.4 }]}>
           <Ionicons name="arrow-up" size={22} color="#fff" />
         </Pressable>
       </View>
-      <Text style={c.small}>AI answers can be wrong — check anything important with your doctor or dietitian. Only the profile details needed for your question are sent. The coach doesn’t calculate fertile or safe days or prescribe cycle-based training.</Text>
+      <Text style={c.small}>{tr("AI answers can be wrong — check anything important with your doctor or dietitian. Only the profile details needed for your question are sent. The coach doesn’t calculate fertile or safe days or prescribe cycle-based training.")}</Text>
     </Screen>
   );
 }

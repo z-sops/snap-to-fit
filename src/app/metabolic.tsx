@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useState, useEffect } from "react";
 import { router } from "expo-router";
 import {
@@ -28,6 +29,7 @@ import {
 import { localDay, uid } from "../core/model";
 import type { Routine } from "../core/planning-types";
 export default function Metabolic() {
+  const tr = useT();
   const { state, namespace, update } = useStore();
   const [routine, setRoutine] = useState<Routine>(
     state.routine || JSON.parse(JSON.stringify(defaultRoutine)),
@@ -72,7 +74,7 @@ export default function Metabolic() {
         });
         notify(
           routine.reminders
-            ? "Routine saved and reminders requested on this device."
+            ? tr("Routine saved and reminders requested on this device.")
             : "Routine saved without notifications.",
         );
       } catch (e) {
@@ -92,8 +94,8 @@ export default function Metabolic() {
         <H>Today’s rhythm</H>
         <P>
           {active.weekendDays.includes(now.getDay())
-            ? "Weekend"
-            : "Regular day"}{" "}
+            ? tr("Weekend")
+            : tr("Regular day")}{" "}
           · wake {times.wake} · breakfast {times.breakfast} · lunch{" "}
           {times.lunch} · dinner {times.dinner}
         </P>
@@ -144,8 +146,8 @@ export default function Metabolic() {
         <H>Set your usual times</H>
         <Chips
           values={[
-            { value: "regular", label: "Regular days" },
-            { value: "weekend", label: "Weekend days" },
+            { value: "regular", label: tr("Regular days") },
+            { value: "weekend", label: tr("Weekend days") },
           ]}
           selected={group}
           onChange={setGroup}
@@ -191,7 +193,7 @@ export default function Metabolic() {
         />
         <Button
           disabled={busy}
-          title={busy ? "Saving routine…" : "Save my routine"}
+          title={busy ? tr("Saving routine…") : tr("Save my routine")}
           onPress={save}
         />
         <P>

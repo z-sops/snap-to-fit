@@ -405,6 +405,7 @@ export const server = createServer(async (req, res) => {
           text: String(m.text || "").slice(0, 2000),
         }))
       : [];
+    const spanish = body.language === "es";
     await chargeAI();
     const text = await generate(
       [
@@ -414,6 +415,7 @@ export const server = createServer(async (req, res) => {
             targets,
             history,
             question: body.question,
+            replyLanguage: spanish ? "Spanish (US). Write the whole answer in natural, simple US Spanish." : "English (US)",
           }),
         },
       ],
@@ -421,12 +423,14 @@ export const server = createServer(async (req, res) => {
     );
     // Defense in depth only, not proof of clinical correctness.
     if (
-      /(stop|skip|increase|decrease|taper|wean|reduce).{0,45}(insulin|ozempic|wegovy|mounjaro|injection|semaglutide|tirzepatide)|(insulin|injection).{0,45}(\d+\s*(mg|units)|take a break)/i.test(
+      /(stop|skip|increase|decrease|taper|wean|reduce|suspend|dej|salt|aument|dismin|reduc|baj).{0,45}(insulin|ozempic|wegovy|mounjaro|injection|inyecci|semaglutid|tirzepatid)|(insulin|injection|inyecci).{0,45}(\d+\s*(mg|units|unidades)|take a break|descans)/i.test(
         text,
       )
     ) {
       send(200, {
-        text: "Medication changes need your prescriber’s advice. I can help with logs and general education.",
+        text: spanish
+          ? "Los cambios de medicamento necesitan el consejo de tu médico. Puedo ayudarte con tus registros y con educación general."
+          : "Medication changes need your prescriber’s advice. I can help with logs and general education.",
       });
       return;
     }

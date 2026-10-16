@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 // Guided workout: one exercise at a time, set counter, rest timer and spoken cues.
 import React, { useEffect, useRef, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -13,6 +14,7 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
   visible: boolean; title: string; items: PlayerItem[]; voice: boolean; onVoice: (v: boolean) => void;
   onClose: () => void; onFinish: (logs: WorkoutLog[]) => void; units: "imperial" | "metric";
 }) {
+  const tr = useT();
   const [index, setIndex] = useState(0);
   const [set, setSet] = useState(1);
   const [rest, setRest] = useState(0);
@@ -31,7 +33,7 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
     const key = `${item.id}-${index}`;
     if (announced.current === key) return;
     announced.current = key;
-    say(`${index === 0 ? "Let's go. " : "Next. "}${item.name}. ${item.sets} sets of ${item.reps}.`, voice);
+    say(index === 0 ? "Let's go. {name}. {sets} sets of {reps}." : "Next. {name}. {sets} sets of {reps}.", voice, { name: item.name, sets: item.sets, reps: item.reps });
   }, [visible, item, index, voice]);
 
   // Rest countdown with spoken cues at 10 seconds and at the end.
@@ -40,7 +42,7 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
     const timer = setTimeout(() => {
       const next = rest - 1;
       if (next === 10) say("10 seconds.", voice);
-      if (next === 0) { say(`Set ${set}. Go.`, voice); haptic("warning"); }
+      if (next === 0) { say("Set {set}. Go.", voice, { set }); haptic("warning"); }
       setRest(next);
     }, 1000);
     return () => clearTimeout(timer);
@@ -57,7 +59,7 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
     if (set < item.sets) {
       setSet(set + 1);
       setRest(restLength);
-      say(`Nice. Rest ${restLength} seconds.`, voice);
+      say("Nice. Rest {sec} seconds.", voice, { sec: restLength });
     } else nextExercise();
   };
   const nextExercise = () => {
@@ -83,11 +85,11 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
   return (
     <Sheet visible={visible} title={title} onClose={() => { quiet(); onClose(); }}
       footer={finished ? <PrimaryButton title="Save workout" icon="checkmark-done" onPress={finish} />
-        : rest > 0 ? <PrimaryButton title="Skip rest" icon="play-skip-forward" onPress={() => { setRest(0); say(`Set ${set}. Go.`, voice); }} />
-        : <PrimaryButton title={`Done · set ${set} of ${item?.sets}`} icon="checkmark-circle" onPress={completeSet} />}>
+        : rest > 0 ? <PrimaryButton title="Skip rest" icon="play-skip-forward" onPress={() => { setRest(0); say("Set {set}. Go.", voice, { set }); }} />
+        : <PrimaryButton title={tr("Done · set {set} of {v1}", { set, v1: item?.sets })} icon="checkmark-circle" onPress={completeSet} />}>
       <View style={s.topRow}>
-        <Pill label={finished ? "Finished" : `Exercise ${index + 1} of ${items.length}`} />
-        <Pressable accessibilityRole="switch" aria-checked={voice} accessibilityLabel="Voice coach" onPress={() => onVoice(!voice)} style={s.voice}>
+        <Pill label={finished ? tr("Finished") : `Exercise ${index + 1} of ${items.length}`} />
+        <Pressable accessibilityRole="switch" aria-checked={voice} accessibilityLabel={tr("Voice coach")} onPress={() => onVoice(!voice)} style={s.voice}>
           <Ionicons name={voice ? "volume-high" : "volume-mute"} size={18} color={voice ? palette.brand : palette.muted} />
           <Text style={[s.voiceText, !voice && { color: palette.muted }]}>Voice coach {voice ? "on" : "off"}</Text>
         </Pressable>
@@ -97,7 +99,7 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
       {finished ? (
         <View style={s.doneBox}>
           <Text style={s.doneEmoji}>🏆</Text>
-          <Text style={s.doneTitle}>Workout complete!</Text>
+          <Text style={s.doneTitle}>{tr("Workout complete!")}</Text>
           <Text style={s.p}>{Object.keys(done).length} exercises · {Object.values(done).reduce((a, d) => a + d.sets, 0)} sets. Save it to your log and keep your streak going.</Text>
         </View>
       ) : item ? (
@@ -105,33 +107,33 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
           {item.image ? <Image source={{ uri: item.image }} style={s.image} resizeMode="cover" accessibilityLabel={`${item.name} demonstration`} /> : null}
           <Text style={s.name}>{item.name}</Text>
           {rest > 0 ? (
-            <View style={s.restBox} accessibilityLabel={`Rest ${rest} seconds`}>
-              <Text style={s.restLabel}>Rest</Text>
+            <View style={s.restBox} accessibilityLabel={tr("Rest {rest} seconds", { rest })}>
+              <Text style={s.restLabel}>{tr("Rest")}</Text>
               <Text style={s.restNum}>{rest}s</Text>
               <Text style={s.p}>Next: set {set} of {item.sets} · {item.reps} reps</Text>
             </View>
           ) : (
             <>
               <View style={s.statRow}>
-                <View style={s.stat}><Text style={s.statLabel}>Set</Text><Text style={s.statNum}>{set}/{item.sets}</Text></View>
-                <View style={s.stat}><Text style={s.statLabel}>Reps</Text><Stepper label="reps" value={reps} onChange={setReps} step={1} min={1} max={100} /></View>
+                <View style={s.stat}><Text style={s.statLabel}>{tr("Set")}</Text><Text style={s.statNum}>{set}/{item.sets}</Text></View>
+                <View style={s.stat}><Text style={s.statLabel}>{tr("Reps")}</Text><Stepper label="reps" value={reps} onChange={setReps} step={1} min={1} max={100} /></View>
               </View>
-              <TextInput value={weight} onChangeText={setWeight} keyboardType="decimal-pad" placeholder={`Weight (${units === "imperial" ? "lb" : "kg"}) — leave empty for bodyweight`}
-                placeholderTextColor={palette.muted} accessibilityLabel="Weight used" style={s.input} />
-              {(item.cues || []).slice(0, 3).map((c) => <Text key={c} style={s.cue}>• {c}</Text>)}
+              <TextInput value={weight} onChangeText={setWeight} keyboardType="decimal-pad" placeholder={tr("Weight ({v0}) — leave empty for bodyweight", { v0: units === "imperial" ? "lb" : "kg" })}
+                placeholderTextColor={palette.muted} accessibilityLabel={tr("Weight used")} style={s.input} />
+              {(item.cues || []).slice(0, 3).map((c) => <Text key={c} style={s.cue}>• {tr(c)}</Text>)}
             </>
           )}
           <View style={s.restPick}>
-            <Text style={s.p}>Rest between sets</Text>
+            <Text style={s.p}>{tr("Rest between sets")}</Text>
             {[45, 60, 90, 120].map((sec) => (
-              <Pressable key={sec} accessibilityRole="button" accessibilityLabel={`Set rest to ${sec} seconds`} onPress={() => setRestLength(sec)}
+              <Pressable key={sec} accessibilityRole="button" accessibilityLabel={tr("Set rest to {sec} seconds", { sec })} onPress={() => setRestLength(sec)}
                 style={[s.restChip, restLength === sec && { backgroundColor: palette.ink }]}>
                 <Text style={[s.restChipText, restLength === sec && { color: palette.bg }]}>{sec}s</Text>
               </Pressable>
             ))}
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel="Skip this exercise" onPress={nextExercise}><Text style={s.skip}>Skip this exercise</Text></Pressable>
-          <Text style={s.small}>Stop if you feel sharp pain, chest pain, dizziness or unusual shortness of breath.</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel={tr("Skip this exercise")} onPress={nextExercise}><Text style={s.skip}>{tr("Skip this exercise")}</Text></Pressable>
+          <Text style={s.small}>{tr("Stop if you feel sharp pain, chest pain, dizziness or unusual shortness of breath.")}</Text>
         </>
       ) : null}
     </Sheet>

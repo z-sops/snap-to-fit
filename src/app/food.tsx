@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useEffect, useRef, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -23,6 +24,7 @@ import { photoFood, type PhotoResult } from "../core/photo-estimate";
 type Flow = null | "search" | "barcode" | "detail" | "quick";
 
 export default function FoodScreen() {
+  const tr = useT();
   const { state, update } = useStore();
   const p = effectiveProfile(state)!;
   const targets = nutritionTargets(p);
@@ -71,7 +73,7 @@ export default function FoodScreen() {
           setPhoto({
             uri: img.uri, thumb: img.thumb, estimate: false,
             note: !p.aiConsent
-              ? "Photo added. Automatic calories need AI analysis, which is off. Turn it on in Settings, or find what you ate below."
+              ? tr("Photo added. Automatic calories need AI analysis, which is off. Turn it on in Settings, or find what you ate below.")
               : "Photo added. AI meal analysis is not connected in this test build yet, so find what you ate below.",
           });
           return;
@@ -106,16 +108,16 @@ export default function FoodScreen() {
   const micros: NutrientKey[] = ["fibre", "sodium", "satFat", "sugar", "potassium", "calcium", "iron", "magnesium", "vitaminC", "vitaminD", "vitaminB12", "folate"];
 
   return (
-    <Screen title="Food" subtitle={new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}>
+    <Screen title="Food" subtitle={new Date().toLocaleDateString(tr("en-US"), { weekday: "long", month: "long", day: "numeric" })}>
       <Surface dark>
         <View style={s.sumRow}>
           <View>
-            <Text style={s.sumLabel}>Eaten today</Text>
+            <Text style={s.sumLabel}>{tr("Eaten today")}</Text>
             <Text style={s.sumBig}>{eaten.toLocaleString()} <Text style={s.sumUnit}>kcal</Text></Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={s.sumLabel}>{left === null ? "Calorie target" : left >= 0 ? "Left" : "Over"}</Text>
-            <Text style={s.sumMid}>{left === null ? "Set by your care team" : `${Math.abs(left).toLocaleString()} kcal`}</Text>
+            <Text style={s.sumLabel}>{left === null ? tr("Calorie target") : left >= 0 ? tr("Left") : tr("Over")}</Text>
+            <Text style={s.sumMid}>{left === null ? tr("Set by your care team") : `${Math.abs(left).toLocaleString()} kcal`}</Text>
           </View>
         </View>
         {left !== null ? <Bar value={eaten} total={targets.calories} color={left >= 0 ? "#6EA8FF" : palette.carbs} height={10} /> : null}
@@ -130,14 +132,14 @@ export default function FoodScreen() {
       </Surface>
 
       <View style={s.actions}>
-        <Action icon="camera" label={busy ? "Opening…" : "Snap meal"} a11y="Take a snap" tint={soft("#EEF2FF")} color={palette.brand} onPress={() => scan(true)} />
+        <Action icon="camera" label={busy ? tr("Opening…") : tr("Snap meal")} a11y="Take a snap" tint={soft("#EEF2FF")} color={palette.brand} onPress={() => scan(true)} />
         <Action icon="barcode-outline" label="Barcode" a11y="Scan barcode" tint={soft("#E7F6EE")} color={palette.good} onPress={() => open(defaultSlot(), "barcode")} />
         <Action icon="search" label="Search" a11y="Search food" tint={soft("#FFF4DE")} color={palette.warn} onPress={() => open(defaultSlot(), "search")} />
         <Action icon="flash" label="Quick add" a11y="Quick add calories" tint={soft("#F3EDFF")} color="#6D28D9" onPress={() => open(defaultSlot(), "quick")} />
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Choose photo" onPress={() => scan(false)} style={s.gallery}>
+      <Pressable accessibilityRole="button" accessibilityLabel={tr("Choose photo")} onPress={() => scan(false)} style={s.gallery}>
         <Ionicons name="images-outline" size={16} color={palette.brand} />
-        <Text style={s.galleryText}>Use a photo from your gallery</Text>
+        <Text style={s.galleryText}>{tr("Use a photo from your gallery")}</Text>
       </Pressable>
 
       {notice ? (
@@ -149,8 +151,8 @@ export default function FoodScreen() {
 
       {photo && !photo.estimate ? (
         <Surface>
-          <Image source={{ uri: photo.uri }} style={s.photo} resizeMode="cover" accessibilityLabel="Your meal photo" />
-          <Text style={s.body}>{photo.note}</Text>
+          <Image source={{ uri: photo.uri }} style={s.photo} resizeMode="cover" accessibilityLabel={tr("Your meal photo")} />
+          <Text style={s.body}>{tr(photo.note)}</Text>
           <PrimaryButton title="Find what you ate" icon="search" onPress={() => open(defaultSlot(), "search")} />
         </Surface>
       ) : null}
@@ -160,13 +162,13 @@ export default function FoodScreen() {
         return (
           <Surface key={m.id}>
             <View style={s.slotHead}>
-              <Text style={s.slotTitle}>{m.emoji}  {m.label}</Text>
+              <Text style={s.slotTitle}>{m.emoji}  {tr(m.label)}</Text>
               <Text style={s.slotKcal}>{sumCalories(list)} kcal</Text>
-              <Pressable accessibilityRole="button" accessibilityLabel={`Add to ${m.label}`} onPress={() => open(m.id, "search")} hitSlop={8} style={s.plus}>
+              <Pressable accessibilityRole="button" accessibilityLabel={tr("Add to {slot}", { slot: tr(m.label) })} onPress={() => open(m.id, "search")} hitSlop={8} style={s.plus}>
                 <Ionicons name="add" size={22} color="#fff" />
               </Pressable>
             </View>
-            {list.length === 0 ? <Text style={s.empty}>Nothing logged yet.</Text> : null}
+            {list.length === 0 ? <Text style={s.empty}>{tr("Nothing logged yet.")}</Text> : null}
             {list.map((meal) => (
               <View key={meal.id} style={s.item}>
                 {meal.photoUri ? <Image source={{ uri: meal.photoUri }} style={s.thumb} /> : (
@@ -195,8 +197,8 @@ export default function FoodScreen() {
       })}
 
       <Surface>
-        <Pressable accessibilityRole="button" accessibilityLabel={showMicros ? "Hide vitamins and minerals" : "Show vitamins and minerals"} onPress={() => setShowMicros(!showMicros)} style={s.slotHead}>
-          <Text style={s.slotTitle}>🧪  Vitamins & minerals</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel={showMicros ? tr("Hide vitamins and minerals") : tr("Show vitamins and minerals")} onPress={() => setShowMicros(!showMicros)} style={s.slotHead}>
+          <Text style={s.slotTitle}>{tr("🧪 Vitamins & minerals")}</Text>
           <Ionicons name={showMicros ? "chevron-up" : "chevron-down"} size={20} color={palette.muted} />
         </Pressable>
         {showMicros ? micros.map((k) => {
@@ -204,12 +206,12 @@ export default function FoodScreen() {
           const v = totals[k];
           return (
             <View key={k} style={s.microRow}>
-              <Text style={s.microName}>{info.label}</Text>
+              <Text style={s.microName}>{tr(info.label)}</Text>
               <View style={{ flex: 1 }}>{info.dv ? <Bar value={v || 0} total={info.dv} color={info.limit && (v || 0) > info.dv ? palette.bad : info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
               <Text style={s.microValue}>{v === undefined ? "—" : `${v} ${info.unit}`}</Text>
             </View>
           );
-        }) : <Text style={s.empty}>Today’s fiber, sodium, potassium, iron, vitamins and more vs. FDA Daily Values. Foods from search and barcode carry full nutrients; quick adds don’t.</Text>}
+        }) : <Text style={s.empty}>{tr("Today’s fiber, sodium, potassium, iron, vitamins and more vs. FDA Daily Values. Foods from search and barcode carry full nutrients; quick adds don’t.")}</Text>}
       </Surface>
 
       <SectionHeader title="Plan ahead" />
@@ -229,9 +231,10 @@ export default function FoodScreen() {
 }
 
 function MacroBarDark(props: { label: string; value: number; total?: number; color: string }) {
+  const tr = useT();
   return (
     <View style={{ flex: 1, gap: 6 }}>
-      <Text style={s.darkLabel}>{props.label}</Text>
+      <Text style={s.darkLabel}>{tr(props.label)}</Text>
       <Bar value={props.value} total={props.total || props.value || 1} color={props.color} />
       <Text style={s.darkValue}>{Math.round(props.value)}<Text style={s.darkTotal}>{props.total ? ` / ${props.total}g` : "g"}</Text></Text>
     </View>
@@ -239,15 +242,17 @@ function MacroBarDark(props: { label: string; value: number; total?: number; col
 }
 
 function Action({ icon, label, a11y, tint, color, onPress }: { icon: string; label: string; a11y: string; tint: string; color: string; onPress: () => void }) {
+  const tr = useT();
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={a11y} onPress={onPress} style={s.action}>
+    <Pressable accessibilityRole="button" accessibilityLabel={tr(a11y)} onPress={onPress} style={s.action}>
       <View style={[s.actionIcon, { backgroundColor: tint }]}><Ionicons name={icon as never} size={24} color={color} /></View>
-      <Text style={s.actionText}>{label}</Text>
+      <Text style={s.actionText}>{tr(label)}</Text>
     </Pressable>
   );
 }
 
 function QuickAdd({ visible, slot, onClose, onAdd, photoUri }: { visible: boolean; slot: MealSlotName; onClose: () => void; onAdd: (m: NewMeal) => void; photoUri?: string }) {
+  const tr = useT();
   const [name, setName] = useState("");
   const [values, setValues] = useState({ calories: "", protein: "", carbs: "", fat: "", fibre: "" });
   const [where, setWhere] = useState<MealSlotName>(slot);
@@ -264,13 +269,13 @@ function QuickAdd({ visible, slot, onClose, onAdd, photoUri }: { visible: boolea
         onAdd(meal);
         setName(""); setValues({ calories: "", protein: "", carbs: "", fat: "", fibre: "" });
       })} />}>
-      <Text style={s.body}>Use this for a package label or a restaurant menu that lists calories.</Text>
-      <TextInput value={name} onChangeText={setName} placeholder="What did you eat?" placeholderTextColor={palette.muted} accessibilityLabel="Meal name" style={s.input} />
+      <Text style={s.body}>{tr("Use this for a package label or a restaurant menu that lists calories.")}</Text>
+      <TextInput value={name} onChangeText={setName} placeholder={tr("What did you eat?")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Meal name")} style={s.input} />
       {fields.map(([k, label]) => (
-        <TextInput key={k} value={values[k]} onChangeText={(v) => setValues((x) => ({ ...x, [k]: v }))} placeholder={label}
-          placeholderTextColor={palette.muted} keyboardType="decimal-pad" accessibilityLabel={label} style={s.input} />
+        <TextInput key={k} value={values[k]} onChangeText={(v) => setValues((x) => ({ ...x, [k]: v }))} placeholder={tr(label)}
+          placeholderTextColor={palette.muted} keyboardType="decimal-pad" accessibilityLabel={tr(label)} style={s.input} />
       ))}
-      <View style={s.wrap}>{mealSlotNames.map((m) => <Chip key={m.id} label={`${m.emoji} ${m.label}`} selected={where === m.id} onPress={() => setWhere(m.id)} />)}</View>
+      <View style={s.wrap}>{mealSlotNames.map((m) => <Chip key={m.id} label={`${m.emoji} ${tr(m.label)}`} selected={where === m.id} onPress={() => setWhere(m.id)} />)}</View>
     </Sheet>
   );
 }

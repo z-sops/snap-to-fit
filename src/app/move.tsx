@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -16,6 +17,7 @@ import { streak } from "../core/streaks";
 import { uid, numeric, validateProfile, type Place, localDay } from "../core/model";
 
 export default function Move() {
+  const tr = useT();
   const { state, update } = useStore();
   const p = state.profile!;
   const [editingWeek, setEditingWeek] = useState(!p.workoutDays);
@@ -47,15 +49,15 @@ export default function Move() {
     });
 
   return (
-    <Screen title="Move" subtitle={`${p.days} sessions a week · ${p.experience}`}>
+    <Screen title="Move" subtitle={tr("{days} sessions a week · {experience}", { days: p.days, experience: tr(p.experience) })}>
       <Surface dark>
         <View style={s.sumRow}>
           <View>
-            <Text style={s.darkLabel}>This week</Text>
-            <Text style={s.darkBig}>{doneDays}<Text style={s.darkUnit}> / {planned} sessions</Text></Text>
+            <Text style={s.darkLabel}>{tr("This week")}</Text>
+            <Text style={s.darkBig}>{doneDays}<Text style={s.darkUnit}> / {tr("{n} sessions", { n: planned })}</Text></Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={s.darkLabel}>Active minutes</Text>
+            <Text style={s.darkLabel}>{tr("Active minutes")}</Text>
             <Text style={s.darkMid}>{weekMinutes} min</Text>
           </View>
         </View>
@@ -63,12 +65,12 @@ export default function Move() {
           {week.map((d) => (
             <Pressable key={d.date} accessibilityRole="tab" aria-selected={d.date === selectedDate} accessibilityLabel={`${d.weekday}${d.rest ? ", rest day" : ""}${d.completed ? ", done" : ""}`}
               onPress={() => setSelectedDate(d.date)} style={[s.day, d.date === selectedDate && s.dayOn]}>
-              <Text style={[s.dayName, d.date === selectedDate && { color: "#17213B" }]}>{d.weekday.slice(0, 1)}</Text>
+              <Text style={[s.dayName, d.date === selectedDate && { color: "#17213B" }]}>{tr(d.weekday).slice(0, 1).toUpperCase()}</Text>
               <Ionicons name={d.completed ? "checkmark-circle" : d.rest ? "ellipse-outline" : "barbell"} size={16} color={d.completed ? palette.fiber : d.date === selectedDate ? "#17213B" : "#A9B4CC"} />
             </Pressable>
           ))}
         </View>
-        <Text style={s.darkSmall}>{st.current ? `🔥 ${st.current}-day streak · ` : "Start a streak today · "}tap a day to see its plan</Text>
+        <Text style={s.darkSmall}>{st.current ? tr("🔥 {current}-day streak · ", { current: st.current }) : tr("Start a streak today · ")}{tr("tap a day to see its plan")}</Text>
       </Surface>
 
       <View style={s.chipsRow}>
@@ -76,14 +78,14 @@ export default function Move() {
       </View>
 
       <Surface>
-        <Text style={s.kicker}>{day.date === localDay() ? "Today" : day.weekday}</Text>
-        <Text style={s.title}>{restricted ? "Your care plan comes first" : day.rest ? "Rest or light activity" : day.title}</Text>
+        <Text style={s.kicker}>{day.date === localDay() ? tr("Today") : day.weekday}</Text>
+        <Text style={s.title}>{restricted ? tr("Your care plan comes first") : day.rest ? tr("Rest or light activity") : day.title}</Text>
         <Text style={s.p}>
           {restricted
-            ? "Because of your health details, Snap to Fit doesn’t assign intensity. Use the library and safety guides with your doctor or physical therapist."
+            ? tr("Because of your health details, Snap to Fit doesn’t assign intensity. Use the library and safety guides with your doctor or physical therapist.")
             : day.rest
-              ? "No session planned. A walk, stretching or mobility work all count."
-              : `${day.items.length} exercises · ${day.sets} sets × ${day.reps} reps · about ${day.duration} min`}
+              ? tr("No session planned. A walk, stretching or mobility work all count.")
+              : tr("{length} exercises · {sets} sets × {reps} reps · about {duration} min", { length: day.items.length, sets: day.sets, reps: day.reps, duration: day.duration })}
         </Text>
         {!restricted && !day.rest ? (
           <>
@@ -96,7 +98,7 @@ export default function Move() {
                 </View>
               </View>
             ))}
-            <PrimaryButton title={day.completed ? "Do it again" : "Start workout"} icon="play" onPress={() => setPlayer({ title: day.title, items: planItems })} />
+            <PrimaryButton title={day.completed ? tr("Do it again") : tr("Start workout")} icon="play" onPress={() => setPlayer({ title: day.title, items: planItems })} />
           </>
         ) : (
           <PrimaryButton title="Browse exercises" icon="search" onPress={() => router.push("/exercises")} />
@@ -105,7 +107,7 @@ export default function Move() {
 
       {mine.length ? (
         <Surface>
-          <View style={s.between}><Text style={s.title}>My workout</Text><Pill label={`${mine.length} exercises`} /></View>
+          <View style={s.between}><Text style={s.title}>{tr("My workout")}</Text><Pill label={`${mine.length} exercises`} /></View>
           {myItems.map((it) => (
             <View key={it.id} style={s.exRow}>
               <Image source={{ uri: it.image }} style={s.exImg} />
@@ -116,11 +118,11 @@ export default function Move() {
         </Surface>
       ) : null}
 
-      <Pressable accessibilityRole="button" accessibilityLabel="Open exercise library" onPress={() => router.push("/exercises")} style={s.libCard}>
+      <Pressable accessibilityRole="button" accessibilityLabel={tr("Open exercise library")} onPress={() => router.push("/exercises")} style={s.libCard}>
         <View style={s.libIcon}><Ionicons name="library" size={26} color="#fff" /></View>
         <View style={{ flex: 1 }}>
-          <Text style={s.libTitle}>Exercise library</Text>
-          <Text style={s.libText}>870+ exercises by muscle and equipment, with form steps. Filtered for your health details.</Text>
+          <Text style={s.libTitle}>{tr("Exercise library")}</Text>
+          <Text style={s.libText}>{tr("870+ exercises by muscle and equipment, with form steps. Filtered for your health details.")}</Text>
         </View>
         <Ionicons name="chevron-forward" size={22} color="#fff" />
       </Pressable>
@@ -134,8 +136,8 @@ export default function Move() {
 
       {guides.length ? (
         <Card tint>
-          <H>Exercise safety guides for you</H>
-          <P>Based on your profile. Your doctor or physical therapist sets your limits — these guides help you ask the right questions.</P>
+          <H>{tr("Exercise safety guides for you")}</H>
+          <P>{tr("Based on your profile. Your doctor or physical therapist sets your limits — these guides help you ask the right questions.")}</P>
           {guides.slice(0, 4).map((a) => (
             <Button key={a.id} secondary title={`${a.emoji} ${a.title}`} onPress={() => router.push({ pathname: "/education", params: { topic: a.id } })} />
           ))}
@@ -143,7 +145,7 @@ export default function Move() {
       ) : null}
 
       <Card>
-        <Button secondary title={editingWeek ? "Close week settings" : "Choose / change my workout days"} onPress={() => { setWeekProfile(p); setEditingWeek(!editingWeek); }} />
+        <Button secondary title={editingWeek ? tr("Close week settings") : tr("Choose / change my workout days")} onPress={() => { setWeekProfile(p); setEditingWeek(!editingWeek); }} />
         {editingWeek ? <>
           <WorkoutPreferences profile={weekProfile} onChange={setWeekProfile} />
           <Button title="Save my workout week" onPress={() => act(async () => {
@@ -156,13 +158,13 @@ export default function Move() {
       </Card>
 
       <SectionHeader title="Recent sessions" />
-      {state.workouts.length === 0 ? <Text style={s.p}>Finish a workout or log an activity to see it here.</Text> : null}
+      {state.workouts.length === 0 ? <Text style={s.p}>{tr("Finish a workout or log an activity to see it here.")}</Text> : null}
       {[...state.workouts].reverse().slice(0, 12).map((w) => (
         <View key={w.id} style={s.logRow}>
           <View style={[s.exImg, s.exIcon]}><Ionicons name="barbell" size={18} color={palette.brand} /></View>
           <View style={{ flex: 1 }}>
             <Text style={s.exName}>{w.name}</Text>
-            <Text style={s.exMeta}>{w.sets ? `${w.sets} × ${w.reps}${w.weight ? ` · ${units === "imperial" ? Math.round(w.weight * 2.2046) + " lb" : w.weight + " kg"}` : ""} · ` : ""}{w.minutes} min · {new Date(w.at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</Text>
+            <Text style={s.exMeta}>{w.sets ? `${w.sets} × ${w.reps}${w.weight ? ` · ${units === "imperial" ? Math.round(w.weight * 2.2046) + " lb" : w.weight + " kg"}` : ""} · ` : ""}{w.minutes} min · {new Date(w.at).toLocaleDateString(tr("en-US"), { month: "short", day: "numeric" })}</Text>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${w.name}`} onPress={() => act(() => update((x) => ({ ...x, workouts: x.workouts.filter((y) => y.id !== w.id) })))} hitSlop={8}>
             <Ionicons name="trash-outline" size={18} color={palette.muted} />
@@ -188,6 +190,7 @@ const activities = [
   { id: "swim", name: "Swimming" }, { id: "yoga", name: "Yoga / stretching" }, { id: "sport", name: "Sports" }, { id: "strength", name: "Strength training" },
 ];
 function LogActivity({ visible, onClose, onSave }: { visible: boolean; onClose: () => void; onSave: (e: { id: string; at: string; exerciseId: string; name: string; sets: number; reps: number; weight: number; minutes: number }) => void }) {
+  const tr = useT();
   const [kind, setKind] = useState("walk");
   const [minutes, setMinutes] = useState("");
   return (
@@ -198,8 +201,8 @@ function LogActivity({ visible, onClose, onSave }: { visible: boolean; onClose: 
         setMinutes("");
       })} />}>
       <View style={s.chipsRow}>{activities.map((a) => <Chip key={a.id} label={a.name} selected={kind === a.id} onPress={() => setKind(a.id)} />)}</View>
-      <TextInput value={minutes} onChangeText={setMinutes} keyboardType="number-pad" placeholder="Minutes" placeholderTextColor={palette.muted}
-        accessibilityLabel="Duration (minutes)" style={s.input} />
+      <TextInput value={minutes} onChangeText={setMinutes} keyboardType="number-pad" placeholder={tr("Minutes")} placeholderTextColor={palette.muted}
+        accessibilityLabel={tr("Duration (minutes)")} style={s.input} />
     </Sheet>
   );
 }

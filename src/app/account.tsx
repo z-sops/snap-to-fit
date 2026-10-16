@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import { backupState, withoutDeviceReminders } from "../core/backup-state";
 import React, { useState, useEffect } from "react";
 import { router } from "expo-router";
@@ -29,6 +30,7 @@ import { useStore } from "../services/store";
 import { type State } from "../core/model";
 import type { Session } from "../services/session-types";
 export default function Account() {
+  const tr = useT();
   const { state, namespace, switchAccount, update } = useStore();
   const [session, setSession] = useState<Session | null>(null);
   const [mode, setMode] = useState("login");
@@ -79,9 +81,9 @@ export default function Account() {
           <H>Sign in or create an account</H>
           <Chips
             values={[
-              { value: "login", label: "Sign in" },
-              { value: "register", label: "Create account" },
-              { value: "recover", label: "Recover access" },
+              { value: "login", label: tr("Sign in") },
+              { value: "register", label: tr("Create account") },
+              { value: "recover", label: tr("Recover access") },
             ]}
             selected={mode}
             onChange={setMode}
@@ -95,8 +97,8 @@ export default function Account() {
           <Field
             label={
               mode === "recover"
-                ? "New password"
-                : "Password (at least 12 characters)"
+                ? tr("New password")
+                : tr("Password (at least 12 characters)")
             }
             secret
             value={password}
@@ -121,10 +123,10 @@ export default function Account() {
             disabled={busy}
             title={
               mode === "register"
-                ? "Create my account"
+                ? tr("Create my account")
                 : mode === "recover"
-                  ? "Recover account"
-                  : "Sign in"
+                  ? tr("Recover account")
+                  : tr("Sign in")
             }
             onPress={() =>
               run(async () => {

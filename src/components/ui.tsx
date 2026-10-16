@@ -21,6 +21,7 @@ import {
 } from "react-native";
 import { router, usePathname } from "expo-router";
 import { useOptionalStore } from "../services/store";
+import { useT, translateActive } from "../i18n";
 import {
   activeMainTab,
   isActive,
@@ -37,7 +38,8 @@ export const isDark = Appearance.getColorScheme() === "dark";
 export const colors = isDark
   ? { ink: "#EEF2FA", muted: "#9AA6BF", green: "#6B8CFF", lime: "#1C2A55", bg: "#0B1220", line: "#26324A", amber: "#2A2213", card: "#141D31", hairline: "#1F2A42" }
   : { ink: "#17213B", muted: "#5D6880", green: "#355AF4", lime: "#EEF2FF", bg: "#F4F6FA", line: "#E2E7F0", amber: "#FFF6E7", card: "#FFFFFF", hairline: "#EDF0F6" };
-export function notify(message: string) {
+export function notify(raw: string) {
+  const message = translateActive(raw);
   if (Platform.OS === "web") window.alert(message);
   else Alert.alert("Snap to Fit", message);
 }
@@ -72,6 +74,7 @@ export function Screen({
   const hasProfile = !!store?.state.profile;
   const [menu, setMenu] = useState(false);
   const active = activeMainTab(path);
+  const tr = useT();
   const go = (href: AppRoute) => {
     setMenu(false);
     if (!isActive(path, href)) router.navigate(href);
@@ -100,7 +103,7 @@ export function Screen({
           <Pressable
             onPress={() => setMenu(true)}
             accessibilityRole="button"
-            accessibilityLabel="Open menu"
+            accessibilityLabel={tr("Open menu")}
             aria-expanded={menu}
             hitSlop={8}
             style={s.iconButton}
@@ -115,7 +118,7 @@ export function Screen({
             <Pressable
               onPress={() => go("/settings")}
               accessibilityRole="button"
-              accessibilityLabel="Open settings"
+              accessibilityLabel={tr("Open settings")}
               hitSlop={8}
               style={s.iconButton}
             >
@@ -130,12 +133,12 @@ export function Screen({
             <Pressable
               onPress={back}
               accessibilityRole="button"
-              accessibilityLabel={backLabel || "Back"}
+              accessibilityLabel={tr(backLabel || tr("Back"))}
               hitSlop={8}
               style={s.backBtn}
             >
               <Ionicons name="chevron-back" size={20} color={colors.green} />
-              <Text style={s.backText}>{backLabel || "Back"}</Text>
+              <Text style={s.backText}>{tr(backLabel || tr("Back"))}</Text>
             </Pressable>
           </View>
         ) : null}
@@ -143,11 +146,11 @@ export function Screen({
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={s.content}
         >
-          <Text style={s.title}>{title}</Text>
-          {subtitle ? <Text style={s.subtitle}>{subtitle}</Text> : null}
+          <Text style={s.title}>{tr(title)}</Text>
+          {subtitle ? <Text style={s.subtitle}>{tr(subtitle)}</Text> : null}
           <SafetyNotice />
           {children}
-          <Text style={s.footer}>Your pace. Your progress.</Text>
+          <Text style={s.footer}>{tr("Your pace. Your progress.")}</Text>
         </ScrollView>
         {hasProfile ? (
           <View style={s.nav} accessibilityRole="tablist">
@@ -162,12 +165,12 @@ export function Screen({
                   router.navigate({ pathname: "/food", params: { snap: String(Date.now()) } });
                 }}
                 accessibilityRole="button"
-                accessibilityLabel="Snap a meal"
+                accessibilityLabel={tr("Snap a meal")}
                 style={s.snapBtn}
               >
                 <Ionicons name="camera" size={28} color="white" />
               </Pressable>
-              <Text style={s.snapLabel}>Snap</Text>
+              <Text style={s.snapLabel}>{tr("Snap")}</Text>
             </View>
             {mainTabs.slice(2).map((t) => (
               <NavTab key={t.href} item={t} selected={active === t.href} onPress={() => go(t.href)} />
@@ -186,11 +189,12 @@ export function Screen({
   );
 }
 function NavTab({ item, selected, onPress }: { item: (typeof mainTabs)[number]; selected: boolean; onPress: () => void }) {
+  const tr = useT();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="tab"
-      accessibilityLabel={item.label}
+      accessibilityLabel={tr(item.label)}
       aria-selected={selected}
       style={selected ? s.navItemActive : s.navItem}
     >
@@ -199,22 +203,23 @@ function NavTab({ item, selected, onPress }: { item: (typeof mainTabs)[number]; 
         size={20}
         color={selected ? colors.green : colors.muted}
       />
-      <Text style={selected ? s.navLabelActive : s.navLabel}>{item.label}</Text>
+      <Text style={selected ? s.navLabelActive : s.navLabel}>{tr(item.label)}</Text>
     </Pressable>
   );
 }
 /** Compact doctor notice on every screen: one line, tap to read the full text. */
 function SafetyNotice() {
   const [open, setOpen] = useState(false);
+  const tr = useT();
   return (
-    <Pressable accessibilityRole="button" aria-expanded={open} accessibilityLabel={open ? "Hide safety notice" : "Show safety notice"}
+    <Pressable accessibilityRole="button" aria-expanded={open} accessibilityLabel={tr(open ? tr("Hide safety notice") : tr("Show safety notice"))}
       onPress={() => setOpen(!open)} style={[s.notice, !open && s.noticeCompact]}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <Ionicons name="information-circle-outline" size={18} color={isDark ? "#F5C26B" : "#9A5B00"} />
-        <Text style={[s.noticeMain, { flex: 1 }]} numberOfLines={open ? undefined : 1}>{doctorNotice}</Text>
+        <Text style={[s.noticeMain, { flex: 1 }]} numberOfLines={open ? undefined : 1}>{tr(doctorNotice)}</Text>
         <Ionicons name={open ? "chevron-up" : "chevron-down"} size={16} color={isDark ? "#F5C26B" : "#9A5B00"} />
       </View>
-      {open ? <Text style={s.noticeSub}>{steroidNotice}</Text> : null}
+      {open ? <Text style={s.noticeSub}>{tr(steroidNotice)}</Text> : null}
     </Pressable>
   );
 }
@@ -234,6 +239,7 @@ function SideMenu({
 }) {
   const [slide] = useState(() => new Animated.Value(0));
   const insets = useMenuInsets();
+  const tr = useT();
   // Stays mounted after `open` turns false until the slide-out finishes.
   const [mounted, setMounted] = useState(false);
   const visible = open || mounted;
@@ -267,7 +273,7 @@ function SideMenu({
     <Modal transparent visible animationType="none" onRequestClose={onClose} statusBarTranslucent>
       <View style={s.menuRoot}>
         <Animated.View style={[s.backdrop, { opacity: slide }]}>
-          <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel="Close menu" />
+          <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel={tr("Close menu")} />
         </Animated.View>
         <Animated.View
           style={[
@@ -281,14 +287,14 @@ function SideMenu({
               snap<Text style={{ color: colors.green }}> to fit</Text>
               <Text style={{ fontSize: 13, color: colors.green }}> ✦</Text>
             </Text>
-            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close menu" hitSlop={8} style={s.iconButton}>
+            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={tr("Close menu")} hitSlop={8} style={s.iconButton}>
               <Ionicons name="close" size={26} color={colors.ink} />
             </Pressable>
           </View>
           <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 16 }}>
             {menuSections(hasProfile).map((section) => (
               <View key={section.title} style={{ marginTop: 14 }}>
-                <Text style={s.menuSection}>{section.title}</Text>
+                <Text style={s.menuSection}>{tr(section.title)}</Text>
                 {section.items.map(({ href, label, icon }) => {
                   const selected = isActive(path, href);
                   return (
@@ -296,7 +302,7 @@ function SideMenu({
                       key={href}
                       onPress={() => onGo(href)}
                       accessibilityRole="link"
-                      accessibilityLabel={label}
+                      accessibilityLabel={tr(label)}
                       aria-selected={selected}
                       style={selected ? s.menuItemActive : s.menuItem}
                     >
@@ -305,7 +311,7 @@ function SideMenu({
                         size={20}
                         color={selected ? colors.green : colors.ink}
                       />
-                      <Text style={selected ? s.menuLabelActive : s.menuLabel}>{label}</Text>
+                      <Text style={selected ? s.menuLabelActive : s.menuLabel}>{tr(label)}</Text>
                     </Pressable>
                   );
                 })}
@@ -314,15 +320,12 @@ function SideMenu({
             {!hasProfile ? (
               <View style={s.menuInfo}>
                 <Ionicons name="lock-open-outline" size={22} color={colors.green} />
-                <Text style={s.menuInfoTitle}>Finish your profile to unlock everything</Text>
-                <Text style={s.menuInfoBody}>
-                  Today, Food, Move, Health, meal plans, the tracker, coach and music
-                  appear here once your profile is saved. It takes about 5 minutes.
-                </Text>
+                <Text style={s.menuInfoTitle}>{tr("Finish your profile to unlock everything")}</Text>
+                <Text style={s.menuInfoBody}>{tr("Today, Food, Move, Health, meal plans, the tracker, coach and music appear here once your profile is saved. It takes about 5 minutes.")}</Text>
               </View>
             ) : null}
             <View style={s.menuNoticeBox}>
-              <Text style={s.menuNotice}>{doctorNotice}</Text>
+              <Text style={s.menuNotice}>{tr(doctorNotice)}</Text>
             </View>
             {/* Decorative illustration; sits at the bottom when there is room. */}
             <View style={s.menuArtWrap} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -353,10 +356,12 @@ export function Card({
   );
 }
 export function H({ children }: { children: React.ReactNode }) {
-  return <Text style={s.heading}>{children}</Text>;
+  const tr = useT();
+  return <Text style={s.heading}>{typeof children === "string" ? tr(children) : children}</Text>;
 }
 export function P({ children }: { children: React.ReactNode }) {
-  return <Text style={s.body}>{children}</Text>;
+  const tr = useT();
+  return <Text style={s.body}>{typeof children === "string" ? tr(children) : children}</Text>;
 }
 export function Row({ children }: { children: React.ReactNode }) {
   return <View style={s.row}>{children}</View>;
@@ -372,10 +377,11 @@ export function Button({
   secondary?: boolean;
   disabled?: boolean;
 }) {
+  const tr = useT();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={title}
+      accessibilityLabel={tr(title)}
       disabled={disabled}
       onPress={onPress}
       style={[
@@ -389,7 +395,7 @@ export function Button({
       ]}
     >
       <Text style={[s.buttonText, secondary && { color: colors.ink }]}>
-        {title}
+        {tr(title)}
       </Text>
     </Pressable>
   );
@@ -409,16 +415,17 @@ export function Field({
   placeholder?: string;
   secret?: boolean;
 }) {
+  const tr = useT();
   return (
     <View style={{ marginBottom: 14, flexGrow: 1 }}>
-      <Text style={s.label}>{label}</Text>
+      <Text style={s.label}>{tr(label)}</Text>
       <TextInput
-        accessibilityLabel={label}
+        accessibilityLabel={tr(label)}
         value={value}
         onChangeText={onChange}
         keyboardType={numeric ? "decimal-pad" : "default"}
         secureTextEntry={secret}
-        placeholder={placeholder}
+        placeholder={placeholder ? tr(placeholder) : undefined}
         placeholderTextColor={colors.muted}
         style={s.input}
         autoCapitalize="none"
@@ -435,6 +442,7 @@ export function Chips<T extends string | number>({
   selected: T;
   onChange: (v: T) => void;
 }) {
+  const tr = useT();
   return (
     <View style={s.chips}>
       {values.map((v) => (
@@ -458,7 +466,7 @@ export function Chips<T extends string | number>({
               fontWeight: "700",
             }}
           >
-            {v.label}
+            {tr(v.label)}
           </Text>
         </Pressable>
       ))}
@@ -474,10 +482,11 @@ export function Check({
   value: boolean;
   onChange: (v: boolean) => void;
 }) {
+  const tr = useT();
   return (
     <Pressable
       accessibilityRole="checkbox"
-      accessibilityLabel={label}
+      accessibilityLabel={tr(label)}
       accessibilityState={{ checked: value }}
       onPress={() => onChange(!value)}
       style={{ flexDirection: "row", gap: 12, paddingVertical: 12 }}
@@ -487,7 +496,7 @@ export function Check({
         size={24}
         color={colors.green}
       />
-      <Text style={[s.body, { flex: 1 }]}>{label}</Text>
+      <Text style={[s.body, { flex: 1 }]}>{tr(label)}</Text>
     </Pressable>
   );
 }
@@ -500,13 +509,14 @@ export function Metric({
   value: string | number;
   unit?: string;
 }) {
+  const tr = useT();
   return (
     <View style={{ flex: 1, minWidth: 80 }}>
       <Text style={s.metric}>
         {value}
         <Text style={{ fontSize: 13, color: colors.muted }}> {unit}</Text>
       </Text>
-      <Text style={s.label}>{label}</Text>
+      <Text style={s.label}>{tr(label)}</Text>
     </View>
   );
 }

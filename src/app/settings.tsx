@@ -10,6 +10,7 @@ import {
   Check,
   Field,
   Button,
+  Chips,
   act,
   notify,
 } from "../components/ui";
@@ -18,10 +19,13 @@ import { saveToken, clearToken } from "../services/storage";
 import { cancelNotifications } from "../services/routine-notifications";
 import { cancelReminder } from "../services/reminders";
 import { emptyState } from "../core/model";
+import { languages, useLang, useT } from "../i18n";
 export default function Settings() {
   const { state, update } = useStore();
   const [token, setToken] = useState("");
   const p = state.profile!;
+  const lang = useLang();
+  const tr = useT();
   const erase = () =>
     act(async () => {
       await cancelNotifications([
@@ -40,9 +44,15 @@ export default function Settings() {
       subtitle="Your profile, connections and privacy."
     >
       <Card>
-        <H>{p.name}’s profile</H>
+        <H>{tr("Language · Idioma")}</H>
+        <Chips values={languages.map((l) => ({ value: l.id, label: l.label }))} selected={lang}
+          onChange={(v) => act(() => update((s) => ({ ...s, language: v })))} />
+        <P>{tr("Health articles in Gym Truth are in English for now.")}</P>
+      </Card>
+      <Card>
+        <H>{tr("{name}’s profile", { name: p.name })}</H>
         <P>
-          {p.age} years · {formatHeight(p.height, p.units || "imperial")} · {formatWeight(p.weight, p.units || "imperial")} at setup · {p.goal === "lose" ? "lose weight" : p.goal === "gain" ? "build muscle" : "maintain"}
+          {tr("{age} years", { age: p.age })} · {formatHeight(p.height, p.units || "imperial")} · {formatWeight(p.weight, p.units || "imperial")} {tr("at setup")} · {tr(p.goal === "lose" ? "lose weight" : p.goal === "gain" ? "build muscle" : "maintain")}
         </P>
         <Button
           title="Edit health profile & preferences"
@@ -61,18 +71,16 @@ export default function Settings() {
           }
         />
         <P>
-          Withdrawal stops future requests. Previously sent requests may have
-          been retained by the configured AI provider; check the provider’s
-          terms before entering real data.
+          {tr("Withdrawal stops future requests. Previously sent requests may have been retained by the configured AI provider; check the provider’s terms before entering real data.")}
         </P>
       </Card>
       {__DEV__ ? (
         <Card>
-          <H>Developer service pairing</H>
+          <H>{tr("Developer service pairing")}</H>
           <P>
             {process.env.EXPO_PUBLIC_API_URL
-              ? "An AI service URL is configured."
-              : "No AI service configured. Food and health logs work without it."}
+              ? tr("An AI service URL is configured.")
+              : tr("No AI service configured. Food and health logs work without it.")}
           </P>
           <Field
             label="Private pairing token"
@@ -107,10 +115,9 @@ export default function Settings() {
         </Card>
       ) : null}
       <Card>
-        <H>Account & subscriptions</H>
+        <H>{tr("Account & subscriptions")}</H>
         <P>
-          Sign in for optional encrypted backups. Paid AI allowances are
-          available when store products are configured.
+          {tr("Sign in for optional encrypted backups. Paid AI allowances are available when store products are configured.")}
         </P>
         <Button
           title="Account and private backup"
@@ -128,7 +135,7 @@ export default function Settings() {
         />
       </Card>
       <Card>
-        <H>Food, routine and education</H>
+        <H>{tr("Food, routine and education")}</H>
         <Button
           title="Weekly meal plan"
           onPress={() => router.push("/meal-plan")}
@@ -145,20 +152,17 @@ export default function Settings() {
         />
       </Card>
       <Card>
-        <H>Your information</H>
+        <H>{tr("Your information")}</H>
         <P>
           {Platform.OS === "web"
-            ? "This browser preview uses temporary memory only. Refreshing clears its data."
-            : "Health profiles, logs and progress photos use encrypted local storage. Cloud backups are optional and uploaded from Account."}
+            ? tr("This browser preview uses temporary memory only. Refreshing clears its data.")
+            : tr("Health profiles, logs and progress photos use encrypted local storage. Cloud backups are optional and uploaded from Account.")}
         </P>
         <P>
-          Photo originals and temporary processing files can remain outside the
-          encrypted database. Clearing this profile does not erase those copies.
+          {tr("Photo originals and temporary processing files can remain outside the encrypted database. Clearing this profile does not erase those copies.")}
         </P>
         <P>
-          Health connections read daily steps, available weight and heart rate
-          only. Revoke access in Apple Health or Android Health Connect. No
-          advertising trackers are included.
+          {tr("Health connections read daily steps, available weight and heart rate only. Revoke access in Apple Health or Android Health Connect. No advertising trackers are included.")}
         </P>
         <Button
           secondary
@@ -187,8 +191,7 @@ export default function Settings() {
           }
         />
         <P>
-          Export includes sensitive health information. Choose a destination you
-          trust.
+          {tr("Export includes sensitive health information. Choose a destination you trust.")}
         </P>
         <Button
           secondary
@@ -214,12 +217,9 @@ export default function Settings() {
         />
       </Card>
       <Card>
-        <H>About this build</H>
+        <H>{tr("About this build")}</H>
         <P>
-          Snap to Fit · development build 0.3.1 · USA cuisine preferences and
-          user-selected workout days. General-fitness estimates and
-          educational demonstrations. Native-device testing and launch
-          configuration are still required.
+          {tr("Snap to Fit · development build 0.3.1 · USA cuisine preferences and user-selected workout days. General-fitness estimates and educational demonstrations. Native-device testing and launch configuration are still required.")}
         </P>
       </Card>
     </Screen>

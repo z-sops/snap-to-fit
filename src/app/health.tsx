@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -26,6 +27,7 @@ const devices = [
 ];
 
 export default function Health() {
+  const tr = useT();
   const { state, update } = useStore();
   const p = state.profile!;
   const imperial = (p.units || "imperial") === "imperial";
@@ -48,13 +50,13 @@ export default function Health() {
   return (
     <Screen title="Health" subtitle="Your body numbers and devices — a clear record for your next appointment">
       <Surface dark>
-        <Text style={s.darkLabel}>Latest</Text>
+        <Text style={s.darkLabel}>{tr("Latest")}</Text>
         <View style={s.heroRow}>
           <Hero label="Steps today" value={snapshot?.steps != null ? snapshot.steps.toLocaleString() : "—"} />
           <Hero label="Weight" value={show(latest("weight"))} />
           <Hero label="Heart rate" value={snapshot?.heartRate != null ? `${snapshot.heartRate} bpm` : "—"} />
         </View>
-        <Text style={s.darkSmall}>{snapshot ? `${snapshot.source} · ${new Date(snapshot.at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}` : "Connect your watch or tracker below for steps and heart rate."}</Text>
+        <Text style={s.darkSmall}>{snapshot ? `${snapshot.source} · ${new Date(snapshot.at).toLocaleTimeString(tr("en-US"), { hour: "numeric", minute: "2-digit" })}` : tr("Connect your watch or tracker below for steps and heart rate.")}</Text>
       </Surface>
 
       <SectionHeader title="Log a reading" />
@@ -62,14 +64,14 @@ export default function Health() {
         {kinds.map((k) => (
           <Pressable key={k.id} accessibilityRole="button" accessibilityLabel={`Log ${k.label}`} onPress={() => setEntry(k.id)} style={[s.tile, { backgroundColor: soft(k.tint) }]}>
             <Text style={s.tileEmoji}>{k.emoji}</Text>
-            <Text style={s.tileTitle}>{k.label}</Text>
+            <Text style={s.tileTitle}>{tr(k.label)}</Text>
             <Text style={s.tileValue}>{show(latest(k.id))}</Text>
           </Pressable>
         ))}
       </View>
 
       <Surface>
-        <Text style={s.h}>Trends</Text>
+        <Text style={s.h}>{tr("Trends")}</Text>
         <View style={s.wrap}>{kinds.map((k) => <Chip key={k.id} label={k.label} selected={trend === k.id} onPress={() => setTrend(k.id)} />)}</View>
         {trend === "weight" || trend === "waist" ? (
           series.length >= 2
@@ -77,7 +79,7 @@ export default function Health() {
             : <Text style={s.p}>Log two or more {trend} readings to see a trend.</Text>
         ) : (
           <TrendChart points={readingTrend(state.readings, trend, trend === "bp" ? "mmHg" : latest("glucose")?.unit || "mg/dL")}
-            label={trend === "bp" ? "Systolic blood pressure" : "Glucose"} unit={trend === "bp" ? "mmHg" : latest("glucose")?.unit || "mg/dL"} />
+            label={trend === "bp" ? tr("Systolic blood pressure") : tr("Glucose")} unit={trend === "bp" ? "mmHg" : latest("glucose")?.unit || "mg/dL"} />
         )}
       </Surface>
 
@@ -91,25 +93,25 @@ export default function Health() {
               <Text style={s.small}>{d.route}</Text>
             </View>
           </View>
-          <Text style={s.p}>{d.detail}</Text>
-          <PrimaryButton title={busy ? "Reading health data…" : `Connect / refresh ${d.name}`} disabled={busy || Platform.OS !== d.platform} icon="sync" onPress={refresh} />
-          {Platform.OS !== d.platform ? <Text style={s.small}>Available in the {d.platform === "ios" ? "iPhone" : "Android"} app.</Text> : null}
+          <Text style={s.p}>{tr(d.detail)}</Text>
+          <PrimaryButton title={busy ? tr("Reading health data…") : tr("Connect / refresh {name}", { name: d.name })} disabled={busy || Platform.OS !== d.platform} icon="sync" onPress={refresh} />
+          {Platform.OS !== d.platform ? <Text style={s.small}>Available in the {d.platform === "ios" ? "iPhone" : tr("Android")} app.</Text> : null}
         </Surface>
       ))}
-      {snapshot?.note ? <Text style={s.small}>{snapshot.note}</Text> : null}
-      <Text style={s.small}>Read-only. No samples can mean no permission or no synced data — missing data is never treated as zero.</Text>
+      {snapshot?.note ? <Text style={s.small}>{tr(snapshot.note)}</Text> : null}
+      <Text style={s.small}>{tr("Read-only. No samples can mean no permission or no synced data — missing data is never treated as zero.")}</Text>
 
-      <Pressable accessibilityRole="button" accessibilityLabel="Connect my CGM" onPress={() => router.push("/cgm")} style={s.cgm}>
+      <Pressable accessibilityRole="button" accessibilityLabel={tr("Connect my CGM")} onPress={() => router.push("/cgm")} style={s.cgm}>
         <Ionicons name="water" size={22} color={palette.brand} />
         <View style={{ flex: 1 }}>
-          <Text style={s.h}>Continuous glucose monitor</Text>
-          <Text style={s.small}>Dexcom history (delayed, not live alerts)</Text>
+          <Text style={s.h}>{tr("Continuous glucose monitor")}</Text>
+          <Text style={s.small}>{tr("Dexcom history (delayed, not live alerts)")}</Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={palette.muted} />
       </Pressable>
 
       <SectionHeader title="Recent readings" />
-      {!state.readings.length ? <Text style={s.p}>No readings yet.</Text> : null}
+      {!state.readings.length ? <Text style={s.p}>{tr("No readings yet.")}</Text> : null}
       {[...state.readings].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 20).map((r) => (
         <View key={r.id} style={s.readRow}>
           <Text style={s.readEmoji}>{kinds.find((k) => k.id === r.kind)?.emoji}</Text>
@@ -117,12 +119,12 @@ export default function Health() {
             <Text style={s.readValue}>{show(r)}</Text>
             <Text style={s.small}>{new Date(r.at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}{r.context ? ` · ${r.context}` : ""}</Text>
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel="Remove reading" hitSlop={8} onPress={() => act(() => update((x) => ({ ...x, readings: x.readings.filter((y) => y.id !== r.id) })))}>
+          <Pressable accessibilityRole="button" accessibilityLabel={tr("Remove reading")} hitSlop={8} onPress={() => act(() => update((x) => ({ ...x, readings: x.readings.filter((y) => y.id !== r.id) })))}>
             <Ionicons name="trash-outline" size={18} color={palette.muted} />
           </Pressable>
         </View>
       ))}
-      <Text style={s.small}>Notices appear for manually entered low glucose or very high blood pressure. No notice doesn’t mean a reading is safe; one reading can’t diagnose a condition or set a medicine dose.</Text>
+      <Text style={s.small}>{tr("Notices appear for manually entered low glucose or very high blood pressure. No notice doesn’t mean a reading is safe; one reading can’t diagnose a condition or set a medicine dose.")}</Text>
 
       {entry ? <ReadingSheet kind={entry} imperial={imperial} onClose={() => setEntry(null)} onSave={(r) => act(async () => {
         await update((x) => ({ ...x, readings: [...x.readings, r] }));
@@ -138,15 +140,17 @@ export default function Health() {
 }
 
 function Hero({ label, value }: { label: string; value: string }) {
+  const tr = useT();
   return (
     <View style={{ flex: 1 }}>
-      <Text style={s.darkSmall}>{label}</Text>
+      <Text style={s.darkSmall}>{tr(label)}</Text>
       <Text style={s.darkValue}>{value}</Text>
     </View>
   );
 }
 
 function ReadingSheet({ kind, imperial, onClose, onSave }: { kind: Kind; imperial: boolean; onClose: () => void; onSave: (r: Reading) => void }) {
+  const tr = useT();
   const [value, setValue] = useState("");
   const [second, setSecond] = useState("");
   const [unit, setUnit] = useState("mg/dL");
@@ -154,7 +158,7 @@ function ReadingSheet({ kind, imperial, onClose, onSave }: { kind: Kind; imperia
   const meta = kinds.find((k) => k.id === kind)!;
   const label = kind === "bp" ? "Systolic (mmHg)" : kind === "weight" ? `Weight (${imperial ? "lb" : "kg"})` : kind === "waist" ? `Waist (${imperial ? "in" : "cm"})` : `Glucose (${unit})`;
   return (
-    <Sheet visible title={`Log ${meta.label.toLowerCase()}`} onClose={onClose}
+    <Sheet visible title={tr("Log {what}", { what: tr(meta.label).toLowerCase() })} onClose={onClose}
       footer={<PrimaryButton title="Save reading" icon="checkmark" onPress={() => {
         try {
           let n: number;
@@ -168,9 +172,9 @@ function ReadingSheet({ kind, imperial, onClose, onSave }: { kind: Kind; imperia
       }} />}>
       <Text style={s.bigEmoji}>{meta.emoji}</Text>
       {kind === "glucose" ? <View style={s.wrap}>{["mg/dL", "mmol/L"].map((u) => <Chip key={u} label={u} selected={unit === u} onPress={() => setUnit(u)} />)}</View> : null}
-      <TextInput value={value} onChangeText={setValue} keyboardType="decimal-pad" placeholder={label} placeholderTextColor={palette.muted} accessibilityLabel={label} style={s.input} />
-      {kind === "bp" ? <TextInput value={second} onChangeText={setSecond} keyboardType="number-pad" placeholder="Diastolic (mmHg)" placeholderTextColor={palette.muted} accessibilityLabel="Diastolic (mmHg)" style={s.input} /> : null}
-      <TextInput value={context} onChangeText={setContext} placeholder="Context (fasting, after meal, seated…)" placeholderTextColor={palette.muted} accessibilityLabel="Context / notes" style={s.input} />
+      <TextInput value={value} onChangeText={setValue} keyboardType="decimal-pad" placeholder={tr(label)} placeholderTextColor={palette.muted} accessibilityLabel={tr(label)} style={s.input} />
+      {kind === "bp" ? <TextInput value={second} onChangeText={setSecond} keyboardType="number-pad" placeholder={tr("Diastolic (mmHg)")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Diastolic (mmHg)")} style={s.input} /> : null}
+      <TextInput value={context} onChangeText={setContext} placeholder={tr("Context (fasting, after meal, seated…)")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Context / notes")} style={s.input} />
       {kind === "weight" ? <Pill label="Tip: weigh in the morning, after the bathroom, before eating" icon="sunny" /> : null}
     </Sheet>
   );

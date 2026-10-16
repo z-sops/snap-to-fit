@@ -1,3 +1,4 @@
+import { useT } from "../../i18n";
 import React, { useRef, useState } from "react";
 import { Platform, StyleSheet, Text, TextInput, View, Linking } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -11,6 +12,7 @@ import { haptic } from "../../services/feedback";
 export function BarcodeScanner({ visible, onClose, onFound, onSearchInstead }: {
   visible: boolean; onClose: () => void; onFound: (f: Food) => void; onSearchInstead: () => void;
 }) {
+  const tr = useT();
   const [permission, requestPermission] = useCameraPermissions();
   const [code, setCode] = useState("");
   const [status, setStatus] = useState<"idle" | "looking" | "missing" | "error">("idle");
@@ -53,12 +55,12 @@ export function BarcodeScanner({ visible, onClose, onFound, onSearchInstead }: {
           <View pointerEvents="none" style={s.frame}>
             {[s.tl, s.tr, s.bl, s.br].map((c, i) => <View key={i} style={[s.corner, c]} />)}
           </View>
-          <Text style={s.cameraHint}>{status === "looking" ? "Looking up…" : "Point at the barcode on the package"}</Text>
+          <Text style={s.cameraHint}>{status === "looking" ? tr("Looking up…") : tr("Point at the barcode on the package")}</Text>
         </View>
       ) : camera ? (
         <View style={s.permission}>
-          <Text style={s.h}>Allow the camera to scan barcodes</Text>
-          <Text style={s.note}>Only the barcode number is sent to Open Food Facts to find the product.</Text>
+          <Text style={s.h}>{tr("Allow the camera to scan barcodes")}</Text>
+          <Text style={s.note}>{tr("Only the barcode number is sent to Open Food Facts to find the product.")}</Text>
           {permission?.canAskAgain === false ? (
             <PrimaryButton title="Open phone settings" onPress={() => void Linking.openSettings()} />
           ) : (
@@ -66,17 +68,17 @@ export function BarcodeScanner({ visible, onClose, onFound, onSearchInstead }: {
           )}
         </View>
       ) : null}
-      <Text style={s.h}>Or type the number</Text>
+      <Text style={s.h}>{tr("Or type the number")}</Text>
       <TextInput value={code} onChangeText={setCode} keyboardType="number-pad" placeholder="e.g. 012345678905"
-        placeholderTextColor={palette.muted} accessibilityLabel="Barcode number" style={s.input} maxLength={14} />
-      <PrimaryButton title={status === "looking" ? "Looking up…" : "Find product"} disabled={status === "looking" || !validBarcode(code.replace(/\D/g, ""))} onPress={() => void look(code)} />
+        placeholderTextColor={palette.muted} accessibilityLabel={tr("Barcode number")} style={s.input} maxLength={14} />
+      <PrimaryButton title={status === "looking" ? tr("Looking up…") : tr("Find product")} disabled={status === "looking" || !validBarcode(code.replace(/\D/g, ""))} onPress={() => void look(code)} />
       {status === "missing" || status === "error" ? (
         <View style={s.alert}>
           <Text style={s.alertText}>{message}</Text>
           <PrimaryButton title="Search by name" icon="search" onPress={() => { setStatus("idle"); onSearchInstead(); }} />
         </View>
       ) : null}
-      <Text style={s.credit}>Product data © Open Food Facts contributors (ODbL). Always check the package label.</Text>
+      <Text style={s.credit}>{tr("Product data © Open Food Facts contributors (ODbL). Always check the package label.")}</Text>
     </Sheet>
   );
 }

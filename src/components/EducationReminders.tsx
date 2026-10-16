@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useState } from "react";
 import { Linking } from "react-native";
 import {
@@ -23,6 +24,7 @@ import {
 } from "../core/routine";
 import type { EducationSettings } from "../core/planning-types";
 export function EducationReminders() {
+  const tr = useT();
   const { state, namespace, update } = useStore();
   const p = state.profile!;
   const [settings, setSettings] = useState<EducationSettings>(
@@ -32,11 +34,9 @@ export function EducationReminders() {
   const eligible = p.age >= 18 && p.age <= 50;
   return (
       <Card>
-        <H>Optional Gym Truth reminders</H>
+        <H>{tr("Optional Gym Truth reminders")}</H>
         <P>
-          Education is available at every age. Automatic awareness reminders are
-          offered to users aged 18–50; weekly is the default, and daily is
-          optional.
+          {tr("Education is available at every age. Automatic awareness reminders are offered to users aged 18–50; weekly is the default, and daily is optional.")}
         </P>
         <Check
           label="Send steroid-risk education reminders on this device"
@@ -45,8 +45,8 @@ export function EducationReminders() {
         />
         <Chips
           values={[
-            { value: "weekly", label: "Weekly" },
-            { value: "daily", label: "Daily" },
+            { value: "weekly", label: tr("Weekly") },
+            { value: "daily", label: tr("Daily") },
           ]}
           selected={settings.frequency}
           onChange={(v) => setSettings((s) => ({ ...s, frequency: v }))}
@@ -67,7 +67,7 @@ export function EducationReminders() {
         ) : null}
         <Button
           disabled={busy || (settings.enabled && !eligible)}
-          title={busy ? "Saving…" : "Save education reminders"}
+          title={busy ? tr("Saving…") : tr("Save education reminders")}
           onPress={() =>
             act(async () => {
               validateEducation(settings);

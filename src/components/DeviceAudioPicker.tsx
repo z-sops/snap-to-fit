@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -178,9 +179,10 @@ export function DeviceAudioPicker({
 }
 
 function Btn({ label, onPress, secondary }: { label: string; onPress: () => void; secondary?: boolean }) {
+  const tr = useT();
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={secondary ? st.btnSecondary : st.btn}>
-      <Text style={secondary ? st.btnSecondaryText : st.btnText}>{label}</Text>
+      <Text style={secondary ? st.btnSecondaryText : st.btnText}>{tr(label)}</Text>
     </Pressable>
   );
 }

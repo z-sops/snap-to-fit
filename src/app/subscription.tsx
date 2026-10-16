@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useState, useEffect } from "react";
 import type { PurchasesPackage } from "react-native-purchases";
 import { router } from "expo-router";
@@ -10,6 +11,7 @@ import {
   managePurchases,
 } from "../services/billing";
 export default function Subscription() {
+  const tr = useT();
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [pro, setPro] = useState(false);
   const [note, setNote] = useState("Loading plan availability…");
@@ -51,7 +53,7 @@ export default function Subscription() {
       subtitle="Core tracking remains available offline."
     >
       <Card tint>
-        <H>{pro ? "Snap to Fit Pro is active" : "Your fitness essentials"}</H>
+        <H>{pro ? tr("Snap to Fit Pro is active") : tr("Your fitness essentials")}</H>
         <P>
           Manual food and health logs, general fitness targets, workout plans,
           3D demonstrations and progress tracking are available without a
@@ -80,7 +82,7 @@ export default function Subscription() {
                 setPro(result.pro);
                 notify(
                   result.pro
-                    ? "Pro activated."
+                    ? tr("Pro activated.")
                     : "Purchase received. Entitlement confirmation may take a moment; restore purchases to refresh.",
                 );
               })
@@ -99,7 +101,7 @@ export default function Subscription() {
               setPro(result.pro);
               notify(
                 result.pro
-                  ? "Subscription restored."
+                  ? tr("Subscription restored.")
                   : "No active Pro subscription found.",
               );
             })

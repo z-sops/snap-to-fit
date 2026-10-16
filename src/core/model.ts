@@ -174,6 +174,8 @@ export interface State {
   glp1Checkins?: { id: string; at: string; effects: Record<string, number>; note?: string }[];
   /** Exercises the user added from the library to their own workout. */
   myWorkout?: string[];
+  /** App language chosen by the user; default follows the phone. */
+  language?: "en" | "es";
   /** Spoken workout cues on/off (default on). */
   voiceCues?: boolean;
   version: 1;

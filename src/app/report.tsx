@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Screen } from "../components/ui";
@@ -7,6 +8,7 @@ import { useStore } from "../services/store";
 import { achievements, streak, weekReport } from "../core/streaks";
 
 export default function Report() {
+  const tr = useT();
   const { state } = useStore();
   const r = weekReport(state);
   const st = streak(state);
@@ -20,9 +22,9 @@ export default function Report() {
   return (
     <Screen title="Weekly report" subtitle="Your last 7 days">
       <Surface dark>
-        <Text style={s.darkKicker}>Streak</Text>
+        <Text style={s.darkKicker}>{tr("Streak")}</Text>
         <Text style={s.darkBig}>🔥 {st.current} day{st.current === 1 ? "" : "s"}</Text>
-        <Text style={s.darkText}>Best ever: {st.best} day{st.best === 1 ? "" : "s"}. {st.loggedToday ? "Today is counted." : "Log something today to keep it going."}</Text>
+        <Text style={s.darkText}>Best ever: {st.best} day{st.best === 1 ? "" : "s"}. {st.loggedToday ? tr("Today is counted.") : tr("Log something today to keep it going.")}</Text>
       </Surface>
 
       <View style={s.row}>
@@ -35,40 +37,40 @@ export default function Report() {
       </View>
 
       <Surface>
-        <Text style={s.h}>Calories</Text>
+        <Text style={s.h}>{tr("Calories")}</Text>
         <WeekBars values={r.days.map((d) => d.calories)} labels={r.days.map((d) => d.label)} target={r.calorieTarget} />
-        <Text style={s.p}>{r.calorieTarget ? `Dashed line: your ${r.calorieTarget.toLocaleString()} kcal daily estimate. Amber bars ran more than 5% over.` : "Your care team sets your calorie target."}</Text>
+        <Text style={s.p}>{r.calorieTarget ? tr("Dashed line: your {v0} kcal daily estimate. Amber bars ran more than 5% over.", { v0: r.calorieTarget.toLocaleString() }) : tr("Your care team sets your calorie target.")}</Text>
       </Surface>
 
       <Surface>
-        <Text style={s.h}>Protein</Text>
+        <Text style={s.h}>{tr("Protein")}</Text>
         <WeekBars values={r.days.map((d) => d.protein)} labels={r.days.map((d) => d.label)} target={r.proteinTarget || null} color={palette.protein} />
-        <Text style={s.p}>{r.proteinTarget ? `Goal reached on ${r.proteinDays} of 7 days (target ${r.proteinTarget} g).` : "Log meals to see your protein trend."}</Text>
+        <Text style={s.p}>{r.proteinTarget ? tr("Goal reached on {proteinDays} of 7 days (target {proteinTarget} g).", { proteinDays: r.proteinDays, proteinTarget: r.proteinTarget }) : tr("Log meals to see your protein trend.")}</Text>
       </Surface>
 
       <Surface>
-        <Text style={s.h}>Weight trend · 30 days</Text>
+        <Text style={s.h}>{tr("Weight trend · 30 days")}</Text>
         {shown.length >= 2 ? (
           <>
             <Sparkline points={shown} />
-            <Text style={s.p}>{change === null ? "" : `${change > 0 ? "+" : ""}${change} ${unit} this week. `}Day-to-day weight jumps with water and salt — watch the trend, not one weigh-in.</Text>
+            <Text style={s.p}>{change === null ? "" : tr("{v0}{change} {unit} this week. ", { v0: change > 0 ? "+" : "", change, unit })}Day-to-day weight jumps with water and salt — watch the trend, not one weigh-in.</Text>
           </>
-        ) : <Text style={s.p}>Add your weight in Health two or more times to see your trend.</Text>}
+        ) : <Text style={s.p}>{tr("Add your weight in Health two or more times to see your trend.")}</Text>}
       </Surface>
 
       <Surface>
-        <Text style={s.h}>Highlights</Text>
-        {r.highlights.length ? r.highlights.map((h) => <Text key={h} style={s.highlight}>{h}</Text>) : <Text style={s.p}>Log meals and workouts to unlock highlights.</Text>}
+        <Text style={s.h}>{tr("Highlights")}</Text>
+        {r.highlights.length ? r.highlights.map((h) => <Text key={h} style={s.highlight}>{tr(h)}</Text>) : <Text style={s.p}>{tr("Log meals and workouts to unlock highlights.")}</Text>}
       </Surface>
 
       <Surface>
-        <Text style={s.h}>Achievements</Text>
+        <Text style={s.h}>{tr("Achievements")}</Text>
         <View style={s.badges}>
           {badges.map((b) => (
             <View key={b.id} style={[s.badge, !b.done && { opacity: 0.4 }]} accessibilityLabel={`${b.label}: ${b.done ? "unlocked" : "locked"}`}>
               <Text style={s.badgeIcon}>{b.done ? "🏅" : "🔒"}</Text>
-              <Text style={s.badgeTitle}>{b.label}</Text>
-              <Text style={s.badgeText}>{b.detail}</Text>
+              <Text style={s.badgeTitle}>{tr(b.label)}</Text>
+              <Text style={s.badgeText}>{tr(b.detail)}</Text>
             </View>
           ))}
         </View>

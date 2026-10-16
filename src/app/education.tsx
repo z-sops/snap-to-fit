@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -29,6 +30,7 @@ const learnNotice =
   "Education only, not medical advice. Talk to your doctor before starting any supplement, especially if you have a health condition, are under 18, or take medicines.";
 
 export default function Education() {
+  const tr = useT();
   const [category, setCategory] = useState<LearnCategory | null>(null);
   const [articleId, setArticleId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -46,7 +48,7 @@ export default function Education() {
   if (article) {
     return (
       <Screen title={article.title} subtitle="Gym Truth" onBack={() => setArticleId(null)}
-        backLabel={category ? "Back to list" : "Back to Gym Truth"}>
+        backLabel={category ? tr("Back to list") : tr("Back to Gym Truth")}>
         <ArticleView article={article} />
       </Screen>
     );
@@ -68,9 +70,9 @@ export default function Education() {
     <Screen title="Gym Truth" subtitle="Build strength safely — the science, without the hype">
       <View style={s.hero}>
         <Text style={s.heroEmoji}>🏋️</Text>
-        <Text style={s.heroTitle}>New to the gym?</Text>
+        <Text style={s.heroTitle}>{tr("New to the gym?")}</Text>
         <Text style={s.heroText}>
-          Real answers on steroids, water pills, supplements, soreness and food — from public health sources, with no brands and nothing to sell.
+          {tr("Real answers on steroids, water pills, supplements, soreness and food — from public health sources, with no brands and nothing to sell.")}
         </Text>
       </View>
       <View style={s.notice} accessibilityRole="alert">
@@ -78,8 +80,8 @@ export default function Education() {
         <Text style={s.noticeText}>{learnNotice}</Text>
       </View>
       <TextInput
-        accessibilityLabel="Search Gym Truth"
-        placeholder="Search: creatine, soreness, protein…"
+        accessibilityLabel={tr("Search Gym Truth")}
+        placeholder={tr("Search: creatine, soreness, protein…")}
         placeholderTextColor={colors.muted}
         value={query}
         onChangeText={setQuery}
@@ -87,8 +89,8 @@ export default function Education() {
       />
       {!query.trim() && forYou.length ? (
         <View style={{ gap: 10 }}>
-          <Text style={s.forYou}>For you</Text>
-          <Text style={s.muted}>Based on the age, health details and movement limits in your profile.</Text>
+          <Text style={s.forYou}>{tr("For you")}</Text>
+          <Text style={s.muted}>{tr("Based on the age, health details and movement limits in your profile.")}</Text>
           {forYou.map((a) => <ArticleRow key={a.id} article={a} onPress={() => setArticleId(a.id)} />)}
         </View>
       ) : null}
@@ -104,13 +106,13 @@ export default function Education() {
             <Pressable
               key={c.id}
               accessibilityRole="button"
-              accessibilityLabel={c.label}
+              accessibilityLabel={tr(c.label)}
               onPress={() => setCategory(c.id)}
               style={[s.tile, { backgroundColor: categoryLook[c.id].tint }]}
             >
               <Text style={s.tileEmoji}>{categoryLook[c.id].emoji}</Text>
-              <Text style={s.tileTitle}>{c.label}</Text>
-              <Text style={s.tileDetail}>{c.detail}</Text>
+              <Text style={s.tileTitle}>{tr(c.label)}</Text>
+              <Text style={s.tileDetail}>{tr(c.detail)}</Text>
               <Text style={s.tileCount}>{articlesIn(c.id).length} topics</Text>
             </Pressable>
           ))}
@@ -122,10 +124,11 @@ export default function Education() {
 }
 
 function VerdictPill({ article }: { article: Article }) {
+  const tr = useT();
   const v = verdicts[article.verdict];
   return (
     <View style={[s.pill, { backgroundColor: v.bg }]}>
-      <Text style={[s.pillText, { color: v.color }]}>{v.label}</Text>
+      <Text style={[s.pillText, { color: v.color }]}>{tr(v.label)}</Text>
     </View>
   );
 }
@@ -157,6 +160,7 @@ function ArticleRow({ article, onPress }: { article: Article; onPress: () => voi
 }
 
 function ArticleView({ article }: { article: Article }) {
+  const tr = useT();
   return (
     <View style={{ gap: 12 }}>
       <View style={s.detailHead}>
@@ -175,7 +179,7 @@ function ArticleView({ article }: { article: Article }) {
         <Text style={s.noticeText}>{article.caution ? `${article.caution} ` : ""}{learnNotice}</Text>
       </View>
       <View style={s.section}>
-        <Text style={s.sectionHeading}>Sources</Text>
+        <Text style={s.sectionHeading}>{tr("Sources")}</Text>
         {article.sources.map((src) => (
           <Pressable key={src.url} accessibilityRole="link" accessibilityLabel={src.title} onPress={() => Linking.openURL(src.url)}>
             <Text style={s.source}>{src.title} ↗</Text>

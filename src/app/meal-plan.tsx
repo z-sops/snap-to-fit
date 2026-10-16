@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
 import {
@@ -27,6 +28,7 @@ import { CuisinePreferences, cuisineLabel } from "../components/CuisinePreferenc
 import { uid } from "../core/model";
 import type { CarePlan, MacroBudget, MealSlot } from "../core/planning-types";
 export default function MealPlanner() {
+  const tr = useT();
   const { state, update } = useStore();
   const p = effectiveProfile(state)!;
   const signature = planSignature(p);
@@ -60,10 +62,10 @@ export default function MealPlanner() {
       <Card tint>
         <H>
           {plan.mode === "fitness"
-            ? "Your weekly fitness meal ideas"
+            ? tr("Your weekly fitness meal ideas")
             : plan.mode === "care-plan"
-              ? "Your weekly care-plan organizer"
-              : "Complete your local meal setup"}
+              ? tr("Your weekly care-plan organizer")
+              : tr("Complete your local meal setup")}
         </H>
         <P>
           {cuisineLabel(p.cuisine)}{" "}
@@ -122,7 +124,7 @@ export default function MealPlanner() {
                 {m.budget.fibre} g fibre
               </P>
             ) : null}
-            <P>{m.note}</P>
+            <P>{tr(m.note)}</P>
             <Button
               secondary
               title="Log the portions I actually ate"
@@ -135,8 +137,8 @@ export default function MealPlanner() {
         <Card>
           <H>
             {plan.mode === "care-plan"
-              ? "Enter my existing care plan"
-              : "Add my familiar meals"}
+              ? tr("Enter my existing care plan")
+              : tr("Add my familiar meals")}
           </H>
           <P>
             These meal names repeat across the week as your editable starting
@@ -147,7 +149,7 @@ export default function MealPlanner() {
           {mealSlots.map((slot) => (
             <Field
               key={slot}
-              label={`${slot} from my own plan`}
+              label={tr("{slot} from my own plan", { slot })}
               value={meals[slot] || ""}
               onChange={(v) => setMeals((x) => ({ ...x, [slot]: v }))}
             />
@@ -163,7 +165,7 @@ export default function MealPlanner() {
                 (key) => (
                   <Field
                     key={key}
-                    label={`My existing ${key} target (${key === "calories" ? "kcal" : "g"})`}
+                    label={tr("My existing {key} target ({v1})", { key, v1: key === "calories" ? "kcal" : "g" })}
                     numeric
                     value={targets[key]}
                     onChange={(v) => setTargets((x) => ({ ...x, [key]: v }))}
@@ -211,15 +213,15 @@ export default function MealPlanner() {
       ) : null}
       <Card>
         <H>Flexible meal</H>
-        <P>{flexible.reason}</P>
+        <P>{tr(flexible.reason)}</P>
         <Button
           disabled={!flexible.available}
           title={
             flexible.eligible
               ? flexible.used
-                ? "Selected for this week"
-                : "Choose this week’s flexible meal"
-              : "Unavailable for medical profiles"
+                ? tr("Selected for this week")
+                : tr("Choose this week’s flexible meal")
+              : tr("Unavailable for medical profiles")
           }
           onPress={() =>
             act(async () => {

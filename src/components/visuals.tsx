@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useEffect, useState } from "react";
 import {
   AccessibilityInfo,
@@ -69,6 +70,7 @@ export function FitnessHero({
   detail: string;
   children?: React.ReactNode;
 }) {
+  const tr = useT();
   return (
     <MotionReveal>
       <View style={s.hero}>
@@ -79,8 +81,8 @@ export function FitnessHero({
         </View>
         <View style={{ zIndex: 1, maxWidth: "78%" }}>
           <Text style={s.eyebrow}>SNAP TO FIT · YOUR EVERYDAY FITNESS</Text>
-          <Text style={s.heroTitle}>{title}</Text>
-          <Text style={s.heroDetail}>{detail}</Text>
+          <Text style={s.heroTitle}>{tr(title)}</Text>
+          <Text style={s.heroDetail}>{tr(detail)}</Text>
         </View>
         {children}
       </View>
@@ -101,6 +103,7 @@ export function BarChart({
   label: string;
   unit: string;
 }) {
+  const tr = useT();
   const maximum = Math.max(1, ...points.map((p) => p.value));
   const [selected, setSelected] = useState<number | null>(null);
   const point = selected === null ? null : points[selected];
@@ -134,7 +137,7 @@ export function BarChart({
                   }}
                 />
               </View>
-              <Text style={s.tick}>{p.label}</Text>
+              <Text style={s.tick}>{tr(p.label)}</Text>
             </Pressable>
           ))}
         </View>

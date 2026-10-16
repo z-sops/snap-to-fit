@@ -1,3 +1,4 @@
+import { useT } from "../../i18n";
 import { soft } from "../ui";
 import React, { useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
@@ -42,6 +43,7 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
   /** Diet, allergy or medical concerns that must be acknowledged before adding. */
   review?: (meal: NewMeal) => { messages: string[]; alternative: string } | null;
 }) {
+  const tr = useT();
   const [ack, setAck] = useState(false);
   const [servingIndex, setServingIndex] = useState(0);
   const [qty, setQty] = useState(1);
@@ -59,13 +61,13 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
   const badge = sourceBadge[photo ? "photo" : food.source];
   const slotLabel = mealSlotNames.find((s) => s.id === slot)!.label;
   return (
-    <Sheet visible={visible} title={photo ? "Review your meal" : "Add food"} onClose={onClose} closeLabel="Back"
-      footer={<PrimaryButton title={`Add to ${slotLabel}`} icon="add-circle" disabled={blocked} onPress={() => onAdd({ ...meal, photoUri: photoThumb || photoUri })} />}>
-      {photoUri ? <Image source={{ uri: photoUri }} style={s.photo} resizeMode="cover" accessibilityLabel="Your meal photo" /> : null}
+    <Sheet visible={visible} title={photo ? tr("Review your meal") : tr("Add food")} onClose={onClose} closeLabel="Back"
+      footer={<PrimaryButton title={tr("Add to {slot}", { slot: tr(slotLabel) })} icon="add-circle" disabled={blocked} onPress={() => onAdd({ ...meal, photoUri: photoThumb || photoUri })} />}>
+      {photoUri ? <Image source={{ uri: photoUri }} style={s.photo} resizeMode="cover" accessibilityLabel={tr("Your meal photo")} /> : null}
       <Surface>
         <Pill label={badge.label} icon={badge.icon} color={badge.color} bg={badge.bg} />
         <Text style={s.name}>{food.name}</Text>
-        {food.detail ? <Text style={s.detail}>{food.detail}</Text> : null}
+        {food.detail ? <Text style={s.detail}>{tr(food.detail)}</Text> : null}
         {note ? <Text style={s.note}>{note}</Text> : null}
         <View style={s.kcalRow}>
           <View>
@@ -73,7 +75,7 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
             <Text style={s.kcalUnit}>kcal</Text>
           </View>
           <View style={s.rangeBox}>
-            <Text style={s.rangeLabel}>Likely range</Text>
+            <Text style={s.rangeLabel}>{tr("Likely range")}</Text>
             <Text style={s.range}>{meal.range![0]}–{meal.range![1]} kcal</Text>
           </View>
         </View>
@@ -87,51 +89,51 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
 
       {concerns ? (
         <Surface style={{ backgroundColor: palette.warnSoft, borderColor: palette.warnSoft }}>
-          <Text style={s.h}>Check before choosing this meal</Text>
+          <Text style={s.h}>{tr("Check before choosing this meal")}</Text>
           {concerns.messages.map((m) => <Text key={m} style={s.concern}>• {m}</Text>)}
           <Text style={s.concern}>{concerns.alternative}</Text>
           <Pressable accessibilityRole="checkbox" aria-checked={ack} accessibilityState={{ checked: ack }}
-            accessibilityLabel="I reviewed the concerns and ingredients. This does not certify food safety; I can still record what I actually ate."
+            accessibilityLabel={tr("I reviewed the concerns and ingredients. This does not certify food safety; I can still record what I actually ate.")}
             onPress={() => setAck(!ack)} style={s.ackRow}>
             <Ionicons name={ack ? "checkbox" : "square-outline"} size={24} color={palette.ink} />
-            <Text style={[s.concern, { flex: 1 }]}>I reviewed the concerns and ingredients. This does not certify food safety; I can still record what I actually ate.</Text>
+            <Text style={[s.concern, { flex: 1 }]}>{tr("I reviewed the concerns and ingredients. This does not certify food safety; I can still record what I actually ate.")}</Text>
           </Pressable>
         </Surface>
       ) : null}
 
       {food.items?.length ? (
         <Surface>
-          <Text style={s.h}>What we found</Text>
+          <Text style={s.h}>{tr("What we found")}</Text>
           {food.items.map((i) => (
             <View key={`${i.name}-${i.grams}`} style={s.itemRow}>
               <View style={{ flex: 1 }}>
                 <Text style={s.itemName}>{i.name} · {i.grams} g</Text>
-                {i.matched ? <Text style={s.note}>USDA: {i.matched}</Text> : <Text style={s.note}>No database match — AI estimate used</Text>}
+                {i.matched ? <Text style={s.note}>USDA: {i.matched}</Text> : <Text style={s.note}>{tr("No database match — AI estimate used")}</Text>}
               </View>
               <Text style={s.itemName}>{i.calories !== undefined ? `${i.calories} kcal` : "—"}</Text>
             </View>
           ))}
-          <Text style={s.note}>Wrong item or portion? Go back and search the food instead — database entries are more accurate than any photo.</Text>
+          <Text style={s.note}>{tr("Wrong item or portion? Go back and search the food instead — database entries are more accurate than any photo.")}</Text>
         </Surface>
       ) : null}
 
       <Surface>
-        <Text style={s.h}>How much?</Text>
+        <Text style={s.h}>{tr("How much?")}</Text>
         <View style={s.wrap}>
           {food.servings.map((sv, i) => (
             <Chip key={sv.label} label={`${sv.label}${sv.label.includes("g") && /^\d/.test(sv.label) ? "" : ` · ${Math.round(sv.grams)} g`}`} selected={i === servingIndex} onPress={() => setServingIndex(i)} />
           ))}
         </View>
         <View style={s.qtyRow}>
-          <Text style={s.qtyLabel}>Servings</Text>
+          <Text style={s.qtyLabel}>{tr("Servings")}</Text>
           <Stepper label="servings" value={qty} onChange={setQty} step={0.5} min={0.25} />
         </View>
         <Text style={s.note}>Total {Math.round(serving.grams * qty)} g. Portions you eyeball are often bigger than they look — weigh once in a while.</Text>
       </Surface>
 
       <Surface>
-        <Text style={s.h}>Cooked with extra oil, butter or ghee?</Text>
-        <Text style={s.note}>Hidden cooking fat is the most-missed calorie source in food logs. 1 tbsp of oil ≈ 120 kcal.</Text>
+        <Text style={s.h}>{tr("Cooked with extra oil, butter or ghee?")}</Text>
+        <Text style={s.note}>{tr("Hidden cooking fat is the most-missed calorie source in food logs. 1 tbsp of oil ≈ 120 kcal.")}</Text>
         <View style={s.wrap}>
           {(Object.keys(addedFat) as AddedFat[]).map((k) => (
             <Chip key={k} label={addedFat[k].label} selected={fat === k} onPress={() => setFat(k)} />
@@ -140,15 +142,15 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
       </Surface>
 
       <Surface>
-        <Text style={s.h}>Add to</Text>
+        <Text style={s.h}>{tr("Add to")}</Text>
         <View style={s.wrap}>
-          {mealSlotNames.map((m) => <Chip key={m.id} label={`${m.emoji} ${m.label}`} selected={slot === m.id} onPress={() => setSlot(m.id)} />)}
+          {mealSlotNames.map((m) => <Chip key={m.id} label={`${m.emoji} ${tr(m.label)}`} selected={slot === m.id} onPress={() => setSlot(m.id)} />)}
         </View>
       </Surface>
 
       <Surface>
-        <Pressable accessibilityRole="button" accessibilityLabel={showMicros ? "Hide nutrients" : "Show all nutrients"} onPress={() => setShowMicros(!showMicros)} style={s.microHead}>
-          <Text style={s.h}>Vitamins & minerals</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel={showMicros ? tr("Hide nutrients") : tr("Show all nutrients")} onPress={() => setShowMicros(!showMicros)} style={s.microHead}>
+          <Text style={s.h}>{tr("Vitamins & minerals")}</Text>
           <Ionicons name={showMicros ? "chevron-up" : "chevron-down"} size={20} color={palette.muted} />
         </Pressable>
         {showMicros ? (
@@ -157,14 +159,14 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
             const v = meal.micros?.[k] ?? (k === "fibre" ? meal.fibre : undefined);
             return (
               <View key={k} style={s.microRow}>
-                <Text style={s.microName}>{info.label}</Text>
+                <Text style={s.microName}>{tr(info.label)}</Text>
                 <View style={{ flex: 1 }}>{v !== undefined && info.dv ? <Bar value={v} total={info.dv} color={info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
                 <Text style={s.microValue}>{v === undefined ? "—" : `${v} ${info.unit}`}{v !== undefined && info.dv ? `  ${Math.round((v / info.dv) * 100)}%` : ""}</Text>
               </View>
             );
           })
         ) : (
-          <Text style={s.note}>Sodium, potassium, calcium, iron, vitamins C, D, B12 and more, with % Daily Value.</Text>
+          <Text style={s.note}>{tr("Sodium, potassium, calcium, iron, vitamins C, D, B12 and more, with % Daily Value.")}</Text>
         )}
       </Surface>
     </Sheet>

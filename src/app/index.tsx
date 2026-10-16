@@ -1,3 +1,4 @@
+import { useT, type T } from "../i18n";
 import React, { useState } from "react";
 import { Avatar, AvatarPicker } from "../components/Avatar";
 import { WeekBars } from "../components/charts";
@@ -19,6 +20,7 @@ import type { AppRoute } from "../components/navigation";
 type Tile = { href: AppRoute; title: string; detail: string; icon: keyof typeof Ionicons.glyphMap; tint: string };
 
 export default function Today() {
+  const tr = useT();
   const { state, update } = useStore();
   const p = effectiveProfile(state);
   const [day, setDay] = useState(() => localDay());
@@ -47,7 +49,7 @@ export default function Today() {
   const left = Math.round(targets.calories - totals.calories);
 
   const featured: Tile[] = [
-    { href: "/medicines", title: "GLP-1 companion", detail: p.glp1 ? `${p.glp1.split(" (")[0]} · shots, side effects, protein` : "Ozempic, Wegovy, Mounjaro, Zepbound", icon: "medkit", tint: soft("#F3EDFF") },
+    { href: "/medicines", title: "GLP-1 companion", detail: p.glp1 ? tr("{v0} · shots, side effects, protein", { v0: p.glp1.split(" (")[0] }) : "Ozempic, Wegovy, Mounjaro, Zepbound", icon: "medkit", tint: soft("#F3EDFF") },
     { href: "/education", title: "Gym Truth", detail: "Supplements, steroids, soreness — the science", icon: "school", tint: soft("#EAF7EF") },
     { href: "/coach", title: "AI Coach", detail: "Ask about food and moving", icon: "chatbubbles", tint: soft("#E9F6FF") },
   ];
@@ -62,16 +64,16 @@ export default function Today() {
 
 
   return (
-    <Screen title={`Hi, ${p.name} 👋`} subtitle={dateLine(selected, isToday)}>
+    <Screen title={tr("Hi, {name} 👋", { name: p.name })} subtitle={dateLine(selected, isToday, tr)}>
       <View style={s.topRow}>
         <Avatar profile={p} size={52} onPress={() => setPicker(true)} />
         <View style={{ flex: 1 }}>
-          <Text style={s.topTitle}>{st.loggedToday ? "Nice — you’re on track today" : st.current ? "Keep your streak alive" : "Let’s start your streak"}</Text>
-          <Text style={s.topText}>{st.loggedToday ? "Every log makes your estimates smarter." : "Log one meal to count today."}</Text>
+          <Text style={s.topTitle}>{st.loggedToday ? tr("Nice — you’re on track today") : st.current ? tr("Keep your streak alive") : tr("Let’s start your streak")}</Text>
+          <Text style={s.topText}>{st.loggedToday ? tr("Every log makes your estimates smarter.") : tr("Log one meal to count today.")}</Text>
         </View>
-        <View style={s.streak} accessibilityLabel={`${st.current} day streak`}>
+        <View style={s.streak} accessibilityLabel={tr("{current} day streak", { current: st.current })}>
           <Text style={s.streakNum}>🔥 {st.current}</Text>
-          <Text style={s.streakLabel}>day streak</Text>
+          <Text style={s.streakLabel}>{tr("day streak")}</Text>
         </View>
       </View>
       <WeekStrip selected={day} onSelect={setDay} meals={state.meals} />
@@ -81,18 +83,18 @@ export default function Today() {
           <View style={s.heroRow}>
             <ProgressRing size={150} stroke={14} progress={0} color={theme.brand}>
               <Text style={s.heroNum}>{Math.round(totals.calories).toLocaleString()}</Text>
-              <Text style={s.heroUnit}>kcal eaten</Text>
+              <Text style={s.heroUnit}>{tr("kcal eaten")}</Text>
             </ProgressRing>
             <View style={{ flex: 1 }}>
-              <Text style={s.heroTitle}>Targets paused</Text>
-              <Text style={s.heroText}>Your health details mean your doctor or dietitian sets calorie goals. Keep logging meals here.</Text>
+              <Text style={s.heroTitle}>{tr("Targets paused")}</Text>
+              <Text style={s.heroText}>{tr("Your health details mean your doctor or dietitian sets calorie goals. Keep logging meals here.")}</Text>
             </View>
           </View>
         ) : (
           <View style={s.heroRow}>
             <ProgressRing size={150} stroke={14} progress={totals.calories / targets.calories} color={left < 0 ? theme.protein : theme.brand}>
               <Text style={s.heroNum}>{Math.abs(left).toLocaleString()}</Text>
-              <Text style={s.heroUnit}>{left < 0 ? "kcal over" : "kcal left"}</Text>
+              <Text style={s.heroUnit}>{tr(left < 0 ? "kcal over" : "kcal left")}</Text>
             </ProgressRing>
             <View style={{ flex: 1, gap: 12 }}>
               <Stat label="Eaten" value={`${Math.round(totals.calories).toLocaleString()} kcal`} />
@@ -111,7 +113,7 @@ export default function Today() {
         <View style={s.win} accessibilityRole="alert">
           <Text style={s.winEmoji}>🎉</Text>
           <View style={{ flex: 1 }}>
-            <Text style={s.winTitle}>Protein goal reached!</Text>
+            <Text style={s.winTitle}>{tr("Protein goal reached!")}</Text>
             <Text style={s.winText}>{Math.round(totals.protein)} g today — that’s how you keep muscle while you get lean.</Text>
           </View>
         </View>
@@ -124,69 +126,69 @@ export default function Today() {
         <QuickAction icon="barbell" label="Workout" tint={soft("#EEF2FF")} onPress={() => router.navigate("/move")} a11y="Start a workout" />
       </View>
 
-      <Pressable onPress={() => router.navigate("/move")} accessibilityRole="button" accessibilityLabel="Today's workout" style={s.card}>
+      <Pressable onPress={() => router.navigate("/move")} accessibilityRole="button" accessibilityLabel={tr("Today's workout")} style={s.card}>
         <View style={[s.tileIcon, { backgroundColor: soft("#EEF2FF") }]}><Ionicons name="barbell" size={22} color={theme.brand} /></View>
         <View style={{ flex: 1 }}>
-          <Text style={s.cardKicker}>Today&apos;s workout</Text>
-          <Text style={s.cardTitle}>{!todayPlan || todayPlan.rest ? "No workout scheduled" : todayPlan.title}</Text>
+          <Text style={s.cardKicker}>{tr("Today's workout")}</Text>
+          <Text style={s.cardTitle}>{!todayPlan || todayPlan.rest ? tr("No workout scheduled") : todayPlan.title}</Text>
           <Text style={s.cardText}>
             {!todayPlan || todayPlan.rest
-              ? "Rest, stretch or take a gentle walk."
+              ? tr("Rest, stretch or take a gentle walk.")
               : todayPlan.completed
-                ? "Done for today — nice work."
-                : `${todayPlan.items.length} exercises · about ${todayPlan.duration} min`}
+                ? tr("Done for today — nice work.")
+                : tr("{length} exercises · about {duration} min", { length: todayPlan.items.length, duration: todayPlan.duration })}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={theme.muted} />
       </Pressable>
 
-      <Pressable onPress={() => router.navigate("/report")} accessibilityRole="button" accessibilityLabel="Open weekly report" style={s.reportCard}>
+      <Pressable onPress={() => router.navigate("/report")} accessibilityRole="button" accessibilityLabel={tr("Open weekly report")} style={s.reportCard}>
         <View style={s.reportHead}>
           <View style={{ flex: 1 }}>
-            <Text style={s.cardKicker}>This week</Text>
-            <Text style={s.cardTitle}>{report.daysLogged ? `${report.avgCalories.toLocaleString()} kcal · ${report.avgProtein} g protein avg` : "Your weekly report starts today"}</Text>
+            <Text style={s.cardKicker}>{tr("This week")}</Text>
+            <Text style={s.cardTitle}>{report.daysLogged ? tr("{v0} kcal · {avgProtein} g protein avg", { v0: report.avgCalories.toLocaleString(), avgProtein: report.avgProtein }) : tr("Your weekly report starts today")}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={theme.muted} />
         </View>
         <WeekBars values={report.days.map((d) => d.calories)} labels={report.days.map((d) => d.label)} target={report.calorieTarget} />
-        <Text style={s.cardText}>{report.highlights[0] || "Log meals for a few days to see your trends."}</Text>
+        <Text style={s.cardText}>{tr(report.highlights[0]) || tr("Log meals for a few days to see your trends.")}</Text>
       </Pressable>
 
-      <Pressable onPress={() => router.navigate("/numbers")} accessibilityRole="button" accessibilityLabel="Open my numbers" style={s.numbers}>
+      <Pressable onPress={() => router.navigate("/numbers")} accessibilityRole="button" accessibilityLabel={tr("Open my numbers")} style={s.numbers}>
         <Num label="BMR" value={numbers.bmr.toLocaleString()} unit="kcal" />
-        <Num label={adaptive ? "TDEE (adaptive)" : "TDEE"} value={(adaptive?.tdee || numbers.tdee).toLocaleString()} unit="kcal" />
+        <Num label={adaptive ? tr("TDEE (adaptive)") : tr("TDEE")} value={(adaptive?.tdee || numbers.tdee).toLocaleString()} unit="kcal" />
         <Num label="BMI" value={String(numbers.bmi)} />
         <Ionicons name="chevron-forward" size={18} color={theme.muted} />
       </Pressable>
 
       <View style={s.sectionHead}>
-        <Text style={s.section}>{isToday ? "Recently logged" : "Logged this day"}</Text>
-        <Pressable onPress={() => router.navigate("/food")} accessibilityRole="button"><Text style={s.link}>Add food</Text></Pressable>
+        <Text style={s.section}>{isToday ? tr("Recently logged") : tr("Logged this day")}</Text>
+        <Pressable onPress={() => router.navigate("/food")} accessibilityRole="button"><Text style={s.link}>{tr("Add food")}</Text></Pressable>
       </View>
       {meals.length ? meals.map((m) => <MealRow key={m.id} meal={m} />) : (
         <View style={[s.card, { justifyContent: "center" }]}>
-          <Text style={s.cardText}>Nothing logged yet. Snap your first meal or add it by hand.</Text>
+          <Text style={s.cardText}>{tr("Nothing logged yet. Snap your first meal or add it by hand.")}</Text>
         </View>
       )}
 
-      <Text style={[s.section, { marginTop: 10 }]}>For you</Text>
+      <Text style={[s.section, { marginTop: 10 }]}>{tr("For you")}</Text>
       {featured.map((f) => (
-        <Pressable key={f.href} onPress={() => router.navigate(f.href)} accessibilityRole="button" accessibilityLabel={f.title} style={s.card}>
+        <Pressable key={f.href} onPress={() => router.navigate(f.href)} accessibilityRole="button" accessibilityLabel={tr(f.title)} style={s.card}>
           <View style={[s.tileIcon, { backgroundColor: f.tint }]}><Ionicons name={f.icon} size={22} color={theme.ink} /></View>
           <View style={{ flex: 1 }}>
-            <Text style={s.cardTitle}>{f.title}</Text>
-            <Text style={s.cardText}>{f.detail}</Text>
+            <Text style={s.cardTitle}>{tr(f.title)}</Text>
+            <Text style={s.cardText}>{tr(f.detail)}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={theme.muted} />
         </Pressable>
       ))}
-      <Text style={[s.section, { marginTop: 10 }]}>More</Text>
+      <Text style={[s.section, { marginTop: 10 }]}>{tr("More")}</Text>
       <View style={s.grid}>
         {more.map((t) => (
-          <Pressable key={t.href} onPress={() => router.navigate(t.href)} accessibilityRole="button" accessibilityLabel={t.title} style={s.tile}>
+          <Pressable key={t.href} onPress={() => router.navigate(t.href)} accessibilityRole="button" accessibilityLabel={tr(t.title)} style={s.tile}>
             <View style={[s.tileIconSm, { backgroundColor: t.tint }]}><Ionicons name={t.icon} size={18} color={theme.ink} /></View>
-            <Text style={s.tileTitle}>{t.title}</Text>
-            <Text style={s.tileText}>{t.detail}</Text>
+            <Text style={s.tileTitle}>{tr(t.title)}</Text>
+            <Text style={s.tileText}>{tr(t.detail)}</Text>
           </Pressable>
         ))}
       </View>
@@ -199,12 +201,13 @@ export default function Today() {
   );
 }
 
-function dateLine(d: Date, isToday: boolean) {
-  const label = d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-  return isToday ? `Today · ${label}` : label;
+function dateLine(d: Date, isToday: boolean, tr: T) {
+  const label = d.toLocaleDateString(tr("en-US"), { weekday: "long", month: "long", day: "numeric" });
+  return isToday ? tr("Today · {label}", { label }) : label;
 }
 
 function WeekStrip({ selected, onSelect, meals }: { selected: string; onSelect: (d: string) => void; meals: Meal[] }) {
+  const tr = useT();
   const today = new Date();
   const start = new Date(today);
   start.setHours(12, 0, 0, 0);
@@ -221,9 +224,9 @@ function WeekStrip({ selected, onSelect, meals }: { selected: string; onSelect: 
         const future = key > todayKey;
         return (
           <Pressable key={key} disabled={future} onPress={() => onSelect(key)} accessibilityRole="tab"
-            accessibilityLabel={d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}
+            accessibilityLabel={d.toLocaleDateString(tr("en-US"), { weekday: "long", month: "short", day: "numeric" })}
             aria-selected={on} style={[on ? s.dayOn : s.day, future && { opacity: 0.4 }]}>
-            <Text style={on ? s.dayNameOn : s.dayName}>{d.toLocaleDateString(undefined, { weekday: "narrow" })}</Text>
+            <Text style={on ? s.dayNameOn : s.dayName}>{d.toLocaleDateString(tr("en-US"), { weekday: "narrow" })}</Text>
             <Text style={on ? s.dayNumOn : s.dayNum}>{d.getDate()}</Text>
             <View style={[s.dot, { backgroundColor: logged.has(key) ? (on ? "white" : theme.brand) : "transparent" }]} />
           </Pressable>
@@ -234,46 +237,51 @@ function WeekStrip({ selected, onSelect, meals }: { selected: string; onSelect: 
 }
 
 function QuickAction({ icon, label, tint, onPress, a11y, dark }: { icon: keyof typeof Ionicons.glyphMap; label: string; tint: string; onPress: () => void; a11y: string; dark?: boolean }) {
+  const tr = useT();
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={a11y} style={[s.quick, dark && { backgroundColor: "#111A2E", borderColor: "#111A2E" }]}>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={tr(a11y)} style={[s.quick, dark && { backgroundColor: "#111A2E", borderColor: "#111A2E" }]}>
       <View style={[s.quickIcon, { backgroundColor: tint }]}><Ionicons name={icon} size={22} color={dark ? "white" : theme.ink} /></View>
-      <Text style={[s.quickText, dark && { color: "white" }]}>{label}</Text>
+      <Text style={[s.quickText, dark && { color: "white" }]}>{tr(label)}</Text>
     </Pressable>
   );
 }
 
 function Num({ label, value, unit }: { label: string; value: string; unit?: string }) {
+  const tr = useT();
   return (
     <View style={{ flex: 1 }}>
-      <Text style={s.statLabel}>{label}</Text>
+      <Text style={s.statLabel}>{tr(label)}</Text>
       <Text style={s.numValue}>{value}{unit ? <Text style={s.numUnit}> {unit}</Text> : null}</Text>
     </View>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const tr = useT();
   return (
     <View>
-      <Text style={s.statLabel}>{label}</Text>
+      <Text style={s.statLabel}>{tr(label)}</Text>
       <Text style={s.statValue}>{value}</Text>
     </View>
   );
 }
 
 function MacroRing({ label, eaten, target, color }: { label: string; eaten: number; target: number; color: string }) {
+  const tr = useT();
   return (
     <View style={s.macro}>
       <ProgressRing size={66} stroke={7} progress={target ? eaten / target : 0} color={color}>
         <Text style={s.macroNum}>{Math.round(eaten)}g</Text>
       </ProgressRing>
-      <Text style={s.macroLabel}>{label}</Text>
-      <Text style={s.macroSub}>{target ? `${Math.max(0, Math.round(target - eaten))}g left` : "logged"}</Text>
+      <Text style={s.macroLabel}>{tr(label)}</Text>
+      <Text style={s.macroSub}>{target ? tr("{n}g left", { n: Math.max(0, Math.round(target - eaten)) }) : tr("logged")}</Text>
     </View>
   );
 }
 
 function MealRow({ meal }: { meal: Meal }) {
-  const time = new Date(meal.at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const tr = useT();
+  const time = new Date(meal.at).toLocaleTimeString(tr("en-US"), { hour: "numeric", minute: "2-digit" });
   return (
     <View style={s.mealRow}>
       <View style={[s.tileIcon, { backgroundColor: soft("#FFF1E6") }]}>
@@ -296,9 +304,10 @@ function MealRow({ meal }: { meal: Meal }) {
 }
 
 function Chip({ text, color }: { text: string; color: string }) {
+  const tr = useT();
   return (
     <View style={[s.chip, { backgroundColor: `${color}22` }]}>
-      <Text style={[s.chipText, { color }]}>{text}</Text>
+      <Text style={[s.chipText, { color }]}>{tr(text)}</Text>
     </View>
   );
 }

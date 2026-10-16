@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import { buildMealPlan, dietaryType } from "../core/meal-planning";
 import { dietChoices, allergenChoices } from "../core/meal-catalog";
 import { CuisinePreferences } from "../components/CuisinePreferences";
@@ -63,6 +64,7 @@ function startProfile(existing: Profile | null): Profile {
 }
 
 export default function Onboarding() {
+  const tr = useT();
   const { state, update } = useStore();
   const editing = !!state.profile;
   const [p, setP] = useState<Profile>(() => startProfile(state.profile));
@@ -195,9 +197,9 @@ export default function Onboarding() {
         <TextInput
           value={p.name}
           onChangeText={(v) => change("name", v)}
-          placeholder="First name"
+          placeholder={tr("First name")}
           placeholderTextColor={theme.muted}
-          accessibilityLabel="First name"
+          accessibilityLabel={tr("First name")}
           autoFocus={!editing}
           autoCapitalize="words"
           returnKeyType="next"
@@ -252,10 +254,10 @@ export default function Onboarding() {
     case "training":
       return shell("How do you like to train?", undefined,
         <>
-          <Text style={s.group}>Experience</Text>
+          <Text style={s.group}>{tr("Experience")}</Text>
           <OptionCard label="Beginner" emoji="🌱" selected={p.experience === "beginner"} onPress={() => change("experience", "beginner")} />
           <OptionCard label="Experienced" emoji="🏋️" selected={p.experience === "experienced"} onPress={() => change("experience", "experienced")} />
-          <Text style={s.group}>Where</Text>
+          <Text style={s.group}>{tr("Where")}</Text>
           <OptionCard label="Gym" emoji="🏟️" selected={p.place === "gym"} onPress={() => change("place", "gym")} />
           <OptionCard label="Home" emoji="🏠" selected={p.place === "home"} onPress={() => change("place", "home")} />
           <OptionCard label="Walking" emoji="👟" selected={p.place === "walk"} onPress={() => change("place", "walk")} />
@@ -264,11 +266,11 @@ export default function Onboarding() {
       const chosen = p.workoutDays || [];
       return shell("Plan your workout week", "You choose the days. Consecutive days are fine — adjust recovery to how you feel.",
         <>
-          <Text style={s.group}>Days per week</Text>
+          <Text style={s.group}>{tr("Days per week")}</Text>
           <View style={s.dayCount}>
             {[1, 2, 3, 4, 5, 6, 7].map((n) => (
               <Pressable key={n} onPress={() => setP((prev) => ({ ...prev, days: n, workoutDays: undefined }))}
-                accessibilityRole="radio" accessibilityLabel={`${n} days per week`} aria-checked={p.days === n}
+                accessibilityRole="radio" accessibilityLabel={tr("{n} days per week", { n })} aria-checked={p.days === n}
                 style={p.days === n ? s.countOn : s.count}>
                 <Text style={p.days === n ? s.countTextOn : s.countText}>{n}</Text>
               </Pressable>
@@ -299,18 +301,18 @@ export default function Onboarding() {
           <OptionCard label="Yes" selected={glpAnswer === "yes"} onPress={() => setGlpAnswer("yes")} />
           {glpAnswer === "yes" ? (
             <>
-              <Text style={s.group}>Which one is on your prescription?</Text>
+              <Text style={s.group}>{tr("Which one is on your prescription?")}</Text>
               {glp1Choices.map((g) => (
                 <OptionCard key={g} label={g} selected={p.glp1 === g} onPress={() => change("glp1", g)} />
               ))}
               <Text style={s.caution}>
-                Do not start, stop, skip or change a dose because of this app. Follow your Medication Guide and ask your prescriber or pharmacist.
+                {tr("Do not start, stop, skip or change a dose because of this app. Follow your Medication Guide and ask your prescriber or pharmacist.")}
               </Text>
             </>
           ) : null}
-          <Text style={s.group}>Other prescribed medicines (optional)</Text>
-          <TextInput value={otherMeds} onChangeText={setOtherMeds} placeholder="Names and usual timing" placeholderTextColor={theme.muted}
-            accessibilityLabel="Other prescribed medicines" multiline style={s.textArea} />
+          <Text style={s.group}>{tr("Other prescribed medicines (optional)")}</Text>
+          <TextInput value={otherMeds} onChangeText={setOtherMeds} placeholder={tr("Names and usual timing")} placeholderTextColor={theme.muted}
+            accessibilityLabel={tr("Other prescribed medicines")} multiline style={s.textArea} />
         </>);
     case "injuries":
       return shell("Any injuries or movement limits?", "Optional. We show safety guides for these in Gym Truth and do not assign exercise intensity — your doctor or physical therapist does.",
@@ -322,9 +324,9 @@ export default function Onboarding() {
                 onPress={() => change("limits", on ? (p.limits || []).filter((x) => x !== l.value) : [...(p.limits || []), l.value])} />
             );
           })}
-          <Text style={s.group}>Anything else (optional)</Text>
-          <TextInput value={p.injuries} onChangeText={(v) => change("injuries", v)} placeholder="For example: hip surgery last year"
-            placeholderTextColor={theme.muted} accessibilityLabel="Injuries or movement limitations" multiline style={s.textArea} />
+          <Text style={s.group}>{tr("Anything else (optional)")}</Text>
+          <TextInput value={p.injuries} onChangeText={(v) => change("injuries", v)} placeholder={tr("For example: hip surgery last year")}
+            placeholderTextColor={theme.muted} accessibilityLabel={tr("Injuries or movement limitations")} multiline style={s.textArea} />
         </>,
         p.injuries.trim() || p.limits?.length ? "Continue" : "Skip — none");
     case "diet":
@@ -333,53 +335,54 @@ export default function Onboarding() {
           {dietChoices.map((d) => (
             <OptionCard key={d.value} label={d.label} selected={(p.dietType || dietaryType(p)) === d.value} onPress={() => change("dietType", d.value)} />
           ))}
-          <Text style={s.group}>Food allergies (select all)</Text>
+          <Text style={s.group}>{tr("Food allergies (select all)")}</Text>
           <View style={s.chips}>
             {allergenChoices.map((a) => {
               const on = (p.allergyFoods || []).includes(a.value);
               return (
                 <Pressable key={a.value} onPress={() => change("allergyFoods", on ? (p.allergyFoods || []).filter((x) => x !== a.value) : [...(p.allergyFoods || []), a.value])}
-                  accessibilityRole="checkbox" accessibilityLabel={a.label} aria-checked={on} style={on ? s.chipOn : s.chip}>
-                  <Text style={on ? s.chipTextOn : s.chipText}>{a.label}</Text>
+                  accessibilityRole="checkbox" accessibilityLabel={tr(a.label)} aria-checked={on} style={on ? s.chipOn : s.chip}>
+                  <Text style={on ? s.chipTextOn : s.chipText}>{tr(a.label)}</Text>
                 </Pressable>
               );
             })}
           </View>
-          <Text style={s.caution}>Always read package labels for allergens.</Text>
+          <Text style={s.caution}>{tr("Always read package labels for allergens.")}</Text>
         </>);
     case "cuisine":
       return shell("What food do you enjoy?", "We use this for meal ideas. American is the default.",
         <>
           <CuisinePreferences value={p.cuisine} onChange={(v) => change("cuisine", v)} />
-          <TextInput value={p.familiarFoods || ""} onChangeText={(v) => change("familiarFoods", v)} placeholder="Foods you usually buy and cook (optional)"
-            placeholderTextColor={theme.muted} accessibilityLabel="Familiar foods" multiline style={s.textArea} />
+          <TextInput value={p.familiarFoods || ""} onChangeText={(v) => change("familiarFoods", v)} placeholder={tr("Foods you usually buy and cook (optional)")}
+            placeholderTextColor={theme.muted} accessibilityLabel={tr("Familiar foods")} multiline style={s.textArea} />
         </>);
     case "consent":
       return shell("You stay in control", undefined,
         <>
           <View style={s.infoCard}>
-            <Text style={s.infoText}>Your profile and logs are stored on this device. Nutrition and exercise estimates are educational. Snap to Fit does not diagnose, prescribe or tell you to change medicines.</Text>
+            <Text style={s.infoText}>{tr("Your profile and logs are stored on this device. Nutrition and exercise estimates are educational. Snap to Fit does not diagnose, prescribe or tell you to change medicines.")}</Text>
             <Text style={[s.infoText, { marginTop: 8, fontWeight: "700" }]}>{doctorNotice}</Text>
             <Text style={[s.infoText, { marginTop: 8 }]}>{steroidNotice}</Text>
           </View>
           <OptionCard multi label="I am 18 or older and understand how my health information is used." selected={p.consent} onPress={() => change("consent", !p.consent)} />
           <OptionCard multi label="Optional: allow selected profile details and photos to be sent to the AI service when I ask for chat or food analysis." selected={p.aiConsent} onPress={() => change("aiConsent", !p.aiConsent)} />
-          <Text style={s.caution}>You can change consent or delete your information in Settings.</Text>
+          <Text style={s.caution}>{tr("You can change consent or delete your information in Settings.")}</Text>
         </>, "See my plan");
   }
 }
 
 function Welcome({ onStart }: { onStart: () => void }) {
+  const tr = useT();
   return (
     <ScrollView contentContainerStyle={s.welcome}>
       <Logo size={88} />
-      <Text style={s.brand}>snap<Text style={{ color: theme.brand }}> to fit</Text></Text>
-      <Text style={s.tagline}>Snap your meals. Move your way. See your progress.</Text>
+      <Text style={s.brand}>snap<Text style={{ color: theme.brand }}> {tr("to fit")}</Text></Text>
+      <Text style={s.tagline}>{tr("Snap your meals. Move your way. See your progress.")}</Text>
       <Image source={menuArt} style={s.hero} resizeMode="contain" accessibilityIgnoresInvertColors />
       <View style={{ width: "100%", maxWidth: 480 }}>
-        <Pressable onPress={onStart} accessibilityRole="button" style={s.cta}><Text style={s.ctaText}>Get started</Text></Pressable>
-        <Pressable onPress={() => router.push("/account")} accessibilityRole="button" style={s.link}><Text style={s.linkText}>I already have an account</Text></Pressable>
-        <Pressable onPress={() => router.push("/legal")} accessibilityRole="button" style={s.link}><Text style={s.linkMuted}>Privacy and app terms</Text></Pressable>
+        <Pressable onPress={onStart} accessibilityRole="button" style={s.cta}><Text style={s.ctaText}>{tr("Get started")}</Text></Pressable>
+        <Pressable onPress={() => router.push("/account")} accessibilityRole="button" style={s.link}><Text style={s.linkText}>{tr("I already have an account")}</Text></Pressable>
+        <Pressable onPress={() => router.push("/legal")} accessibilityRole="button" style={s.link}><Text style={s.linkMuted}>{tr("Privacy and app terms")}</Text></Pressable>
         <Text style={s.notice}>{doctorNotice}</Text>
       </View>
     </ScrollView>
@@ -387,19 +390,20 @@ function Welcome({ onStart }: { onStart: () => void }) {
 }
 
 function Reveal({ profile, busy, onBack, onStart }: { profile: Profile; busy: boolean; onBack: () => void; onStart: () => void }) {
+  const tr = useT();
   const t = nutritionTargets(profile);
   const kcal = useCountUp(t.restricted ? 0 : t.calories);
   return (
     <ScrollView contentContainerStyle={s.reveal}>
-      <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to your answers" style={s.revealBack}>
-        <Text style={s.linkMuted}>‹ Edit answers</Text>
+      <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel={tr("Back to your answers")} style={s.revealBack}>
+        <Text style={s.linkMuted}>{tr("‹ Edit answers")}</Text>
       </Pressable>
       <Text style={s.revealTitle} accessibilityRole="header">Your plan is ready, {profile.name.trim()}.</Text>
       {t.restricted ? (
         <View style={[s.infoCard, { marginTop: 20 }]}>
-          <Text style={s.infoTitle}>Calorie targets are paused</Text>
+          <Text style={s.infoTitle}>{tr("Calorie targets are paused")}</Text>
           <Text style={s.infoText}>
-            Because you shared health conditions or medicines, Snap to Fit will not set automatic calorie or macro targets. Logging, workouts, progress and education stay on. Ask your doctor or dietitian for targets that fit your care plan.
+            {tr("Because you shared health conditions or medicines, Snap to Fit will not set automatic calorie or macro targets. Logging, workouts, progress and education stay on. Ask your doctor or dietitian for targets that fit your care plan.")}
           </Text>
         </View>
       ) : (
@@ -407,7 +411,7 @@ function Reveal({ profile, busy, onBack, onStart }: { profile: Profile; busy: bo
           <View style={{ alignItems: "center", marginTop: 26 }}>
             <ProgressRing size={210} stroke={16} progress={1} color={theme.brand}>
               <Text style={s.kcal}>{kcal.toLocaleString()}</Text>
-              <Text style={s.kcalLabel}>calories / day</Text>
+              <Text style={s.kcalLabel}>{tr("calories / day")}</Text>
             </ProgressRing>
           </View>
           <View style={s.macros}>
@@ -424,19 +428,20 @@ function Reveal({ profile, busy, onBack, onStart }: { profile: Profile; busy: bo
         <Text style={[s.infoText, { fontWeight: "700" }]}>{doctorNotice}</Text>
       </View>
       <Pressable onPress={onStart} disabled={busy} accessibilityRole="button" style={[s.cta, { marginTop: 22 }, busy && { opacity: 0.5 }]}>
-        <Text style={s.ctaText}>{busy ? "Saving…" : "Start my journey"}</Text>
+        <Text style={s.ctaText}>{busy ? tr("Saving…") : tr("Start my journey")}</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
 function Macro({ label, grams, color, share }: { label: string; grams: number; color: string; share: number }) {
+  const tr = useT();
   return (
     <View style={s.macro}>
       <ProgressRing size={74} stroke={8} progress={share} color={color}>
         <Text style={s.macroG}>{grams}g</Text>
       </ProgressRing>
-      <Text style={s.macroLabel}>{label}</Text>
+      <Text style={s.macroLabel}>{tr(label)}</Text>
     </View>
   );
 }

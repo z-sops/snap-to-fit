@@ -1,3 +1,4 @@
+import { useT } from "../../i18n";
 import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,10 +20,11 @@ export function recentFoodIds(meals: Meal[], limit = 25) {
 }
 
 export function FoodRow({ food, onPress }: { food: Food; onPress: () => void }) {
+  const tr = useT();
   const sv = food.servings[0];
   const kcal = Math.round(scale(food, sv.grams).calories || 0);
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${food.name}, ${kcal} calories per ${sv.label}`} onPress={onPress} style={s.row}>
+    <Pressable accessibilityRole="button" accessibilityLabel={tr("{name}, {kcal} calories per {label}", { name: food.name, kcal, label: sv.label })} onPress={onPress} style={s.row}>
       <View style={[s.dot, { backgroundColor: food.source === "recipe" ? palette.warnSoft : palette.goodSoft }]}>
         <Ionicons name={food.source === "recipe" ? "restaurant" : "leaf"} size={16} color={food.source === "recipe" ? palette.warn : palette.good} />
       </View>
@@ -38,6 +40,7 @@ export function FoodRow({ food, onPress }: { food: Food; onPress: () => void }) 
 export function FoodSearch({ visible, onClose, onPick, meals, onBarcode }: {
   visible: boolean; onClose: () => void; onPick: (f: Food) => void; meals: Meal[]; onBarcode: () => void;
 }) {
+  const tr = useT();
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<Tab>("search");
   const results = useMemo(() => {
@@ -50,9 +53,9 @@ export function FoodSearch({ visible, onClose, onPick, meals, onBarcode }: {
       <View style={s.searchBox}>
         <Ionicons name="search" size={20} color={palette.muted} />
         <TextInput autoFocus value={query} onChangeText={(v) => { setQuery(v); if (tab === "recent") setTab("search"); }}
-          placeholder="Search 8,000+ foods, dishes, restaurants" placeholderTextColor={palette.muted}
-          accessibilityLabel="Search foods" style={s.input} returnKeyType="search" />
-        <Pressable accessibilityRole="button" accessibilityLabel="Scan a barcode" onPress={onBarcode} hitSlop={8}>
+          placeholder={tr("Search 8,000+ foods, dishes, restaurants")} placeholderTextColor={palette.muted}
+          accessibilityLabel={tr("Search foods")} style={s.input} returnKeyType="search" />
+        <Pressable accessibilityRole="button" accessibilityLabel={tr("Scan a barcode")} onPress={onBarcode} hitSlop={8}>
           <Ionicons name="barcode-outline" size={24} color={palette.brand} />
         </Pressable>
       </View>
@@ -61,13 +64,13 @@ export function FoodSearch({ visible, onClose, onPick, meals, onBarcode }: {
         <Chip label="Recent" selected={tab === "recent"} onPress={() => setTab("recent")} />
         <Chip label="Dishes" selected={tab === "dishes"} onPress={() => setTab("dishes")} />
       </View>
-      {!query.trim() && tab === "search" ? <Text style={s.hint}>Popular foods</Text> : null}
+      {!query.trim() && tab === "search" ? <Text style={s.hint}>{tr("Popular foods")}</Text> : null}
       {results.length ? results.map((f) => <FoodRow key={f.id} food={f} onPress={() => onPick(f)} />) : (
         <Text style={s.empty}>
-          {tab === "recent" ? "Foods you log will show up here for one-tap logging." : `No match for “${query.trim()}”. Try a simpler word (e.g. “chicken”), scan the barcode, or use Quick add.`}
+          {tab === "recent" ? tr("Foods you log will show up here for one-tap logging.") : tr("No match for “{v0}”. Try a simpler word (e.g. “chicken”), scan the barcode, or use Quick add.", { v0: query.trim() })}
         </Text>
       )}
-      <Text style={s.credit}>Nutrition data: USDA FoodData Central (SR Legacy). Dishes are estimates from typical recipes.</Text>
+      <Text style={s.credit}>{tr("Nutrition data: USDA FoodData Central (SR Legacy). Dishes are estimates from typical recipes.")}</Text>
     </Sheet>
   );
 }

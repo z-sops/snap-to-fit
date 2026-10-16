@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import React, { useEffect, useMemo, useState } from "react";
 import { FlatList, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,6 +11,7 @@ import { equipmentGroups, filterLibrary, library, muscleGroups, safetyFor, type 
 const cap = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function Exercises() {
+  const tr = useT();
   const { state, update } = useStore();
   const p = state.profile!;
   const [query, setQuery] = useState("");
@@ -29,11 +31,11 @@ export default function Exercises() {
       });
     });
   return (
-    <Screen title="Exercise library" subtitle={`${library().length} exercises with step-by-step form`}>
+    <Screen title="Exercise library" subtitle={tr("{v0} exercises with step-by-step form", { v0: library().length })}>
       <View style={s.search}>
         <Ionicons name="search" size={20} color={palette.muted} />
-        <TextInput value={query} onChangeText={setQuery} placeholder="Search squat, row, plank…" placeholderTextColor={palette.muted}
-          accessibilityLabel="Search exercises" style={s.input} />
+        <TextInput value={query} onChangeText={setQuery} placeholder={tr("Search squat, row, plank…")} placeholderTextColor={palette.muted}
+          accessibilityLabel={tr("Search exercises")} style={s.input} />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>
         <Chip label="All" selected={!group} onPress={() => setGroup(undefined)} />
@@ -61,21 +63,22 @@ export default function Exercises() {
             <View style={{ flex: 1 }}>
               <Text style={s.name} numberOfLines={2}>{e.name}</Text>
               <Text style={s.meta} numberOfLines={1}>{cap(e.primary.join(", "))} · {cap(e.equipment)} · {cap(e.level)}</Text>
-              {safety ? <Text style={s.caution} numberOfLines={1}>⚠️ {safety.reason}</Text> : null}
+              {safety ? <Text style={s.caution} numberOfLines={1}>⚠️ {tr(safety.reason)}</Text> : null}
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel={mine.includes(e.id) ? `Remove ${e.name} from my workout` : `Add ${e.name} to my workout`} onPress={() => toggle(e.id)} hitSlop={8}>
+            <Pressable accessibilityRole="button" accessibilityLabel={mine.includes(e.id) ? tr("Remove {name} from my workout", { name: e.name }) : tr("Add {name} to my workout", { name: e.name })} onPress={() => toggle(e.id)} hitSlop={8}>
               <Ionicons name={mine.includes(e.id) ? "checkmark-circle" : "add-circle-outline"} size={28} color={palette.brand} />
             </Pressable>
           </Pressable>
         )} />
-      {results.length > 120 ? <Text style={s.count}>Showing 120 — narrow with search or filters.</Text> : null}
-      <Text style={s.credit}>Exercise data and images: free-exercise-db (public domain).</Text>
+      {results.length > 120 ? <Text style={s.count}>{tr("Showing 120 — narrow with search or filters.")}</Text> : null}
+      <Text style={s.credit}>{tr("Exercise data and images: free-exercise-db (public domain).")}</Text>
       <ExerciseDetail exercise={open} onClose={() => setOpen(null)} inWorkout={!!open && mine.includes(open.id)} onToggle={() => open && toggle(open.id)} />
     </Screen>
   );
 }
 
 function ExerciseDetail({ exercise, onClose, inWorkout, onToggle }: { exercise: LibraryExercise | null; onClose: () => void; inWorkout: boolean; onToggle: () => void }) {
+  const tr = useT();
   const { state } = useStore();
   const [frame, setFrame] = useState(0);
   useEffect(() => {
@@ -87,7 +90,7 @@ function ExerciseDetail({ exercise, onClose, inWorkout, onToggle }: { exercise: 
   const safety = state.profile ? safetyFor(exercise, state.profile) : null;
   return (
     <Sheet visible onClose={onClose} title={exercise.name} closeLabel="Back"
-      footer={<PrimaryButton title={inWorkout ? "Remove from My workout" : "Add to My workout"} icon={inWorkout ? "remove-circle" : "add-circle"} onPress={onToggle} />}>
+      footer={<PrimaryButton title={inWorkout ? tr("Remove from My workout") : tr("Add to My workout")} icon={inWorkout ? "remove-circle" : "add-circle"} onPress={onToggle} />}>
       <Image source={{ uri: exercise.images[frame] || exercise.images[0] }} style={s.hero} resizeMode="cover" accessibilityLabel={`${exercise.name} demonstration`} />
       <View style={s.chipsWrap}>
         <Pill label={cap(exercise.level)} />
@@ -96,16 +99,16 @@ function ExerciseDetail({ exercise, onClose, inWorkout, onToggle }: { exercise: 
       </View>
       {safety ? (
         <Surface style={{ backgroundColor: palette.warnSoft, borderColor: palette.warnSoft }}>
-          <Text style={s.cautionTitle}>Check first</Text>
-          <Text style={s.cautionBody}>{safety.reason}</Text>
+          <Text style={s.cautionTitle}>{tr("Check first")}</Text>
+          <Text style={s.cautionBody}>{tr(safety.reason)}</Text>
         </Surface>
       ) : null}
       <Surface>
-        <Text style={s.h}>Muscles</Text>
+        <Text style={s.h}>{tr("Muscles")}</Text>
         <Text style={s.p}>Main: {cap(exercise.primary.join(", "))}{exercise.secondary.length ? ` · Also: ${cap(exercise.secondary.join(", "))}` : ""}</Text>
       </Surface>
       <Surface>
-        <Text style={s.h}>How to do it</Text>
+        <Text style={s.h}>{tr("How to do it")}</Text>
         {exercise.steps.map((step, i) => (
           <View key={i} style={s.step}>
             <View style={s.stepNum}><Text style={s.stepNumText}>{i + 1}</Text></View>
@@ -113,7 +116,7 @@ function ExerciseDetail({ exercise, onClose, inWorkout, onToggle }: { exercise: 
           </View>
         ))}
       </Surface>
-      <Text style={s.small}>Start light. Stop for sharp pain, dizziness or chest pain. Not a substitute for coaching or physical therapy.</Text>
+      <Text style={s.small}>{tr("Start light. Stop for sharp pain, dizziness or chest pain. Not a substitute for coaching or physical therapy.")}</Text>
     </Sheet>
   );
 }
