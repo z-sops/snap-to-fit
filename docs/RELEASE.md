@@ -28,3 +28,33 @@ Read `docs/CLAIMS-AUDIT.md` and `docs/CYCLE-PRIVACY-RESEARCH.md`. Public launch 
 Install on physical Android/iOS devices and check encrypted storage after restart, account switching/deletion, reminders across timezone changes, camera consent, health read permissions, gym permission denial, local audio and lock-screen/Bluetooth interruptions, purchases and accessibility. Review exercise form and every health claim. Finalize operator identity/contact, retention/deletion policy, regional availability and store disclosures. Publish reviewed privacy/terms pages; no operator/contact identity has been invented in this repository.
 
 Android minimum SDK is 26 (Android 8) to satisfy the bundled Health Connect library. The first APK workflow failed at manifest merge with minSdk 24; the config plugin now sets 26. Health Connect itself requires a supported device/OS and enabled sharing.
+
+## Store release with EAS — step by step (owner)
+
+Prerequisites: Google Play Console account ($25), Apple Developer Program ($99/yr), and the
+production server live (docs/DEPLOY.md) with `.env.production` filled in. Organization accounts
+need a D-U-N-S number for Zunitech; personal Play accounts must run a closed test with 12+
+testers for 14 consecutive days before production access.
+
+```powershell
+npm install -g eas-cli          # once
+eas login                       # Expo account (free)
+eas init                        # links the project; commit the projectId it adds to app.json
+eas build -p android --profile production   # Play Store AAB, cloud-signed (EAS keeps the upload key)
+eas build -p ios --profile production       # iPhone build in the cloud — no Mac needed
+eas submit -p android --latest              # uploads to Play internal testing (draft)
+eas submit -p ios --latest                  # uploads to App Store Connect / TestFlight
+```
+First iOS build asks for your Apple ID and creates certificates automatically.
+
+Before submitting, in the consoles:
+- Play Console → App content: privacy policy URL (`https://<SITE_DOMAIN>/privacy`), Data safety
+  (see docs/STORE_LISTING.md), Health apps declaration (steps, weight, heart rate — read-only,
+  shown to the user), account deletion URL (`/delete-account`), content rating, target audience 18+,
+  countries: United States.
+- App Store Connect: privacy nutrition labels, age rating, support URL (`/support`), review
+  notes + a test account created on the production server, HealthKit usage explained.
+- Screenshots and texts: docs/STORE_LISTING.md.
+
+`app.json` already sets: non-exempt encryption = false, iPhone only (no iPad screenshots
+needed), privacy manifest reasons, dark mode, target Android API 36.
