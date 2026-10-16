@@ -1,15 +1,8 @@
 import { effectiveProfile } from "../core/progress";
 import React, { useState } from "react";
-import {
-  Screen,
-  Card,
-  H,
-  P,
-  Field,
-  Button,
-  Chips,
-  act,
-} from "../components/ui";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Screen, act, colors, soft } from "../components/ui";
 import { useStore } from "../services/store";
 import { api } from "../services/api";
 import { nutritionTargets, todayTotals } from "../core/nutrition";
@@ -95,63 +88,73 @@ export default function Coach() {
         setBusy(false);
       }
     });
+  const prompts = [
+    { q: "Explain my daily calorie and macro targets.", label: "📊 My macros" },
+    { q: "Suggest a balanced meal that respects my food preferences and allergies.", label: "🥗 Meal ideas" },
+    { q: "Give me three high-protein breakfast ideas.", label: "🍳 Protein breakfast" },
+    { q: "How do I eat out at a restaurant and stay on track?", label: "🍔 Eating out" },
+    { q: "Explain how to approach today’s workout.", label: "🏋️ Today’s workout" },
+    { q: "What are gentle food ideas on days I feel nauseous?", label: "🤢 Nausea-friendly food" },
+  ];
   return (
-    <Screen
-      title="Your daily coach."
-      subtitle="Practical food and movement guidance, grounded in your profile."
-    >
-      <Card tint>
-        <H>Ask about your day</H>
-        <P>
-          The coach uses computed targets for eligible general-fitness profiles.
-          It explains estimates and can suggest meals; it does not diagnose or
-          change medication. Selected profile details are sent only when you
-          ask.
-        </P>
-        <P>
-          AI answers can be wrong. This chat does not monitor emergencies or
-          contact emergency services. It does not calculate fertile or safe
-          days, diagnose reproductive conditions or prescribe cycle-based training.
-        </P>
-        <Chips
-          values={[
-            {
-              value: "Explain my daily calorie and macro targets.",
-              label: "My macros",
-            },
-            {
-              value:
-                "Suggest a balanced meal that respects my food preferences and allergies.",
-              label: "Meal ideas",
-            },
-            {
-              value: "Explain how to approach today’s workout.",
-              label: "Today’s workout",
-            },
-          ]}
-          selected=""
-          onChange={(v) => send(v)}
-        />
-      </Card>
+    <Screen title="AI Coach" subtitle="Food and movement guidance grounded in your profile">
+      <View style={c.hero}>
+        <View style={c.botAvatar}><Text style={{ fontSize: 26 }}>✨</Text></View>
+        <View style={{ flex: 1 }}>
+          <Text style={c.heroTitle}>Hi {p.name}, I’m your Snap coach</Text>
+          <Text style={c.heroText}>Ask about meals, macros, workouts or habits. I don’t diagnose, change medicines or handle emergencies — call 911 for an emergency.</Text>
+        </View>
+      </View>
+      <View style={c.prompts}>
+        {prompts.map((x) => (
+          <Pressable key={x.q} accessibilityRole="button" accessibilityLabel={x.label} onPress={() => send(x.q)} style={c.prompt}>
+            <Text style={c.promptText}>{x.label}</Text>
+          </Pressable>
+        ))}
+      </View>
       {state.messages.map((m) => (
-        <Card key={m.id} tint={m.role === "user"}>
-          <H>{m.role === "user" ? "You" : "Snap coach"}</H>
-          <P>{m.text}</P>
-        </Card>
+        <View key={m.id} style={[c.bubbleRow, m.role === "user" && { justifyContent: "flex-end" }]}>
+          {m.role === "assistant" ? <View style={c.miniBot}><Text>✨</Text></View> : null}
+          <View style={[c.bubble, m.role === "user" ? c.userBubble : c.botBubble]}>
+            <Text style={[c.bubbleText, m.role === "user" && { color: "#fff" }]}>{m.text}</Text>
+          </View>
+        </View>
       ))}
-      <Card>
-        <Field
-          label="Message your coach"
-          value={text}
-          onChange={setText}
-          placeholder="What can I eat for dinner?"
-        />
-        <Button
-          disabled={busy || !text.trim()}
-          title={busy ? "Thinking…" : "Send message"}
-          onPress={() => send()}
-        />
-      </Card>
+      {busy ? (
+        <View style={c.bubbleRow}>
+          <View style={c.miniBot}><Text>✨</Text></View>
+          <View style={[c.bubble, c.botBubble]}><Text style={c.bubbleText}>Thinking…</Text></View>
+        </View>
+      ) : null}
+      <View style={c.composer}>
+        <TextInput value={text} onChangeText={setText} placeholder="What can I eat for dinner?" placeholderTextColor={colors.muted}
+          accessibilityLabel="Message your coach" style={c.input} multiline onSubmitEditing={() => send()} />
+        <Pressable accessibilityRole="button" accessibilityLabel="Send message" disabled={busy || !text.trim()} onPress={() => send()}
+          style={[c.send, (busy || !text.trim()) && { opacity: 0.4 }]}>
+          <Ionicons name="arrow-up" size={22} color="#fff" />
+        </Pressable>
+      </View>
+      <Text style={c.small}>AI answers can be wrong — check anything important with your doctor or dietitian. Only the profile details needed for your question are sent. The coach doesn’t calculate fertile or safe days or prescribe cycle-based training.</Text>
     </Screen>
   );
 }
+
+const c = StyleSheet.create({
+  hero: { flexDirection: "row", gap: 12, alignItems: "center", backgroundColor: colors.card, borderRadius: 24, padding: 16, borderWidth: 1, borderColor: colors.hairline },
+  botAvatar: { width: 52, height: 52, borderRadius: 18, backgroundColor: soft("#F3EDFF"), alignItems: "center", justifyContent: "center" },
+  heroTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
+  heroText: { color: colors.muted, fontSize: 13, lineHeight: 18, marginTop: 2 },
+  prompts: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 12 },
+  prompt: { backgroundColor: colors.card, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: colors.line },
+  promptText: { color: colors.ink, fontWeight: "700", fontSize: 14 },
+  bubbleRow: { flexDirection: "row", alignItems: "flex-end", gap: 8, marginBottom: 10 },
+  miniBot: { width: 30, height: 30, borderRadius: 10, backgroundColor: soft("#F3EDFF"), alignItems: "center", justifyContent: "center" },
+  bubble: { maxWidth: "82%", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10 },
+  userBubble: { backgroundColor: colors.green, borderBottomRightRadius: 6 },
+  botBubble: { backgroundColor: colors.card, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: colors.hairline },
+  bubbleText: { color: colors.ink, fontSize: 15, lineHeight: 22 },
+  composer: { flexDirection: "row", alignItems: "flex-end", gap: 8, backgroundColor: colors.card, borderRadius: 24, padding: 8, borderWidth: 1, borderColor: colors.line, marginTop: 6 },
+  input: { flex: 1, fontSize: 16, color: colors.ink, paddingHorizontal: 10, paddingVertical: 10, maxHeight: 120 },
+  send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.green, alignItems: "center", justifyContent: "center" },
+  small: { color: colors.muted, fontSize: 12, lineHeight: 17, marginTop: 10 },
+});

@@ -23,7 +23,7 @@ test("reproductive predictions are refused locally without AI consent or a provi
   render(<StoreProvider><ReadyCoach /></StoreProvider>);
   fireEvent.change(await screen.findByPlaceholderText("What can I eat for dinner?"),
     { target: { value: "Calculate my safe days to avoid pregnancy" } });
-  fireEvent.click(screen.getByText("Send message"));
+  fireEvent.click(screen.getByRole("button", { name: "Send message" }));
   await screen.findByText(/cannot determine ovulation/);
   expect(api).not.toHaveBeenCalled();
 });
@@ -32,7 +32,7 @@ test("consented meal questions pass structured allergies and dietary preferences
   render(<StoreProvider><ReadyCoach /></StoreProvider>);
   fireEvent.change(await screen.findByPlaceholderText("What can I eat for dinner?"),
     { target: { value: "Suggest dinner" } });
-  fireEvent.click(screen.getByText("Send message"));
+  fireEvent.click(screen.getByRole("button", { name: "Send message" }));
   await screen.findByText("General education.");
   expect(api).toHaveBeenCalledWith("/chat", expect.objectContaining({
     profile: expect.objectContaining({ country: "US", dietType: "vegan",
