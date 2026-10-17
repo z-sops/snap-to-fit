@@ -1,6 +1,6 @@
-import { useT } from "../i18n";
+import { useT, translateActive } from "../i18n";
 import React, { useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen, act, notify, soft } from "../components/ui";
@@ -10,7 +10,7 @@ import { TrendChart } from "../components/visuals";
 import { readingTrend } from "../core/chart-data";
 import { useStore } from "../services/store";
 import { haptic } from "../services/feedback";
-import { connectHealth, type HealthSnapshot } from "../services/health";
+import { connectHealth, installHealthConnect, openHealthSettings, HealthIssue, type HealthSnapshot } from "../services/health";
 import { uid, numeric, type Reading } from "../core/model";
 
 type Kind = Reading["kind"];
@@ -45,7 +45,37 @@ export default function Health() {
   };
   const series = state.readings.filter((r) => r.kind === trend).sort((a, b) => a.at.localeCompare(b.at));
   const myDevices = devices.filter((d) => d.platform === Platform.OS);
-  const refresh = () => act(async () => { setBusy(true); try { setSnapshot(await connectHealth()); } finally { setBusy(false); } });
+  const refresh = async () => {
+    setBusy(true);
+    try {
+      const snap = await connectHealth();
+      setSnapshot(snap);
+      const empty = snap.steps == null && snap.weight == null && snap.heartRate == null;
+      const msg = empty
+        ? translateActive(snap.note)
+        : translateActive("Connected to {source}. Steps: {steps} · Heart rate: {hr}", {
+            source: snap.source,
+            steps: snap.steps != null ? snap.steps.toLocaleString() : "—",
+            hr: snap.heartRate != null ? `${snap.heartRate} bpm` : "—",
+          });
+      if (Platform.OS === "web") notify(msg);
+      else Alert.alert("Snap to Fit", msg, empty && Platform.OS === "android"
+        ? [{ text: translateActive("OK") }, { text: translateActive("Open Health Connect"), onPress: openHealthSettings }]
+        : undefined);
+    } catch (e) {
+      const issue = e instanceof HealthIssue ? e : null;
+      const msg = translateActive(e instanceof Error ? e.message : "Something went wrong. Try again.");
+      if (Platform.OS === "web" || !issue?.action) notify(msg);
+      else Alert.alert("Snap to Fit", msg, [
+        { text: translateActive("Not now"), style: "cancel" },
+        issue.action === "install"
+          ? { text: translateActive("Get Health Connect"), onPress: () => void installHealthConnect() }
+          : { text: translateActive("Open Health Connect"), onPress: openHealthSettings },
+      ]);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <Screen title="Health" subtitle="Your body numbers and devices — a clear record for your next appointment">

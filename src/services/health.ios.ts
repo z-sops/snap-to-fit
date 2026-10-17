@@ -4,7 +4,11 @@ import {
   getMostRecentQuantitySample,
   queryStatisticsForQuantity,
 } from "@kingstinct/react-native-healthkit";
-import type { HealthSnapshot } from "./health";
+import type { HealthSnapshot } from "./health-issue";
+export { HealthIssue } from "./health-issue";
+export type { HealthSnapshot } from "./health-issue";
+export async function installHealthConnect() {}
+export function openHealthSettings() {}
 export async function connectHealth(): Promise<HealthSnapshot> {
   if (!isHealthDataAvailable())
     throw new Error("Apple Health is unavailable on this device.");
