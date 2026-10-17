@@ -236,7 +236,7 @@ const s = StyleSheet.create({
   day: { width: 40, alignItems: "center", gap: 6, paddingVertical: 8, borderRadius: 14 },
   dayOn: { backgroundColor: "#fff" },
   dayName: { color: "#A9B4CC", fontWeight: "800" },
-  chipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginVertical: 8 },
+  chipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   kicker: { color: palette.brand, fontSize: 12, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.6 },
   title: { color: palette.ink, fontSize: 22, fontWeight: "900", letterSpacing: -0.4 },
   p: { color: palette.muted, fontSize: 14, lineHeight: 20 },

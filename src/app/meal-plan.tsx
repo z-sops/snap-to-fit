@@ -1,6 +1,7 @@
 import { useT } from "../i18n";
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
+import { View } from "react-native";
 import {
   Screen,
   Card,
@@ -117,6 +118,7 @@ export default function MealPlanner() {
             {tr(day.training ? "Training day · {kcal} kcal · more carbs for your workout" : "Rest day · {kcal} kcal", { kcal: day.target.calories.toLocaleString() })}
           </P>
         ) : null}
+        <View style={{ gap: 12 }}>
         {day.meals.map((m) => (
           <Card key={m.slot}>
             <H>{tr(m.slot[0].toUpperCase() + m.slot.slice(1))}</H>
@@ -147,6 +149,7 @@ export default function MealPlanner() {
             />
           </Card>
         ))}
+        </View>
       </Card>
       {plan.mode !== "fitness" ? (
         <Card>

@@ -312,7 +312,7 @@ export const fr: Record<string, string> = {
   "Floor push-up": "Pompe au sol",
   "Follow the missed-dose instructions in your Medication Guide or ask your pharmacist. Snap to Fit does not calculate doses or change your schedule.": "Suivez les instructions en cas d’oubli de dose de la notice de votre médicament ou demandez à votre pharmacien. Snap to Fit ne calcule pas de doses et ne modifie pas votre calendrier.",
   "Follow your existing care plan": "Suivez votre plan de soins actuel",
-  "Food": "Alimentation",
+  "Food": "Repas",
   "Food allergies (select all)": "Allergies alimentaires (tout sélectionner)",
   "Food and movement guidance grounded in your profile": "Conseils alimentation et mouvement fondés sur votre profil",
   "Food first": "D’abord l’alimentation",

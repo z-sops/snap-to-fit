@@ -149,7 +149,8 @@ export function Screen({
           <Text style={s.title}>{tr(title)}</Text>
           {subtitle ? <Text style={s.subtitle}>{tr(subtitle)}</Text> : null}
           <SafetyNotice />
-          {children}
+          {/* One consistent gap between every block on every screen. */}
+          <View style={s.stack}>{children}</View>
           <Text style={s.footer}>{tr("Your pace. Your progress.")}</Text>
         </ScrollView>
         {hasProfile ? (
@@ -170,7 +171,7 @@ export function Screen({
               >
                 <Ionicons name="camera" size={28} color="white" />
               </Pressable>
-              <Text style={s.snapLabel}>{tr("Snap")}</Text>
+              <Text style={s.snapLabel} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{tr("Snap")}</Text>
             </View>
             {mainTabs.slice(2).map((t) => (
               <NavTab key={t.href} item={t} selected={active === t.href} onPress={() => go(t.href)} />
@@ -203,7 +204,7 @@ function NavTab({ item, selected, onPress }: { item: (typeof mainTabs)[number]; 
         size={20}
         color={selected ? colors.green : colors.muted}
       />
-      <Text style={selected ? s.navLabelActive : s.navLabel}>{tr(item.label)}</Text>
+      <Text style={selected ? s.navLabelActive : s.navLabel} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{tr(item.label)}</Text>
     </Pressable>
   );
 }
@@ -556,6 +557,7 @@ const s = StyleSheet.create({
   logo: { fontSize: 34, fontWeight: "800", letterSpacing: -1, color: colors.ink },
   drawerLogo: { fontSize: 31, fontWeight: "800", letterSpacing: -1, color: colors.ink },
   content: { padding: 20, paddingBottom: 28 },
+  stack: { gap: 16 },
   title: {
     fontSize: 32,
     fontWeight: "900",
@@ -575,7 +577,6 @@ const s = StyleSheet.create({
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.hairline,
-    marginBottom: 14,
     ...(Platform.OS === "web"
       ? ({ boxShadow: "0 6px 24px rgba(23,33,59,0.06)" } as object)
       : { shadowColor: "#17213B", shadowOpacity: isDark ? 0 : 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 5 }, elevation: isDark ? 0 : 1 }),
@@ -650,8 +651,8 @@ const s = StyleSheet.create({
   snapSlot: { flex: 1, alignItems: "center", justifyContent: "flex-end" },
   snapBtn: { width: 62, height: 62, borderRadius: 31, backgroundColor: colors.green, alignItems: "center", justifyContent: "center", marginTop: -30, borderWidth: 5, borderColor: "white", shadowColor: "#17213B", shadowOpacity: 0.22, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
   snapLabel: { fontSize: 12, fontWeight: "800", color: colors.ink, marginTop: 2 },
-  navLabel: { fontSize: 12, color: colors.muted, fontWeight: "600" },
-  navLabelActive: { fontSize: 12, color: colors.green, fontWeight: "700" },
+  navLabel: { fontSize: 11.5, color: colors.muted, fontWeight: "600", maxWidth: "100%", textAlign: "center" },
+  navLabelActive: { fontSize: 11.5, color: colors.green, fontWeight: "700", maxWidth: "100%", textAlign: "center" },
   iconButton: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   backBar: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 2, backgroundColor: colors.bg },
   backBtn: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 2, paddingVertical: 6, paddingHorizontal: 8, borderRadius: 999, backgroundColor: colors.lime },

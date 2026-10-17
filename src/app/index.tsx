@@ -174,7 +174,7 @@ export default function Today() {
         </View>
       )}
 
-      <Text style={[s.section, { marginTop: 10 }]}>{tr("For you")}</Text>
+      <Text style={s.section}>{tr("For you")}</Text>
       {featured.map((f) => (
         <Pressable key={f.href} onPress={() => router.navigate(f.href)} accessibilityRole="button" accessibilityLabel={tr(f.title)} style={s.card}>
           <View style={[s.tileIcon, { backgroundColor: f.tint }]}><Ionicons name={f.icon} size={22} color={theme.ink} /></View>
@@ -185,7 +185,7 @@ export default function Today() {
           <Ionicons name="chevron-forward" size={20} color={theme.muted} />
         </Pressable>
       ))}
-      <Text style={[s.section, { marginTop: 10 }]}>{tr("More")}</Text>
+      <Text style={s.section}>{tr("More")}</Text>
       <View style={s.grid}>
         {more.map((t) => (
           <Pressable key={t.href} onPress={() => router.navigate(t.href)} accessibilityRole="button" accessibilityLabel={tr(t.title)} style={s.tile}>
@@ -316,27 +316,27 @@ function Chip({ text, color }: { text: string; color: string }) {
 }
 
 const s = StyleSheet.create({
-  topRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 },
+  topRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   topTitle: { fontSize: 15, fontWeight: "800", color: theme.ink },
   topText: { fontSize: 12, color: theme.muted, marginTop: 2 },
   streak: { alignItems: "center", backgroundColor: soft("#FFF4DE"), borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
   streakNum: { fontSize: 17, fontWeight: "900", color: isDark ? "#F5C26B" : "#9A5B00" },
   streakLabel: { fontSize: 10, fontWeight: "700", color: isDark ? "#F5C26B" : "#9A5B00" },
-  win: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: soft("#E7F6EE"), borderRadius: 22, padding: 16, marginBottom: 14 },
+  win: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: soft("#E7F6EE"), borderRadius: 22, padding: 16 },
   winEmoji: { fontSize: 30 },
   winTitle: { fontSize: 16, fontWeight: "800", color: isDark ? "#4ADE80" : "#1E7A47" },
   winText: { fontSize: 13, color: isDark ? "#4ADE80" : "#1E7A47", marginTop: 2, lineHeight: 18 },
-  quickRow: { flexDirection: "row", gap: 10, marginBottom: 14 },
+  quickRow: { flexDirection: "row", gap: 10 },
   quick: { flex: 1, alignItems: "center", gap: 8, paddingHorizontal: 4, backgroundColor: theme.bg, borderRadius: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.line },
   quickIcon: { width: 46, height: 46, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   quickText: { fontSize: 13, fontWeight: "800", color: theme.ink, textAlign: "center", lineHeight: 17 },
-  reportCard: { backgroundColor: theme.bg, borderRadius: 24, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line, gap: 10 },
+  reportCard: { backgroundColor: theme.bg, borderRadius: 24, padding: 16, borderWidth: 1, borderColor: theme.line, gap: 10 },
   reportHead: { flexDirection: "row", alignItems: "center" },
-  numbers: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: theme.bg, borderRadius: 22, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line },
+  numbers: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: theme.bg, borderRadius: 22, padding: 16, borderWidth: 1, borderColor: theme.line },
   numValue: { fontSize: 18, fontWeight: "800", color: theme.ink, marginTop: 2 },
   numUnit: { fontSize: 11, color: theme.muted, fontWeight: "700" },
   tileIconSm: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  week: { flexDirection: "row", justifyContent: "space-between", marginBottom: 14 },
+  week: { flexDirection: "row", justifyContent: "space-between" },
   day: { width: 42, paddingVertical: 8, borderRadius: 16, alignItems: "center", backgroundColor: theme.bg },
   dayOn: { width: 42, paddingVertical: 8, borderRadius: 16, alignItems: "center", backgroundColor: theme.brand },
   dayName: { fontSize: 12, fontWeight: "700", color: theme.muted },
@@ -344,7 +344,7 @@ const s = StyleSheet.create({
   dayNum: { fontSize: 16, fontWeight: "800", color: theme.ink, marginTop: 2 },
   dayNumOn: { fontSize: 16, fontWeight: "800", color: "white", marginTop: 2 },
   dot: { width: 5, height: 5, borderRadius: 3, marginTop: 4 },
-  hero: { backgroundColor: theme.bg, borderRadius: 26, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: theme.line },
+  hero: { backgroundColor: theme.bg, borderRadius: 26, padding: 18, borderWidth: 1, borderColor: theme.line },
   heroRow: { flexDirection: "row", alignItems: "center", gap: 18 },
   heroNum: { fontSize: 30, fontWeight: "800", color: theme.ink, letterSpacing: -0.8 },
   heroUnit: { fontSize: 12, fontWeight: "700", color: theme.muted },
@@ -357,18 +357,18 @@ const s = StyleSheet.create({
   macroNum: { fontSize: 14, fontWeight: "800", color: theme.ink },
   macroLabel: { fontSize: 13, fontWeight: "800", color: theme.ink, marginTop: 2 },
   macroSub: { fontSize: 11, color: theme.muted },
-  snap: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: theme.ink, borderRadius: 24, padding: 18, marginBottom: 14 },
+  snap: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: theme.ink, borderRadius: 24, padding: 18 },
   snapIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: theme.brand, alignItems: "center", justifyContent: "center" },
   snapTitle: { fontSize: 19, fontWeight: "800", color: "white" },
   snapText: { fontSize: 13, lineHeight: 18, color: "#C9D2EE", marginTop: 3 },
-  card: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: theme.bg, borderRadius: 22, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.line },
+  card: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: theme.bg, borderRadius: 22, padding: 16, borderWidth: 1, borderColor: theme.line },
   cardKicker: { fontSize: 12, fontWeight: "800", color: theme.brand, textTransform: "uppercase", letterSpacing: 0.5 },
   cardTitle: { fontSize: 17, fontWeight: "800", color: theme.ink, marginTop: 2 },
   cardText: { fontSize: 13, lineHeight: 19, color: theme.muted, marginTop: 2 },
-  sectionHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 6, marginBottom: 10 },
-  section: { fontSize: 19, fontWeight: "800", color: theme.ink, marginBottom: 10 },
-  link: { fontSize: 14, fontWeight: "800", color: theme.brand, marginBottom: 10 },
-  mealRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: theme.bg, borderRadius: 20, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: theme.line },
+  sectionHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  section: { fontSize: 19, fontWeight: "800", color: theme.ink },
+  link: { fontSize: 14, fontWeight: "800", color: theme.brand },
+  mealRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: theme.bg, borderRadius: 20, padding: 14, borderWidth: 1, borderColor: theme.line },
   mealName: { fontSize: 15, fontWeight: "800", color: theme.ink },
   mealKcal: { fontSize: 15, fontWeight: "800", color: theme.ink },
   mealTime: { fontSize: 12, color: theme.muted, marginTop: 2 },
