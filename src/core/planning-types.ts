@@ -1,5 +1,5 @@
 export type DietType = "vegan" | "vegetarian" | "omnivore";
-export type CuisinePreference = "american" | "british" | "mexican" | "asian-indian" | "asian-chinese" | "asian-japanese" | "asian-thai";
+export type CuisinePreference = "american" | "british" | "mexican" | "asian-indian" | "asian-chinese" | "asian-japanese" | "asian-thai" | "german" | "french" | "brazilian";
 export type Allergen =
   | "milk"
   | "egg"
@@ -25,6 +25,12 @@ export interface PlannedMeal {
   ingredients: string[];
   budget: MacroBudget | null;
   note: string;
+  /** Dish from the cuisine library (recipe id) and how many servings fit the slot budget. */
+  dishId?: string;
+  servings?: number;
+  servingLabel?: string;
+  /** Nutrition of the suggested portion (USDA-based estimate). */
+  nutrition?: MacroBudget;
 }
 export interface MealPlan {
   week: string;
@@ -32,7 +38,7 @@ export interface MealPlan {
   mode: "fitness" | "care-plan" | "allergy-review" | "local-setup";
   country: string;
   diet: DietType;
-  days: { date: string; weekday: string; meals: PlannedMeal[] }[];
+  days: { date: string; weekday: string; meals: PlannedMeal[]; training?: boolean; target?: MacroBudget }[];
   notes: string[];
 }
 export interface RoutineTimes {

@@ -1,4 +1,4 @@
-export async function scheduleReminder(_date: Date): Promise<string> {
+export async function scheduleReminder(_date: Date, _message?: string): Promise<string> {
   throw new Error(
     "Medication reminders require an Android or iPhone device build.",
   );

@@ -230,13 +230,28 @@ function MedicineSetup({ visible, glp1Mode, existing, defaultName, onClose, onSa
   const [date, setDate] = useState(existing?.nextDate || localDay());
   const [time, setTime] = useState(existing?.time || "09:00");
   const [remind, setRemind] = useState(true);
+  const [insulinType, setInsulinType] = useState<NonNullable<Medicine["insulinType"]>>(existing?.insulinType || "other");
+  const [schedule, setSchedule] = useState<{ time: string; units: string }[]>(
+    existing?.schedule?.map((x) => ({ time: x.time, units: String(x.units) })) || [{ time: "08:00", units: "" }],
+  );
+  const insulin = kind === "insulin";
+  const hhmm = /^([01]\d|2[0-3]):[0-5]\d$/;
   return (
     <Sheet visible={visible} title={glp1Mode ? tr("My GLP-1 medicine") : tr("Add a medicine")} onClose={onClose}
       footer={<PrimaryButton title="Save" icon="checkmark" onPress={() => {
-        if (!name.trim() || !dose.trim()) { notify("Enter the medicine name and the dose exactly as prescribed."); return; }
-        if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) { notify("Use HH:MM for the time, e.g. 09:00."); return; }
-        const when = new Date(`${date}T${time}:00`);
-        onSave({ id: existing?.id || uid(), name: name.trim(), dose: dose.trim(), kind, time, nextDate: date, frequency }, remind && when.getTime() > new Date().getTime() ? when : undefined);
+        const rows = schedule.filter((x) => x.units.trim());
+        if (insulin && rows.some((x) => !hhmm.test(x.time) || !(Number(x.units) > 0 && Number(x.units) <= 300))) {
+          notify("Check each time (HH:MM) and the units exactly as prescribed."); return;
+        }
+        const doseText = insulin && rows.length ? rows.map((x) => `${x.units} u at ${x.time}`).join(" · ") : dose.trim();
+        if (!name.trim() || !doseText) { notify("Enter the medicine name and the dose exactly as prescribed."); return; }
+        const firstTime = insulin && rows.length ? rows[0].time : time;
+        if (!hhmm.test(firstTime)) { notify("Use HH:MM for the time, e.g. 09:00."); return; }
+        const when = new Date(`${date}T${firstTime}:00`);
+        onSave({
+          id: existing?.id || uid(), name: name.trim(), dose: doseText, kind, time: firstTime, nextDate: date, frequency,
+          ...(insulin ? { insulinType, schedule: rows.map((x) => ({ time: x.time, units: Number(x.units) })) } : {}),
+        }, remind && when.getTime() > new Date().getTime() ? when : undefined);
       }} />}>
       {glp1Mode ? (
         <>
@@ -249,8 +264,31 @@ function MedicineSetup({ visible, glp1Mode, existing, defaultName, onClose, onSa
           <View style={s.wrap}>{(["tablet", "injection", "insulin"] as const).map((k) => <Chip key={k} label={k === "tablet" ? tr("Tablet") : k === "injection" ? tr("Injection") : tr("Insulin")} selected={kind === k} onPress={() => setKind(k)} />)}</View>
         </>
       )}
-      <Text style={s.h}>{tr("Dose — copy it from your prescription")}</Text>
-      <TextInput value={dose} onChangeText={setDose} placeholder={tr("e.g. 0.5 mg")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Prescribed dose (include units)")} style={s.input} />
+      {insulin ? (
+        <>
+          <Text style={s.h}>{tr("Type of insulin")}</Text>
+          <View style={s.wrap}>
+            {([["long", "Long-acting (basal)"], ["rapid", "Rapid / mealtime"], ["mixed", "Premixed"], ["other", "Not sure"]] as const).map(([v, l]) =>
+              <Chip key={v} label={l} selected={insulinType === v} onPress={() => setInsulinType(v)} />)}
+          </View>
+          <Text style={s.h}>{tr("Your prescribed schedule")}</Text>
+          {schedule.map((row, i) => (
+            <View key={i} style={s.schedRow}>
+              <TextInput value={row.time} onChangeText={(v) => setSchedule((x) => x.map((r, j) => (j === i ? { ...r, time: v } : r)))}
+                placeholder="08:00" placeholderTextColor={palette.muted} accessibilityLabel={tr("Time {n} (HH:MM)", { n: i + 1 })} style={[s.input, { flex: 1 }]} />
+              <TextInput value={row.units} onChangeText={(v) => setSchedule((x) => x.map((r, j) => (j === i ? { ...r, units: v } : r)))}
+                keyboardType="decimal-pad" placeholder={tr("Units")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Units at time {n}", { n: i + 1 })} style={[s.input, { flex: 1 }]} />
+            </View>
+          ))}
+          {schedule.length < 4 ? <Chip label="➕ Add another time" onPress={() => setSchedule((x) => [...x, { time: "20:00", units: "" }])} /> : null}
+          <Text style={s.small}>{tr("Copy the units exactly from your prescription. Snap to Fit records them for your doctor summary and safety reminders — it never suggests, calculates or changes insulin.")}</Text>
+        </>
+      ) : (
+        <>
+          <Text style={s.h}>{tr("Dose — copy it from your prescription")}</Text>
+          <TextInput value={dose} onChangeText={setDose} placeholder={tr("e.g. 0.5 mg")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Prescribed dose (include units)")} style={s.input} />
+        </>
+      )}
       <Text style={s.small}>{tr("Snap to Fit never suggests or changes doses.")}</Text>
       <Text style={s.h}>{tr("How often?")}</Text>
       <View style={s.wrap}>{(["weekly", "daily", "other"] as const).map((f) => <Chip key={f} label={f === "weekly" ? tr("Once a week") : f === "daily" ? tr("Every day") : tr("Other")} selected={frequency === f} onPress={() => setFrequency(f)} />)}</View>
@@ -343,6 +381,7 @@ const s = StyleSheet.create({
   histRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: palette.card, borderRadius: 18, padding: 12, borderWidth: 1, borderColor: palette.hairline },
   histTitle: { color: palette.ink, fontSize: 15, fontWeight: "700" },
   wrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  schedRow: { flexDirection: "row", gap: 10 },
   input: { backgroundColor: palette.card, borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
   body: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   site: { width: "47%", flexGrow: 1, backgroundColor: palette.card, borderRadius: 18, paddingVertical: 16, alignItems: "center", borderWidth: 1, borderColor: palette.line },

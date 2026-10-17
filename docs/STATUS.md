@@ -166,6 +166,12 @@ logged meal (no page errors). Not yet tested on the Pixel 6a.
   to our own CDN before launch.
 - Spanish (US): follows the phone language, switch in Settings; AI Coach and voice coach answer in
   Spanish. Gym Truth article bodies are still English.
+- Meal plan: built automatically from age, height, weight, activity and goal; real dishes from the chosen
+  cuisine (American, British, Mexican, Indian & Pakistani, German, French, Brazilian, plus Chinese/Japanese/Thai)
+  sized to each meal; training days get more carbs, rest days less. Food screen offers "From your plan · Log it".
+- Insulin safety: insulin type and prescribed schedule recorded (never suggested or changed); low-glucose
+  notices for little food + workout, recent lows, rapid insulin before exercise; pre-workout checklist;
+  glucose re-check reminder after workouts; AI Coach gets the context and must not give units.
 - Not done yet: production server + paid Gemini key,
   FatSecret Premier Free (owner to apply), iPhone build/test via EAS.
 - Store listing draft: docs/STORE_LISTING.md

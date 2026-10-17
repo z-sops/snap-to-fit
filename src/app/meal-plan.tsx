@@ -25,7 +25,8 @@ import {
   weekStart,
 } from "../core/meal-planning";
 import { CuisinePreferences, cuisineLabel } from "../components/CuisinePreferences";
-import { uid } from "../core/model";
+import { localDay, uid } from "../core/model";
+import { nutritionTargets } from "../core/nutrition";
 import type { CarePlan, MacroBudget, MealSlot } from "../core/planning-types";
 export default function MealPlanner() {
   const tr = useT();
@@ -47,6 +48,7 @@ export default function MealPlanner() {
   });
   const [ack, setAck] = useState(state.carePlan?.acknowledged || false);
   const flexible = flexibleMealStatus(state, p);
+  const targets0 = (() => { const t = nutritionTargets(p); return t.restricted ? null : t; })();
   const day = plan.days[selected];
   useEffect(() => {
     if (state.mealPlan?.signature !== signature)
@@ -67,15 +69,19 @@ export default function MealPlanner() {
               ? tr("Your weekly care-plan organizer")
               : tr("Complete your local meal setup")}
         </H>
-        <P>
-          {cuisineLabel(p.cuisine)}{" "}
-          · {plan.diet} · week of {plan.week}
-        </P>
-        <P>
-          Use the protein sources shown as starting ideas. Calorie and macro
-          budgets describe goals to plan toward; they are not nutrition values
-          for an unmeasured recipe.
-        </P>
+        <P>{tr("{cuisine} · {diet} · week of {week}", { cuisine: tr(cuisineLabel(p.cuisine)), diet: tr(plan.diet), week: plan.week })}</P>
+        {plan.mode === "fitness" && targets0 ? (
+          <P>
+            {tr("Built from your age, height, weight and activity: about {maint} kcal burned a day (TDEE), so {cal} kcal a day to {goal}. Workout days get a little more food, rest days a little less; the week averages out.", {
+              maint: targets0.maintenance.toLocaleString(), cal: targets0.calories.toLocaleString(),
+              goal: tr(p.goal === "lose" ? "lose weight" : p.goal === "gain" ? "build muscle" : "maintain"),
+            })}
+          </P>
+        ) : (
+          <P>
+            {tr("Use the protein sources shown as starting ideas. Calorie and macro budgets describe goals to plan toward; they are not nutrition values for an unmeasured recipe.")}
+          </P>
+        )}
         {p.familiarFoods ? <P>Your familiar foods: {p.familiarFoods}</P> : null}
         <CuisinePreferences
           value={p.cuisine}
@@ -104,30 +110,39 @@ export default function MealPlanner() {
           onChange={setSelected}
         />
         <H>
-          {day.weekday} · {day.date}
+          {tr(day.weekday)} · {day.date}
         </H>
+        {plan.mode === "fitness" && day.target ? (
+          <P>
+            {tr(day.training ? "Training day · {kcal} kcal · more carbs for your workout" : "Rest day · {kcal} kcal", { kcal: day.target.calories.toLocaleString() })}
+          </P>
+        ) : null}
         {day.meals.map((m) => (
           <Card key={m.slot}>
-            <H>{m.slot[0].toUpperCase() + m.slot.slice(1)}</H>
+            <H>{tr(m.slot[0].toUpperCase() + m.slot.slice(1))}</H>
             <P>
               {plan.mode === "fitness"
-                ? m.name
-                : state.carePlan?.meals[m.slot] || m.name}
+                ? tr(m.name)
+                : state.carePlan?.meals[m.slot] || tr(m.name)}
             </P>
-            {m.proteinSources.length ? (
-              <P>Protein sources: {m.proteinSources.join(", ")}</P>
-            ) : null}
-            {m.budget ? (
+            {m.nutrition ? (
               <P>
-                Planning budget: {m.budget.calories} kcal · {m.budget.protein} g
-                protein · {m.budget.carbs} g carbs · {m.budget.fat} g fat ·{" "}
-                {m.budget.fibre} g fibre
+                {tr("{servings} × {label} · {kcal} kcal · {protein} g protein · {carbs} g carbs · {fat} g fat", {
+                  servings: m.servings || 1, label: tr(m.servingLabel || ""), kcal: m.nutrition.calories,
+                  protein: m.nutrition.protein, carbs: m.nutrition.carbs, fat: m.nutrition.fat,
+                })}
+              </P>
+            ) : m.budget ? (
+              <P>
+                {tr("Planning budget: {kcal} kcal · {protein} g protein · {carbs} g carbs · {fat} g fat", {
+                  kcal: m.budget.calories, protein: m.budget.protein, carbs: m.budget.carbs, fat: m.budget.fat,
+                })}
               </P>
             ) : null}
             <P>{tr(m.note)}</P>
             <Button
               secondary
-              title="Log the portions I actually ate"
+              title={day.date === localDay() && m.dishId ? "Log it" : "Log the portions I actually ate"}
               onPress={() => router.push("/food")}
             />
           </Card>

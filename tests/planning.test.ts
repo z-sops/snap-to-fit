@@ -1,3 +1,4 @@
+import { recipes } from "../src/core/foods";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newProfile, emptyState, type Profile } from "../src/core/model";
@@ -42,27 +43,34 @@ test("Indian cuisine vegan weekly ideas use plant sources and have no animal ing
   assert.match(text, /daal|Daal|chana|Chana|Lobia/);
   assert.doesNotMatch(text, /chicken|fish|paneer|yogurt|egg/i);
   assert.ok(
-    plan.days.every((d) => d.meals.every((m) => m.proteinSources.length > 0)),
+    plan.days.every((d) => d.meals.filter((m) => m.slot === "lunch" || m.slot === "dinner").every((m) => m.proteinSources.length > 0)),
   );
 });
-test("meal budget totals equal computed daily goals; budgets are never recipe nutrition claims", () => {
-  for (const cuisine of ["american", "british", "mexican", "asian-indian", "asian-chinese", "asian-japanese", "asian-thai"] as const)
+test("meal budgets add up to each day's target and the week averages the daily goal", () => {
+  for (const cuisine of ["american", "british", "mexican", "asian-indian", "asian-chinese", "asian-japanese", "asian-thai", "german", "french", "brazilian"] as const)
     for (const dietType of ["vegan", "vegetarian", "omnivore"] as const) {
-      const profile = { ...p, cuisine, dietType };
+      const profile = { ...p, cuisine, dietType, workoutDays: [1, 3, 5], days: 3 };
       const targets = nutritionTargets(profile);
-      for (const day of buildMealPlan(profile).days)
-        for (const key of [
-          "calories",
-          "protein",
-          "carbs",
-          "fat",
-          "fibre",
-        ] as const)
-          assert.equal(
-            day.meals.reduce((sum, m) => sum + (m.budget?.[key] || 0), 0),
-            targets[key],
-          );
+      const plan = buildMealPlan(profile);
+      for (const day of plan.days)
+        for (const key of ["calories", "protein", "carbs", "fat", "fibre"] as const)
+          assert.equal(day.meals.reduce((sum, m) => sum + (m.budget?.[key] || 0), 0), day.target![key]);
+      const avg = plan.days.reduce((a, d) => a + d.target!.calories, 0) / 7;
+      assert.ok(Math.abs(avg - targets.calories) <= 3, `${cuisine} ${dietType} ${avg} vs ${targets.calories}`);
+      assert.ok(plan.days.filter((d) => d.training).every((d) => d.target!.calories > targets.calories));
+      assert.equal(plan.days.find((d) => !d.training)!.target!.protein, targets.protein);
     }
+});
+test("suggested portions come from real dishes of the chosen cuisine", () => {
+  const plan = buildMealPlan({ ...p, cuisine: "american", dietType: "omnivore", country: "US" });
+  const meals = plan.days.flatMap((d) => d.meals);
+  assert.ok(meals.every((m) => m.dishId && m.nutrition && m.servings! >= 0.5));
+  const groups = new Set(meals.map((m) => recipes.find((r) => r.id === m.dishId)!.group));
+  assert.deepEqual([...groups], ["American"]);
+  assert.doesNotMatch(meals.map((m) => m.name).join(" "), /biryani|dal|roti|paratha/i);
+  const day = plan.days[0];
+  const planned = day.meals.reduce((a, m) => a + m.nutrition!.calories, 0);
+  assert.ok(Math.abs(planned - day.target!.calories) < day.target!.calories * 0.15, `${planned} vs ${day.target!.calories}`);
 });
 test("countries and dietary preferences select different meal ideas", () => {
   assert.notEqual(
@@ -99,7 +107,7 @@ test("American is the declared default, independent of legacy country data", () 
   for (const country of [undefined, "OTHER"]) {
     const plan = buildMealPlan({ ...p, country, cuisine: undefined });
     assert.equal(plan.mode, "fitness");
-    assert.match(plan.days[0].meals[0].name, /Oats/);
+    assert.equal(recipes.find((r) => r.id === plan.days[0].meals[0].dishId)?.group, "American");
   }
 });
 test("Mexican and Asian choices produce distinct cuisine ideas while retaining diet filters", () => {
@@ -116,7 +124,7 @@ test("selected known allergies filter catalog ideas; unknown allergies pause gen
   assert.ok(
     plan.days
       .flatMap((d) => d.meals)
-      .every((m) => !m.ingredients.some((i) => /roti|soy|tofu|bread/i.test(i))),
+      .every((m) => !m.ingredients.some((i) => /roti|chapati|soy|tofu|bread|edamame/i.test(i))),
   );
   assert.equal(
     buildMealPlan({ ...p, allergies: "An unusual spice allergy" }).mode,

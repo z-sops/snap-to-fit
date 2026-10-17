@@ -128,6 +128,10 @@ export interface Medicine {
   reminderId?: string;
   /** How often, as written on the prescription. */
   frequency?: "weekly" | "daily" | "other";
+  /** Insulin only: the kind on the prescription, for safety notices (never for dosing). */
+  insulinType?: "long" | "rapid" | "mixed" | "other";
+  /** Insulin only: times and units exactly as prescribed. Recorded, never suggested or changed. */
+  schedule?: { time: string; units: number }[];
 }
 export interface DoseLog {
   id: string;
@@ -259,7 +263,7 @@ export function validateProfile(p: Profile) {
       p.workoutDays.length !== p.days || new Set(p.workoutDays).size !== p.days ||
       p.workoutDays.some(d => !Number.isInteger(d) || d < 0 || d > 6)))
     throw new Error("Choose exactly the number of workout days you requested.");
-  if (p.cuisine !== undefined && !["american", "british", "mexican", "asian-indian", "asian-chinese", "asian-japanese", "asian-thai"].includes(p.cuisine))
+  if (p.cuisine !== undefined && !["american", "british", "mexican", "asian-indian", "asian-chinese", "asian-japanese", "asian-thai", "german", "french", "brazilian"].includes(p.cuisine))
     throw new Error("Invalid cuisine preference.");
   const conditions = [
     "type1",

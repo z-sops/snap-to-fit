@@ -1,9 +1,9 @@
-import { useT } from "../i18n";
+import { translateActive, useT } from "../i18n";
 import React, { useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Screen, Card, H, P, Button, act } from "../components/ui";
+import { Screen, Card, H, P, Button, act, notify } from "../components/ui";
 import { Surface, SectionHeader, Chip, PrimaryButton, Sheet, Pill, palette } from "../components/design";
 import { WorkoutPreferences } from "../components/WorkoutPreferences";
 import { WorkoutPlayer, type PlayerItem } from "../components/WorkoutPlayer";
@@ -14,7 +14,10 @@ import { weeklySchedule, isRestricted } from "../core/schedule";
 import { topicsFor } from "../core/learn";
 import { exerciseById, planImage } from "../core/exercise-library";
 import { streak } from "../core/streaks";
-import { uid, numeric, validateProfile, type Place, localDay } from "../core/model";
+import { uid, numeric, validateProfile, type Place, type State, localDay } from "../core/model";
+import { preWorkoutChecks, usesInsulin } from "../core/insulin-safety";
+import { InsulinNotices } from "../components/InsulinNotices";
+import { scheduleReminder } from "../services/reminders";
 
 export default function Move() {
   const tr = useT();
@@ -26,6 +29,10 @@ export default function Move() {
   const [selectedDate, setSelectedDate] = useState(localDay());
   const [player, setPlayer] = useState<null | { title: string; items: PlayerItem[] }>(null);
   const [logOpen, setLogOpen] = useState(false);
+  const [pending, setPending] = useState<null | { title: string; items: PlayerItem[] }>(null);
+  const insulin = usesInsulin(state);
+  // Insulin users confirm a short low-glucose checklist before every workout.
+  const start = (w: { title: string; items: PlayerItem[] }) => (insulin ? setPending(w) : setPlayer(w));
   const week = weeklySchedule(p, state.workouts, place);
   const day = week.find((d) => d.date === selectedDate) || week[0];
   const restricted = isRestricted(p);
@@ -46,6 +53,11 @@ export default function Move() {
       if (logs.length) await update((s) => ({ ...s, workouts: [...s.workouts, ...logs] }));
       haptic("success");
       setPlayer(null);
+      if (insulin) {
+        // Exercise keeps lowering glucose for hours; remind once, about an hour later.
+        await scheduleReminder(new Date(Date.now() + 60 * 60_000), translateActive("Check your glucose: exercise can keep lowering it for hours, including tonight.")).catch(() => {});
+        notify("Workout saved. Check your glucose now and again later today — exercise can lower it for hours.");
+      }
     });
 
   return (
@@ -73,6 +85,7 @@ export default function Move() {
         <Text style={s.darkSmall}>{st.current ? tr("🔥 {current}-day streak · ", { current: st.current }) : tr("Start a streak today · ")}{tr("tap a day to see its plan")}</Text>
       </Surface>
 
+      <InsulinNotices state={state} />
       <View style={s.chipsRow}>
         {(["gym", "home", "walk"] as Place[]).map((pl) => <Chip key={pl} label={pl === "gym" ? "🏋️ Gym" : pl === "home" ? "🏠 Home" : "🚶 Walking"} selected={place === pl} onPress={() => setPlace(pl)} />)}
       </View>
@@ -98,7 +111,7 @@ export default function Move() {
                 </View>
               </View>
             ))}
-            <PrimaryButton title={day.completed ? tr("Do it again") : tr("Start workout")} icon="play" onPress={() => setPlayer({ title: day.title, items: planItems })} />
+            <PrimaryButton title={day.completed ? tr("Do it again") : tr("Start workout")} icon="play" onPress={() => start({ title: day.title, items: planItems })} />
           </>
         ) : (
           <PrimaryButton title="Browse exercises" icon="search" onPress={() => router.push("/exercises")} />
@@ -114,7 +127,7 @@ export default function Move() {
               <Text style={[s.exName, { flex: 1 }]}>{it.name}</Text>
             </View>
           ))}
-          <PrimaryButton title="Start my workout" icon="play" onPress={() => setPlayer({ title: "My workout", items: myItems })} />
+          <PrimaryButton title="Start my workout" icon="play" onPress={() => start({ title: "My workout", items: myItems })} />
         </Surface>
       ) : null}
 
@@ -172,8 +185,9 @@ export default function Move() {
         </View>
       ))}
 
+      {pending ? <InsulinCheck state={state} onCancel={() => setPending(null)} onStart={() => { setPlayer(pending); setPending(null); }} /> : null}
       {player ? (
-        <WorkoutPlayer visible title={player.title} items={player.items} voice={voice} units={units}
+      <WorkoutPlayer visible title={player.title} items={player.items} voice={voice} units={units}
           onVoice={(v) => act(() => update((x) => ({ ...x, voiceCues: v })))} onClose={() => setPlayer(null)} onFinish={save} />
       ) : null}
       <LogActivity visible={logOpen} onClose={() => setLogOpen(false)} onSave={(entry) => act(async () => {
@@ -208,6 +222,10 @@ function LogActivity({ visible, onClose, onSave }: { visible: boolean; onClose: 
 }
 
 const s = StyleSheet.create({
+  checkIntro: { color: palette.ink, fontSize: 15, lineHeight: 21, marginTop: 6 },
+  checkRow: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 52 },
+  checkText: { color: palette.ink, fontSize: 15, lineHeight: 21, flex: 1 },
+  checkSmall: { color: palette.muted, fontSize: 13, lineHeight: 18 },
   sumRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
   darkLabel: { color: "#A9B4CC", fontSize: 13, fontWeight: "700" },
   darkBig: { color: "#fff", fontSize: 36, fontWeight: "900" },
@@ -235,3 +253,25 @@ const s = StyleSheet.create({
   logRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: palette.card, borderRadius: 18, padding: 10, borderWidth: 1, borderColor: palette.hairline },
   input: { backgroundColor: palette.card, borderWidth: 1, borderColor: palette.line, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: palette.ink },
 });
+
+/** Before-workout checklist for insulin users. The two required ticks unlock Start. */
+function InsulinCheck({ state, onCancel, onStart }: { state: State; onCancel: () => void; onStart: () => void }) {
+  const tr = useT();
+  const [ticked, setTicked] = useState<string[]>([]);
+  const ready = preWorkoutChecks.every((c) => !c.required || ticked.includes(c.id));
+  return (
+    <Sheet visible title={tr("Before you start")} onClose={onCancel}
+      footer={<PrimaryButton title="Start workout" icon="play" disabled={!ready} onPress={onStart} />}>
+      <InsulinNotices state={state} aboutToTrain />
+      <Text style={s.checkIntro}>{tr("You use insulin, so exercise can lower your glucose during and for hours after. Quick check:")}</Text>
+      {preWorkoutChecks.map((c) => (
+        <Pressable key={c.id} accessibilityRole="checkbox" aria-checked={ticked.includes(c.id)} accessibilityLabel={tr(c.text)}
+          onPress={() => setTicked((x) => (x.includes(c.id) ? x.filter((y) => y !== c.id) : [...x, c.id]))} style={s.checkRow}>
+          <Ionicons name={ticked.includes(c.id) ? "checkbox" : "square-outline"} size={24} color={palette.brand} />
+          <Text style={s.checkText}>{tr(c.text)}{c.required ? "" : ` ${tr("(optional)")}`}</Text>
+        </Pressable>
+      ))}
+      <Text style={s.checkSmall}>{tr("If your glucose is low, or high with ketones, don't exercise — follow your care team's plan. Stop and treat a low if you feel shaky, sweaty, dizzy or confused.")}</Text>
+    </Sheet>
+  );
+}

@@ -16,8 +16,9 @@ import { foodReview } from "../core/food-review";
 import { effectiveProfile } from "../core/progress";
 import { nutritionTargets, validateMeal } from "../core/nutrition";
 import { bySlot, mealsOn, nutrientTotals, sumCalories } from "../core/food-log";
-import { nutrientInfo, type Food, type NutrientKey } from "../core/foods";
-import { uid, numeric, defaultSlot, mealSlotNames, type Meal, type MealSlotName } from "../core/model";
+import { foodById, nutrientInfo, type Food, type NutrientKey } from "../core/foods";
+import type { PlannedMeal } from "../core/planning-types";
+import { uid, numeric, defaultSlot, localDay, mealSlotNames, type Meal, type MealSlotName } from "../core/model";
 import { proteinGuidance } from "../core/targets";
 import { photoFood, type PhotoResult } from "../core/photo-estimate";
 
@@ -39,6 +40,17 @@ export default function FoodScreen() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [showMicros, setShowMicros] = useState(false);
+  const [qty, setQty] = useState<number | undefined>(undefined);
+  // Today's suggestions from the weekly plan (only general-fitness plans carry dishes).
+  const planned = state.mealPlan?.days.find((d) => d.date === localDay())?.meals || [];
+  const logPlanned = (m: PlannedMeal) => {
+    const f = m.dishId ? foodById(`recipe:${m.dishId}`) : null;
+    if (!f) return;
+    setSlot(m.slot);
+    setQty(m.servings);
+    setFood(f);
+    setFlow("detail");
+  };
 
   const add = (meal: NewMeal) =>
     act(async () => {
@@ -48,7 +60,7 @@ export default function FoodScreen() {
       setFlow(null);
       setFood(null);
       setPhoto(null);
-      setNotice(`Added ${meal.name} · ${meal.calories} kcal`);
+      setNotice(tr("Added {name} · {kcal} kcal", { name: tr(meal.name), kcal: meal.calories }));
     });
 
   const review = (meal: NewMeal) => {
@@ -58,6 +70,7 @@ export default function FoodScreen() {
 
   const open = (s: MealSlotName, f: Flow) => {
     setSlot(s);
+    setQty(undefined);
     setFlow(f);
   };
 
@@ -168,7 +181,20 @@ export default function FoodScreen() {
                 <Ionicons name="add" size={22} color="#fff" />
               </Pressable>
             </View>
-            {list.length === 0 ? <Text style={s.empty}>{tr("Nothing logged yet.")}</Text> : null}
+            {list.length === 0 ? (() => {
+              const plan = planned.find((x) => x.slot === m.id && x.dishId && x.nutrition);
+              if (!plan) return <Text style={s.empty}>{tr("Nothing logged yet.")}</Text>;
+              return (
+                <Pressable accessibilityRole="button" accessibilityLabel={tr("Log planned meal: {name}", { name: tr(plan.name) })} onPress={() => logPlanned(plan)} style={s.planned}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.plannedKicker}>{tr("From your plan")}</Text>
+                    <Text style={s.itemName} numberOfLines={2}>{tr(plan.name)}</Text>
+                    <Text style={s.itemMeta}>{plan.servings} × {tr(plan.servingLabel)} · {plan.nutrition!.calories} kcal · {plan.nutrition!.protein} g {tr("protein")}</Text>
+                  </View>
+                  <View style={s.plannedBtn}><Text style={s.plannedBtnText}>{tr("Log it")}</Text></View>
+                </Pressable>
+              );
+            })() : null}
             {list.map((meal) => (
               <View key={meal.id} style={s.item}>
                 {meal.photoUri ? <Image source={{ uri: meal.photoUri }} style={s.thumb} /> : (
@@ -177,7 +203,7 @@ export default function FoodScreen() {
                   </View>
                 )}
                 <View style={{ flex: 1 }}>
-                  <Text style={s.itemName} numberOfLines={1}>{meal.name}</Text>
+                  <Text style={s.itemName} numberOfLines={1}>{tr(meal.name)}</Text>
                   <Text style={s.itemMeta} numberOfLines={1}>
                     {meal.servingLabel ? `${meal.servings && meal.servings !== 1 ? `${meal.servings} × ` : ""}${meal.servingLabel} · ` : ""}P {Math.round(meal.protein)} · C {Math.round(meal.carbs)} · F {Math.round(meal.fat)}
                   </Text>
@@ -221,7 +247,7 @@ export default function FoodScreen() {
         onPick={(f) => { setFood(f); setFlow("detail"); }} onBarcode={() => setFlow("barcode")} />
       <BarcodeScanner visible={flow === "barcode"} onClose={() => setFlow(null)}
         onFound={(f) => { setFood(f); setFlow("detail"); }} onSearchInstead={() => setFlow("search")} />
-      <FoodDetail key={food?.id || "none"} food={food} visible={flow === "detail"} initialSlot={slot}
+      <FoodDetail key={`${food?.id || "none"}-${qty || 1}`} food={food} visible={flow === "detail"} initialSlot={slot} initialQty={qty}
         photo={food?.id === "photo"} photoUri={photo?.uri} photoThumb={photo?.thumb} note={food?.id === "photo" ? photo?.note : undefined}
         initialFat={food?.id === "photo" ? photo?.fat : undefined}
         review={review} onClose={() => setFlow(food?.id === "photo" ? null : "search")} onAdd={add} />
@@ -306,6 +332,10 @@ const s = StyleSheet.create({
   slotKcal: { color: palette.muted, fontSize: 14, fontWeight: "700" },
   plus: { width: 34, height: 34, borderRadius: 17, backgroundColor: palette.brand, alignItems: "center", justifyContent: "center" },
   empty: { color: palette.muted, fontSize: 14, lineHeight: 20 },
+  planned: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 16, borderWidth: 1, borderStyle: "dashed", borderColor: palette.line, padding: 12 },
+  plannedKicker: { color: palette.brand, fontSize: 11, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.5 },
+  plannedBtn: { backgroundColor: palette.brand, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
+  plannedBtnText: { color: "#fff", fontWeight: "800", fontSize: 13 },
   item: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 6, borderTopWidth: 1, borderColor: palette.hairline },
   thumb: { width: 44, height: 44, borderRadius: 14 },
   thumbIcon: { backgroundColor: palette.brandSoft, alignItems: "center", justifyContent: "center" },

@@ -1,3 +1,5 @@
+import { dishes, recipeSlots } from "./dishes";
+import type { Allergen, CuisinePreference, MealSlot } from "./planning-types";
 // Food database engine: USDA SR28 reference foods (public domain), popular friendly names,
 // recipe-based dishes built from USDA ingredients, serving maths, honest ranges and
 // hidden-fat adjustments. Pure TypeScript so it is covered by node tests.
@@ -169,8 +171,8 @@ export const popular: Popular[] = [
 ];
 
 // Recipe dishes: typical home portions built from USDA ingredients (grams per serving).
-interface Recipe { id: string; name: string; group: string; serving: string; tags: string; parts: [number, number][] }
-export const recipes: Recipe[] = [
+interface Recipe { id: string; name: string; group: string; serving: string; tags: string; parts: [number, number][]; slots?: MealSlot[] }
+const baseRecipes: Recipe[] = [
   { id: "chicken-biryani", name: "Chicken biryani", group: "Indian & Pakistani", serving: "1 plate", tags: "biryani rice", parts: [[20045, 180], [5098, 100], [11282, 30], [4582, 12], [1116, 20], [11530, 15]] },
   { id: "dal", name: "Dal (yellow lentil curry)", group: "Indian & Pakistani", serving: "1 cup", tags: "daal lentil", parts: [[16070, 200], [11282, 15], [11530, 15], [4582, 7]] },
   { id: "chicken-curry", name: "Chicken curry / karahi", group: "Indian & Pakistani", serving: "1 cup", tags: "karahi salan", parts: [[5098, 140], [11530, 50], [11282, 30], [4582, 15], [1116, 10]] },
@@ -205,6 +207,78 @@ export const recipes: Recipe[] = [
   { id: "berry-smoothie", name: "Berry banana smoothie", group: "American", serving: "1 glass", tags: "smoothie", parts: [[9050, 70], [9316, 70], [9040, 60], [1256, 100], [1079, 120]] },
   { id: "protein-shake", name: "Protein shake with milk", group: "American", serving: "1 shake", tags: "whey shake", parts: [[14066, 32], [1079, 240]] },
 ];
+/** Every dish: the original recipes plus the cuisine library, each tagged with the meals it suits. */
+export const recipes: (Recipe & { slots: MealSlot[] })[] = [
+  ...baseRecipes.map((r) => ({ ...r, slots: recipeSlots[r.id] || (["lunch", "dinner"] as MealSlot[]) })),
+  ...dishes,
+];
+
+/** Diet pattern and likely allergens of a dish, read from its USDA ingredients (label check still needed). */
+export interface DishTraits { diet: "vegan" | "vegetarian" | "omnivore"; allergens: Allergen[] }
+const allergenWords: Record<Allergen, RegExp> = {
+  milk: /milk|cheese|yogurt|butter|cream|whey|lassi|kheer|latte|paneer/i,
+  egg: /\begg|mayonnaise|pancake|noodles, egg|croissant/i,
+  fish: /fish|salmon|tuna|cod|tilapia|haddock/i,
+  shellfish: /shrimp|prawn|crab|lobster|crustacean/i,
+  wheat: /bread|toast|pasta|spaghetti|macaroni|noodles|tortillas, ready-to-bake or -fry, flour|roll|bun|bagel|muffin|croissant|pretzel|pancake|chapati|roti|naan|soy sauce made from soy and wheat|granola|pizza|oats|wheat/i,
+  soy: /soy|tofu|edamame|miso/i,
+  peanut: /peanut/i,
+  "tree-nut": /almond|walnut|cashew|pistachio|coconut|pecan/i,
+  sesame: /sesame|tahini/i,
+};
+const meatGroups = new Set(["0500", "0700", "1000", "1300", "1500", "1700"]);
+const meatWords = /chicken|beef|pork|ham\b|bacon|sausage|fish|tuna|salmon|shrimp|turkey|lamb|chili with meat|frankfurter|bratwurst/i;
+const animalWords = /egg|cheese|milk|yogurt|butter|cream|honey|mayonnaise|pancake|croissant|lassi|kheer/i;
+const traitsCache = new Map<string, DishTraits>();
+export function dishTraits(id: string): DishTraits {
+  const hit = traitsCache.get(id);
+  if (hit) return hit;
+  const r = recipes.find((x) => x.id === id);
+  const { byId } = dataset();
+  const names = (r?.parts || []).map(([n]) => byId.get(n)).filter(Boolean) as Row[];
+  const text = `${r?.name || ""} ${names.map((row) => row[1]).join(" | ")}`;
+  const meat = names.some((row) => meatGroups.has(row[2])) || meatWords.test(text);
+  const animal = names.some((row) => row[2] === "0100") || animalWords.test(text);
+  const out: DishTraits = {
+    diet: meat ? "omnivore" : animal ? "vegetarian" : "vegan",
+    allergens: (Object.keys(allergenWords) as Allergen[]).filter((a) => allergenWords[a].test(text)),
+  };
+  traitsCache.set(id, out);
+  return out;
+}
+
+/** A dish's ingredients with short names and protein per 100 g (for "protein sources"). */
+export function dishIngredients(id: string): { name: string; protein: number }[] {
+  const r = recipes.find((x) => x.id === id);
+  const { byId } = dataset();
+  return (r?.parts || []).map(([n]) => byId.get(n)).filter(Boolean).map((row) => ({
+    name: shortName(row![1]),
+    protein: row![3][1] || 0,
+  }));
+}
+const shortName = (usda: string) => {
+  const parts = usda.split(",").map((x) => x.trim()).filter((x) => !/^(mature seeds|raw|cooked|boiled|roasted|enriched|regular|commercially prepared|ready-to-serve|plain)$/i.test(x));
+  const head = parts[0].replace(/^(Fish|Crustaceans|Nuts|Beverages|Cereals ready-to-eat|Snacks)$/i, "");
+  return (head ? [head, parts[1]] : [parts[1], parts[2]]).filter(Boolean).slice(0, 2).join(", ").replace(/\s*\(.*?\)/g, "");
+};
+
+/** Which dish group belongs to a cuisine preference. */
+export const cuisineGroups: Record<CuisinePreference, string> = {
+  american: "American", british: "British", mexican: "Mexican", "asian-indian": "Indian & Pakistani",
+  "asian-chinese": "Chinese", "asian-japanese": "Japanese", "asian-thai": "Thai",
+  german: "German", french: "French", brazilian: "Brazilian",
+};
+/** The user's own cuisine first, then everything else (so other kitchens stay findable). */
+export function dishesFor(cuisine: CuisinePreference = "american") {
+  const own = cuisineGroups[cuisine];
+  return [...recipes.filter((r) => r.group === own), ...recipes.filter((r) => r.group !== own)];
+}
+/** Popular staples that belong to one kitchen; hidden from other cuisines' quick lists. */
+const popularCuisine: Record<number, string> = {
+  28307: "Indian & Pakistani", 28306: "Indian & Pakistani", 36050: "Mexican", 36052: "Mexican", 21078: "Mexican",
+  6164: "Mexican", 36602: "Chinese",
+};
+
 
 function recipeFood(r: Recipe): Food {
   const { byId } = dataset();
@@ -222,7 +296,7 @@ function recipeFood(r: Recipe): Food {
   const p100: Partial<Nutrients> = {};
   for (const k of nutrientKeys) if (total[k] !== undefined) p100[k] = (total[k]! * 100) / grams;
   return {
-    id: `recipe:${r.id}`, name: r.name, detail: `${r.group} · typical home recipe`, group: r.group,
+    id: `recipe:${r.id}`, name: r.name, detail: r.group, group: r.group,
     source: "recipe", per100: p100,
     servings: [{ label: r.serving, grams: Math.round(grams) }, { label: "100 g", grams: 100 }],
     uncertainty: 0.25,
@@ -251,16 +325,21 @@ const queryWords = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9%]+/g, " ").split(" ").filter(Boolean).flatMap((w) => words(synonyms[w] || w));
 
 /** Ranked search: popular and recipe dishes first, then USDA reference foods. */
-export function searchFoods(query: string, limit = 40): Food[] {
+export function searchFoods(query: string, limit = 40, cuisine: CuisinePreference = "american"): Food[] {
   const q = queryWords(query);
-  if (!q.length) return [...popular.slice(0, 12).map((p) => foodById(`usda:${p.id}`)!), ...recipes.slice(0, 4).map(recipeFood)];
+  const own = cuisineGroups[cuisine];
+  if (!q.length)
+    return [
+      ...dishesFor(cuisine).slice(0, 6).map(recipeFood),
+      ...popular.filter((p) => !popularCuisine[p.id] || popularCuisine[p.id] === own).slice(0, 12).map((p) => foodById(`usda:${p.id}`)!),
+    ];
   const matchTokens = (t: string[]) => q.every((w) => t.some((x) => x.startsWith(w)));
   const match = (text: string) => matchTokens(words(text));
   const scored: { score: number; food: () => Food }[] = [];
   for (const p of popular)
-    if (match(`${p.name} ${p.tags || ""}`)) scored.push({ score: 1000 - p.name.length, food: () => foodById(`usda:${p.id}`)! });
+    if (match(`${p.name} ${p.tags || ""}`)) scored.push({ score: 1000 - p.name.length - (popularCuisine[p.id] && popularCuisine[p.id] !== own ? 150 : 0), food: () => foodById(`usda:${p.id}`)! });
   for (const r of recipes)
-    if (match(`${r.name} ${r.tags} ${r.group}`)) scored.push({ score: 900 - r.name.length, food: () => recipeFood(r) });
+    if (match(`${r.name} ${r.tags} ${r.group}`)) scored.push({ score: 900 - r.name.length + (r.group === own ? 80 : 0), food: () => recipeFood(r) });
   const seen = new Set(popular.map((p) => p.id));
   const { data, tokens } = dataset();
   data.foods.forEach((row, i) => {

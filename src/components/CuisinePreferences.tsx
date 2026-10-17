@@ -6,6 +6,7 @@ import type { CuisinePreference } from "../core/planning-types";
 export const cuisineOptions = [
   { value: "american", label: "American" }, { value: "british", label: "UK / British" },
   { value: "mexican", label: "Mexican" },
+  { value: "german", label: "German" }, { value: "french", label: "French" }, { value: "brazilian", label: "Brazilian" },
   { value: "asian-indian", label: "Indian" }, { value: "asian-chinese", label: "Chinese" },
   { value: "asian-japanese", label: "Japanese" }, { value: "asian-thai", label: "Thai" },
 ] as const;
@@ -14,7 +15,7 @@ export const cuisineOptions = [
 // but they are only listed for a user who already has one selected.
 const offeredAsian: CuisinePreference[] = ["asian-indian"];
 export function asianChoices(current?: CuisinePreference) {
-  return cuisineOptions.slice(3).filter(o => offeredAsian.includes(o.value) || o.value === current);
+  return cuisineOptions.slice(6).filter(o => offeredAsian.includes(o.value) || o.value === current);
 }
 export function cuisineLabel(value?: CuisinePreference) {
   return cuisineOptions.find(option => option.value === (value || "american"))?.label || "American";
@@ -31,11 +32,11 @@ export function CuisinePreferences({ value = "american", onChange }: { value?: C
   return <>
     <H>{tr("Cuisine preference")}</H>
     <P>{tr("American is the default. Choose the food you enjoy; cuisine is separate from where you live, your diet and allergies.")}</P>
-    <Button secondary title={tr("Cuisine: {v0} · Change", { v0: cuisineLabel(value) })} onPress={() => setOpen(!open)}/>
+    <Button secondary title={tr("Cuisine: {v0} · Change", { v0: tr(cuisineLabel(value)) })} onPress={() => setOpen(!open)}/>
     {open ? <View accessibilityLabel={tr("Choose cuisine")}>
-      {cuisineOptions.slice(0,3).map(item => option(item.value, item.label))}
+      {cuisineOptions.slice(0,6).map(item => option(item.value, tr(item.label)))}
       <Button secondary title="Asian cuisines" onPress={() => setAsian(!asian)}/>
-      {asian ? asianChoices(value).map(item => option(item.value, item.label)) : null}
+      {asian ? asianChoices(value).map(item => option(item.value, tr(item.label))) : null}
     </View> : null}
   </>;
 }

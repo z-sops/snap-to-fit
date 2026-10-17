@@ -1,4 +1,5 @@
 import { useLang, useT } from "../i18n";
+import { insulinNotices, recentLow, usesInsulin } from "../core/insulin-safety";
 import { effectiveProfile } from "../core/progress";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -63,6 +64,10 @@ export default function Coach() {
               activity: p.activity,
             },
             targets: targets.restricted ? null : targets,
+            // Context only, so the coach can warn about low-glucose risk. Units are never sent.
+            insulinSafety: usesInsulin(state)
+              ? { types: state.medicines.filter((m) => m.kind === "insulin").map((m) => m.insulinType || "other"), recentLow: recentLow(state), notices: insulinNotices(state).map((n) => n.text) }
+              : undefined,
             totals: todayTotals(state.meals),
           });
           answer = result.text;

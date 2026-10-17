@@ -405,6 +405,15 @@ export const server = createServer(async (req, res) => {
           text: String(m.text || "").slice(0, 2000),
         }))
       : [];
+    const sanitizeInsulin = (x: unknown) => {
+      if (!x || typeof x !== "object") return undefined;
+      const v = x as { types?: unknown; recentLow?: unknown; notices?: unknown };
+      return {
+        types: Array.isArray(v.types) ? v.types.filter((t) => ["long", "rapid", "mixed", "other"].includes(String(t))).slice(0, 6) : [],
+        recentLow: !!v.recentLow,
+        notices: Array.isArray(v.notices) ? v.notices.map((n) => String(n).slice(0, 300)).slice(0, 5) : [],
+      };
+    };
     const replyLanguages: Record<string, string> = {
       en: "English (US)",
       es: "Spanish (US). Write the whole answer in natural, simple US Spanish.",
@@ -421,6 +430,7 @@ export const server = createServer(async (req, res) => {
             profile,
             targets,
             history,
+            insulinSafety: sanitizeInsulin(body.insulinSafety),
             question: body.question,
             replyLanguage: replyLanguages[language],
           }),

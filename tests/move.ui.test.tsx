@@ -43,3 +43,19 @@ test("voice coach can be switched off and is remembered", async () => {
   fireEvent.click(await screen.findByRole("button", { name: "🔊 Voice coach on" }));
   await waitFor(async () => expect((await loadState()).voiceCues).toBe(false));
 });
+
+test("insulin users confirm a low-glucose checklist before a workout starts", async () => {
+  const today = new Date().getDay();
+  const { library } = await import("../src/core/exercise-library");
+  await saveState({ ...emptyState, myWorkout: [library()[0].id], profile: { ...newProfile, name: "Alex", age: 30, height: 175, weight: 80, targetWeight: 80, consent: true, insulin: true, days: 1, workoutDays: [today] } }, "guest");
+  render(<StoreProvider><Ready /></StoreProvider>);
+  expect(await screen.findByText("Insulin safety")).toBeTruthy();
+  fireEvent.click(await screen.findByRole("button", { name: "Start my workout" }));
+  expect(await screen.findByText("Before you start")).toBeTruthy();
+  const start = () => screen.getAllByRole("button", { name: "Start workout" }).at(-1)!;
+  expect(start().hasAttribute("disabled") || start().getAttribute("aria-disabled") === "true").toBe(true);
+  fireEvent.click(screen.getByRole("checkbox", { name: /I checked my glucose/ }));
+  fireEvent.click(screen.getByRole("checkbox", { name: /fast-acting sugar/ }));
+  fireEvent.click(start());
+  expect(await screen.findByText("Exercise 1 of 1")).toBeTruthy();
+});

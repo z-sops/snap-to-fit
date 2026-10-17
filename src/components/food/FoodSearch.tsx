@@ -3,7 +3,8 @@ import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Sheet, Chip, palette } from "../design";
-import { foodById, recipes, scale, searchFoods, type Food } from "../../core/foods";
+import { dishesFor, foodById, scale, searchFoods, type Food } from "../../core/foods";
+import { useOptionalStore } from "../../services/store";
 import type { Meal } from "../../core/model";
 
 type Tab = "search" | "recent" | "dishes";
@@ -24,13 +25,13 @@ export function FoodRow({ food, onPress }: { food: Food; onPress: () => void }) 
   const sv = food.servings[0];
   const kcal = Math.round(scale(food, sv.grams).calories || 0);
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={tr("{name}, {kcal} calories per {label}", { name: food.name, kcal, label: sv.label })} onPress={onPress} style={s.row}>
+    <Pressable accessibilityRole="button" accessibilityLabel={tr("{name}, {kcal} calories per {label}", { name: tr(food.name), kcal, label: tr(sv.label) })} onPress={onPress} style={s.row}>
       <View style={[s.dot, { backgroundColor: food.source === "recipe" ? palette.warnSoft : palette.goodSoft }]}>
         <Ionicons name={food.source === "recipe" ? "restaurant" : "leaf"} size={16} color={food.source === "recipe" ? palette.warn : palette.good} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={s.name} numberOfLines={2}>{food.name}</Text>
-        <Text style={s.meta} numberOfLines={1}>{kcal} kcal · {sv.label}{food.detail ? ` · ${food.detail}` : ""}</Text>
+        <Text style={s.name} numberOfLines={2}>{tr(food.name)}</Text>
+        <Text style={s.meta} numberOfLines={1}>{kcal} kcal · {tr(sv.label)}{food.detail ? ` · ${tr(food.detail)}` : ""}</Text>
       </View>
       <Ionicons name="add-circle" size={28} color={palette.brand} />
     </Pressable>
@@ -43,11 +44,13 @@ export function FoodSearch({ visible, onClose, onPick, meals, onBarcode }: {
   const tr = useT();
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<Tab>("search");
+  const cuisine = useOptionalStore()?.state.profile?.cuisine || "american";
   const results = useMemo(() => {
     if (tab === "recent") return recentFoodIds(meals).map(foodById).filter(Boolean) as Food[];
-    if (tab === "dishes") return recipes.map((r) => foodById(`recipe:${r.id}`)!).filter((f) => !query.trim() || f.name.toLowerCase().includes(query.trim().toLowerCase()));
-    return searchFoods(query);
-  }, [query, tab, meals]);
+    // Dishes follow the user's cuisine first; other kitchens follow underneath.
+    if (tab === "dishes") return dishesFor(cuisine).map((r) => foodById(`recipe:${r.id}`)!).filter((f) => !query.trim() || f.name.toLowerCase().includes(query.trim().toLowerCase()));
+    return searchFoods(query, 40, cuisine);
+  }, [query, tab, meals, cuisine]);
   return (
     <Sheet visible={visible} title="Search food" onClose={onClose}>
       <View style={s.searchBox}>

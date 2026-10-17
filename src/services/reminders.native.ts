@@ -1,7 +1,7 @@
 import { doctorNotice } from "../core/safety";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-export async function scheduleReminder(date: Date) {
+export async function scheduleReminder(date: Date, message?: string) {
   if (date.getTime() <= Date.now())
     throw new Error("Choose a future reminder date and time.");
   if (Platform.OS === "android")
@@ -18,7 +18,7 @@ export async function scheduleReminder(date: Date) {
   return Notifications.scheduleNotificationAsync({
     content: {
       title: "Snap to Fit",
-      body: `You have a scheduled reminder. Open the app to review it. ${doctorNotice}`,
+      body: message || `You have a scheduled reminder. Open the app to review it. ${doctorNotice}`,
       sound: false,
     },
     trigger: {

@@ -37,16 +37,16 @@ export function mealFromFood(food: Food, grams: number, servings: number, servin
   };
 }
 
-export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUri, photoThumb, photo, note, review, initialFat }: {
+export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUri, photoThumb, photo, note, review, initialFat, initialQty }: {
   food: Food | null; visible: boolean; onClose: () => void; onAdd: (meal: NewMeal) => void;
-  initialSlot: MealSlotName; photoUri?: string; photoThumb?: string; photo?: boolean; note?: string; initialFat?: AddedFat;
+  initialSlot: MealSlotName; photoUri?: string; photoThumb?: string; photo?: boolean; note?: string; initialFat?: AddedFat; initialQty?: number;
   /** Diet, allergy or medical concerns that must be acknowledged before adding. */
   review?: (meal: NewMeal) => { messages: string[]; alternative: string } | null;
 }) {
   const tr = useT();
   const [ack, setAck] = useState(false);
   const [servingIndex, setServingIndex] = useState(0);
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState(initialQty || 1);
   const [fat, setFat] = useState<AddedFat>(initialFat || "none");
   const [slot, setSlot] = useState<MealSlotName>(initialSlot);
   const [showMicros, setShowMicros] = useState(false);
@@ -66,7 +66,7 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
       {photoUri ? <Image source={{ uri: photoUri }} style={s.photo} resizeMode="cover" accessibilityLabel={tr("Your meal photo")} /> : null}
       <Surface>
         <Pill label={badge.label} icon={badge.icon} color={badge.color} bg={badge.bg} />
-        <Text style={s.name}>{food.name}</Text>
+        <Text style={s.name}>{tr(food.name)}</Text>
         {food.detail ? <Text style={s.detail}>{tr(food.detail)}</Text> : null}
         {note ? <Text style={s.note}>{note}</Text> : null}
         <View style={s.kcalRow}>

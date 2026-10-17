@@ -1,4 +1,5 @@
 import { useT, type T } from "../i18n";
+import { InsulinNotices } from "../components/InsulinNotices";
 import React, { useState } from "react";
 import { Avatar, AvatarPicker } from "../components/Avatar";
 import { WeekBars } from "../components/charts";
@@ -118,6 +119,8 @@ export default function Today() {
           </View>
         </View>
       ) : null}
+
+      <InsulinNotices state={state} />
 
       <View style={s.quickRow}>
         <QuickAction icon="camera" label="Snap" tint={theme.brand} dark onPress={() => router.navigate({ pathname: "/food", params: { snap: String(Date.now()) } })} a11y="Snap your meal now" />
@@ -288,7 +291,7 @@ function MealRow({ meal }: { meal: Meal }) {
         <Ionicons name={meal.source === "photo" ? "camera" : "restaurant"} size={20} color={theme.ink} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={s.mealName} numberOfLines={1}>{meal.name}</Text>
+        <Text style={s.mealName} numberOfLines={1}>{tr(meal.name)}</Text>
         <View style={s.chips}>
           <Chip text={`P ${Math.round(meal.protein)}g`} color={theme.protein} />
           <Chip text={`C ${Math.round(meal.carbs)}g`} color={theme.carbs} />
