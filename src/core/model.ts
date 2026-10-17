@@ -175,7 +175,7 @@ export interface State {
   /** Exercises the user added from the library to their own workout. */
   myWorkout?: string[];
   /** App language chosen by the user; default follows the phone. */
-  language?: "en" | "es";
+  language?: "en" | "es" | "fr" | "de" | "pt";
   /** Spoken workout cues on/off (default on). */
   voiceCues?: boolean;
   version: 1;
@@ -290,9 +290,7 @@ export function validateProfile(p: Profile) {
       throw new Error("Invalid consent or health setting.");
   if (
     p.country !== undefined &&
-    !["PK", "IN", "BD", "US", "CA", "GB", "AE", "SA", "TR", "OTHER"].includes(
-      p.country,
-    )
+    !(typeof p.country === "string" && /^([A-Z]{2}|OTHER)$/.test(p.country))
   )
     throw new Error("Invalid country preference.");
   if (

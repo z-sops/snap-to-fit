@@ -4,21 +4,42 @@ import { useEffect } from "react";
 import { getLocales } from "expo-localization";
 import { useOptionalStore } from "../services/store";
 import { es } from "./es";
+import { fr } from "./fr";
+import { de } from "./de";
+import { pt } from "./pt";
 
-export type Lang = "en" | "es";
+export type Lang = "en" | "es" | "fr" | "de" | "pt";
+/** Each language is shown in its own name, never a flag: Spanish isn't only Spain, French isn't only France. */
 export const languages: { id: Lang; label: string }[] = [
   { id: "en", label: "English" },
   { id: "es", label: "Español" },
+  { id: "fr", label: "Français" },
+  { id: "de", label: "Deutsch" },
+  { id: "pt", label: "Português" },
 ];
-const dictionaries: Record<Lang, Record<string, string>> = { en: {}, es };
+export const isLang = (v: unknown): v is Lang => languages.some((l) => l.id === v);
+const dictionaries: Record<Lang, Record<string, string>> = { en: {}, es, fr, de, pt };
 
 export function deviceLanguage(): Lang {
   try {
-    return getLocales()[0]?.languageCode === "es" ? "es" : "en";
+    const code = getLocales()[0]?.languageCode;
+    return isLang(code) ? code : "en";
   } catch {
     return "en";
   }
 }
+
+/** Two-letter region from the phone (US, CA, DE, BR…), or "" when unknown. */
+export function deviceRegion(): string {
+  try {
+    return (getLocales()[0]?.regionCode || "").toUpperCase();
+  } catch {
+    return "";
+  }
+}
+
+/** Speech voice for each language. */
+export const voiceLocale: Record<Lang, string> = { en: "en-US", es: "es-US", fr: "fr-FR", de: "de-DE", pt: "pt-BR" };
 
 type Pattern = { re: RegExp; names: string[]; out: string };
 const patternCache: Partial<Record<Lang, Pattern[]>> = {};
@@ -44,6 +65,8 @@ function lookup(lang: Lang, text: string) {
   const dict = dictionaries[lang];
   if (text in dict) return dict[text];
   if (lang === "en") return text;
+  const core = text.trim();
+  if (core !== text && core in dict) return text.replace(core, dict[core]);
   for (const p of patterns(lang)) {
     const m = p.re.exec(text);
     if (m) return p.names.reduce((out, name, i) => out.split(`{${name}}`).join(m[i + 1]), p.out);

@@ -1,4 +1,4 @@
-import { activeLanguage, useT } from "../i18n";
+import { activeLanguage, useT, voiceLocale } from "../i18n";
 import React, { useState } from "react";
 import { Pressable, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -17,7 +17,7 @@ import { proteinGuidance } from "../core/targets";
 import { mealsOn } from "../core/food-log";
 import { uid, localDay, type Medicine } from "../core/model";
 
-const fmtDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(activeLanguage() === "es" ? "es-US" : "en-US", { weekday: "short", month: "short", day: "numeric" });
+const fmtDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(voiceLocale[activeLanguage()], { weekday: "short", month: "short", day: "numeric" });
 const nextDays = (n: number) => Array.from({ length: n }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return localDay(d); });
 
 const guides = [

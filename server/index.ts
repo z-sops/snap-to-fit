@@ -405,7 +405,14 @@ export const server = createServer(async (req, res) => {
           text: String(m.text || "").slice(0, 2000),
         }))
       : [];
-    const spanish = body.language === "es";
+    const replyLanguages: Record<string, string> = {
+      en: "English (US)",
+      es: "Spanish (US). Write the whole answer in natural, simple US Spanish.",
+      fr: "French. Write the whole answer in natural, simple French.",
+      de: "German. Write the whole answer in natural, simple German (use du).",
+      pt: "Brazilian Portuguese. Write the whole answer in natural, simple Brazilian Portuguese.",
+    };
+    const language: "en" | "es" | "fr" | "de" | "pt" = ["es", "fr", "de", "pt"].includes(body.language) ? body.language : "en";
     await chargeAI();
     const text = await generate(
       [
@@ -415,7 +422,7 @@ export const server = createServer(async (req, res) => {
             targets,
             history,
             question: body.question,
-            replyLanguage: spanish ? "Spanish (US). Write the whole answer in natural, simple US Spanish." : "English (US)",
+            replyLanguage: replyLanguages[language],
           }),
         },
       ],
@@ -423,14 +430,18 @@ export const server = createServer(async (req, res) => {
     );
     // Defense in depth only, not proof of clinical correctness.
     if (
-      /(stop|skip|increase|decrease|taper|wean|reduce|suspend|dej|salt|aument|dismin|reduc|baj).{0,45}(insulin|ozempic|wegovy|mounjaro|injection|inyecci|semaglutid|tirzepatid)|(insulin|injection|inyecci).{0,45}(\d+\s*(mg|units|unidades)|take a break|descans)/i.test(
+      /(stop|skip|increase|decrease|taper|wean|reduce|suspend|dej|salt|aument|dismin|reduc|baj|arr[eê]t|augment|diminu|absetz|erh[öo]h|verringer|reduzier|pare|parar|interromp).{0,45}(insulin|ozempic|wegovy|mounjaro|injection|inyecci|injeç|injekt|spritze|semaglutid|tirzepatid)|(insulin|injection|inyecci|injeç|injekt|spritze).{0,45}(\d+\s*(mg|units|unidades|unités|einheiten)|take a break|descans|pause)/i.test(
         text,
       )
     ) {
       send(200, {
-        text: spanish
-          ? "Los cambios de medicamento necesitan el consejo de tu médico. Puedo ayudarte con tus registros y con educación general."
-          : "Medication changes need your prescriber’s advice. I can help with logs and general education.",
+        text: {
+          en: "Medication changes need your prescriber’s advice. I can help with logs and general education.",
+          es: "Los cambios de medicamento necesitan el consejo de tu médico. Puedo ayudarte con tus registros y con educación general.",
+          fr: "Tout changement de médicament doit être décidé avec votre médecin. Je peux vous aider avec votre suivi et des informations générales.",
+          de: "Änderungen an Medikamenten brauchen den Rat deiner Ärztin oder deines Arztes. Ich helfe dir gern bei deinen Einträgen und mit allgemeinen Infos.",
+          pt: "Mudanças de medicamento precisam da orientação do seu médico. Posso ajudar com seus registros e com informações gerais.",
+        }[language],
       });
       return;
     }

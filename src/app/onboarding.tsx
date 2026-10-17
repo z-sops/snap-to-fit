@@ -1,4 +1,8 @@
-import { useT } from "../i18n";
+import { deviceRegion, languages, useLang, useT } from "../i18n";
+import { defaultUnits } from "../core/regions";
+import { CountryPicker } from "../components/CountryPicker";
+import { Chip } from "../components/design";
+import { Ionicons } from "@expo/vector-icons";
 import { buildMealPlan, dietaryType } from "../core/meal-planning";
 import { dietChoices, allergenChoices } from "../core/meal-catalog";
 import { CuisinePreferences } from "../components/CuisinePreferences";
@@ -55,12 +59,14 @@ const conditions: { value: Condition; label: string }[] = [
 ];
 
 type StepId =
-  | "name" | "sex" | "age" | "height" | "weight" | "goal" | "target" | "activity"
+  | "country" | "name" | "sex" | "age" | "height" | "weight" | "goal" | "target" | "activity"
   | "training" | "week" | "health" | "glp1" | "injuries" | "diet" | "cuisine" | "consent";
 
 function startProfile(existing: Profile | null): Profile {
   if (existing) return { ...existing, units: existing.units ?? "metric" };
-  return { ...newProfile, age: 30, height: 170, weight: 75, targetWeight: 75 };
+  const region = deviceRegion();
+  const country = /^[A-Z]{2}$/.test(region) ? region : undefined;
+  return { ...newProfile, country, units: defaultUnits(country), age: 30, height: 170, weight: 75, targetWeight: 75 };
 }
 
 export default function Onboarding() {
@@ -87,7 +93,7 @@ export default function Onboarding() {
 
   const steps = useMemo<StepId[]>(
     () => [
-      "name", "sex", "age", "height", "weight", "goal",
+      "country", "name", "sex", "age", "height", "weight", "goal",
       ...(p.goal === "maintain" ? [] : (["target"] as StepId[])),
       "activity", "training", "week", "health", "glp1", "injuries", "diet", "cuisine", "consent",
     ],
@@ -109,6 +115,8 @@ export default function Onboarding() {
 
   const stepError = (s: StepId): string | null => {
     switch (s) {
+      case "country":
+        return p.country ? null : "Choose the country where you live.";
       case "name":
         return p.name.trim() ? null : "Enter your first name.";
       case "target":
@@ -192,6 +200,9 @@ export default function Onboarding() {
   );
 
   switch (id) {
+    case "country":
+      return shell("Where do you live?", "Sets your units, date format and the official health sources we show. Language is separate — change it any time in Settings.",
+        <CountryPicker value={p.country} onChange={(c) => setP((prev) => ({ ...prev, country: c, units: editing ? prev.units : defaultUnits(c) }))} />);
     case "name":
       return shell("What should we call you?", "Your first name personalises your plan.",
         <TextInput
@@ -371,19 +382,35 @@ export default function Onboarding() {
   }
 }
 
+/** First screen: the app language, preselected from the phone. Country is asked separately. */
+function LanguageChoice() {
+  const { state, update } = useStore();
+  const current = useLang();
+  return (
+    <View style={s.langRow} accessibilityRole="radiogroup" accessibilityLabel="Language">
+      <Ionicons name="globe-outline" size={18} color={theme.muted} />
+      {languages.map((l) => (
+        <Chip key={l.id} label={l.label} selected={current === l.id}
+          onPress={() => { if (state.language !== l.id) void update((x) => ({ ...x, language: l.id })); }} />
+      ))}
+    </View>
+  );
+}
+
 function Welcome({ onStart }: { onStart: () => void }) {
   const tr = useT();
   return (
     <ScrollView contentContainerStyle={s.welcome}>
       <Logo size={88} />
-      <Text style={s.brand}>snap<Text style={{ color: theme.brand }}> {tr("to fit")}</Text></Text>
+      <Text style={s.brand}>snap<Text style={{ color: theme.brand }}> to fit</Text></Text>
       <Text style={s.tagline}>{tr("Snap your meals. Move your way. See your progress.")}</Text>
+      <LanguageChoice />
       <Image source={menuArt} style={s.hero} resizeMode="contain" accessibilityIgnoresInvertColors />
       <View style={{ width: "100%", maxWidth: 480 }}>
         <Pressable onPress={onStart} accessibilityRole="button" style={s.cta}><Text style={s.ctaText}>{tr("Get started")}</Text></Pressable>
         <Pressable onPress={() => router.push("/account")} accessibilityRole="button" style={s.link}><Text style={s.linkText}>{tr("I already have an account")}</Text></Pressable>
         <Pressable onPress={() => router.push("/legal")} accessibilityRole="button" style={s.link}><Text style={s.linkMuted}>{tr("Privacy and app terms")}</Text></Pressable>
-        <Text style={s.notice}>{doctorNotice}</Text>
+        <Text style={s.notice}>{tr(doctorNotice)}</Text>
       </View>
     </ScrollView>
   );
@@ -467,6 +494,7 @@ const s = StyleSheet.create({
   welcome: { flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: theme.bg },
   brand: { fontSize: 38, fontWeight: "800", letterSpacing: -1.2, color: theme.ink, marginTop: 14 },
   tagline: { fontSize: 16, lineHeight: 23, color: theme.muted, textAlign: "center", marginTop: 8, maxWidth: 320 },
+  langRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 16, maxWidth: 480 },
   hero: { width: "100%", maxWidth: 360, height: 250, marginVertical: 18 },
   cta: { backgroundColor: theme.brand, minHeight: 56, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   ctaText: { color: "white", fontSize: 17, fontWeight: "800" },

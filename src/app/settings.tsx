@@ -1,3 +1,4 @@
+import { CountryPicker } from "../components/CountryPicker";
 import { formatHeight, formatWeight } from "../core/units";
 import React, { useState } from "react";
 import { Platform, Alert, Share } from "react-native";
@@ -44,10 +45,15 @@ export default function Settings() {
       subtitle="Your profile, connections and privacy."
     >
       <Card>
-        <H>{tr("Language · Idioma")}</H>
+        <H>{`🌐 ${tr("Language")}`}</H>
         <Chips values={languages.map((l) => ({ value: l.id, label: l.label }))} selected={lang}
           onChange={(v) => act(() => update((s) => ({ ...s, language: v })))} />
         <P>{tr("Health articles in Gym Truth are in English for now.")}</P>
+      </Card>
+      <Card>
+        <H>{tr("Country")}</H>
+        <P>{tr("Sets date format and the official health sources we show. Units stay as you chose them.")}</P>
+        <CountryPicker value={p.country} onChange={(c) => act(() => update((x) => (x.profile ? { ...x, profile: { ...x.profile, country: c } } : x)))} />
       </Card>
       <Card>
         <H>{tr("{name}’s profile", { name: p.name })}</H>

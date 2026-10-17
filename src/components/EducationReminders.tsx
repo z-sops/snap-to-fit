@@ -1,4 +1,5 @@
-import { useT } from "../i18n";
+import { useLang, useT } from "../i18n";
+import { steroidLinks } from "../core/regions";
 import React, { useState } from "react";
 import { Linking } from "react-native";
 import {
@@ -25,6 +26,7 @@ import {
 import type { EducationSettings } from "../core/planning-types";
 export function EducationReminders() {
   const tr = useT();
+  const lang = useLang();
   const { state, namespace, update } = useStore();
   const p = state.profile!;
   const [settings, setSettings] = useState<EducationSettings>(
@@ -98,16 +100,11 @@ export function EducationReminders() {
             })
           }
         />
-        {steroidLinks(p.country).map((l) => (
+        {steroidLinks(p.country, lang).map((l) => (
           <Button key={l.url} secondary title={l.title} onPress={() => Linking.openURL(l.url)} />
         ))}
       </Card>
   );
 }
 
-const fdaLink = { title: "Read FDA steroid & bodybuilding-product warnings (US)", url: "https://www.fda.gov/consumers/consumer-updates/caution-bodybuilding-products-can-be-risky" };
-const nhsLink = { title: "Read NHS anabolic-steroid information (UK)", url: "https://www.nhs.uk/conditions/anabolic-steroid-misuse/" };
-/** US users see the FDA first, UK users the NHS first; both are always shown. */
-export function steroidLinks(country?: string) {
-  return country === "GB" ? [nhsLink, fdaLink] : [fdaLink, nhsLink];
-}
+export { steroidLinks } from "../core/regions";

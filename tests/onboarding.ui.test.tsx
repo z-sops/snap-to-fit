@@ -20,7 +20,12 @@ test("one question per card: welcome → name → … → plan reveal saves an i
   await saveSession(null); await saveState(emptyState, "guest");
   render(<StoreProvider><Ready /></StoreProvider>);
   fireEvent.click(await screen.findByRole("button", { name: "Get started" }));
-  expect(screen.getByText("Step 1 of 15")).toBeTruthy();
+  expect(screen.getByText("Step 1 of 16")).toBeTruthy();
+  expect(screen.getByText("Where do you live?")).toBeTruthy(); // phone region preselected (US)
+  fireEvent.change(screen.getByLabelText("Search another country"), { target: { value: "canad" } });
+  expect(screen.getAllByRole("button", { name: "Canada" }).length).toBeGreaterThan(0);
+  fireEvent.change(screen.getByLabelText("Search another country"), { target: { value: "" } });
+  cont();
   cont(); // empty name blocked
   expect(alerts).toHaveBeenCalledWith("Enter your first name.");
   fireEvent.change(screen.getByLabelText("First name"), { target: { value: "Zee" } }); cont();
@@ -29,7 +34,7 @@ test("one question per card: welcome → name → … → plan reveal saves an i
   expect(screen.getAllByText("5 ft 7 in").length).toBeGreaterThan(0); cont();
   expect(screen.getAllByText("165 lb").length).toBeGreaterThan(0); cont();
   fireEvent.click(screen.getByRole("radio", { name: "Lose fat" })); cont();
-  expect(screen.getByText("Step 7 of 16")).toBeTruthy(); cont(); // target defaults below current weight
+  expect(screen.getByText("Step 8 of 17")).toBeTruthy(); cont(); // target defaults below current weight
   cont(); cont(); // activity, training
   cont(); expect(alerts).toHaveBeenLastCalledWith("Choose 3 workout days.");
   for (const d of ["Monday", "Tuesday", "Wednesday"]) fireEvent.click(screen.getByRole("checkbox", { name: d }));
@@ -45,7 +50,7 @@ test("one question per card: welcome → name → … → plan reveal saves an i
   fireEvent.click(screen.getByRole("button", { name: "Start my journey" }));
   await waitFor(() => expect(nav.replace).toHaveBeenCalledWith("/"));
   const saved = (await loadState("guest")).profile!;
-  expect(saved).toMatchObject({ name: "Zee", sex: "male", units: "imperial", glp1: "Zepbound (tirzepatide)", workoutDays: [1, 2, 3] });
+  expect(saved).toMatchObject({ country: "US", name: "Zee", sex: "male", units: "imperial", glp1: "Zepbound (tirzepatide)", workoutDays: [1, 2, 3] });
   expect(saved.medicines).toContain("GLP-1: Zepbound (tirzepatide)");
   expect(saved.weight).toBe(75); // default accepted unchanged (shown as 165 lb)
   expect(saved.targetWeight).toBeLessThan(saved.weight);

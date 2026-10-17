@@ -79,7 +79,7 @@ export function StepShell({
           ) : (
             <View style={st.iconBtn} />
           )}
-          <Text style={st.stepLabel}>Step {step} of {total}</Text>
+          <Text style={st.stepLabel}>{tr("Step {step} of {total}", { step, total })}</Text>
           {onClose ? (
             <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={tr("Close setup")} hitSlop={10} style={st.iconBtn}>
               <Ionicons name="close" size={24} color={theme.ink} />
@@ -93,8 +93,8 @@ export function StepShell({
         </View>
       </View>
       <ScrollView contentContainerStyle={st.body} keyboardShouldPersistTaps="handled">
-        <Text style={st.title} accessibilityRole="header">{title}</Text>
-        {subtitle ? <Text style={st.subtitle}>{subtitle}</Text> : null}
+        <Text style={st.title} accessibilityRole="header">{tr(title)}</Text>
+        {subtitle ? <Text style={st.subtitle}>{tr(subtitle)}</Text> : null}
         <View style={{ marginTop: 22 }}>{children}</View>
       </ScrollView>
       <View style={st.bottom}>
@@ -105,9 +105,9 @@ export function StepShell({
           accessibilityState={{ disabled: !!nextDisabled }}
           style={[st.cta, nextDisabled && { opacity: 0.45 }]}
         >
-          <Text style={st.ctaText}>{nextLabel}</Text>
+          <Text style={st.ctaText}>{tr(nextLabel)}</Text>
         </Pressable>
-        <Text style={st.notice}>{doctorNotice}</Text>
+        <Text style={st.notice}>{tr(doctorNotice)}</Text>
       </View>
     </View>
   );
@@ -129,18 +129,19 @@ export function OptionCard({
   onPress: () => void;
   multi?: boolean;
 }) {
+  const tr = useT();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole={multi ? "checkbox" : "radio"}
-      accessibilityLabel={label}
+      accessibilityLabel={tr(label)}
       accessibilityState={multi ? { checked: selected } : { selected }}
       aria-checked={selected}
       style={selected ? st.optionOn : st.option}
     >
       <View style={{ flex: 1 }}>
-        <Text style={selected ? st.optionLabelOn : st.optionLabel}>{label}</Text>
-        {detail ? <Text style={selected ? st.optionDetailOn : st.optionDetail}>{detail}</Text> : null}
+        <Text style={selected ? st.optionLabelOn : st.optionLabel}>{tr(label)}</Text>
+        {detail ? <Text style={selected ? st.optionDetailOn : st.optionDetail}>{tr(detail)}</Text> : null}
       </View>
       {emoji ? <Text style={st.emoji}>{emoji}</Text> : null}
       {multi ? (
@@ -235,7 +236,7 @@ export function WheelPicker({
           onLayout={() => setReady(true)}
           accessible
           accessibilityRole="adjustable"
-          accessibilityLabel={label}
+          accessibilityLabel={tr(label)}
           accessibilityValue={{ text: options[index]?.label }}
           accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
           onAccessibilityAction={(e) => step(e.nativeEvent.actionName === "increment" ? 1 : -1)}
