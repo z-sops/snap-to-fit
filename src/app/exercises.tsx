@@ -39,30 +39,30 @@ export default function Exercises() {
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>
         <Chip label="All" selected={!group} onPress={() => setGroup(undefined)} />
-        {muscleGroups.map((g) => <Chip key={g.id} label={`${g.emoji} ${g.label}`} selected={group === g.id} onPress={() => setGroup(group === g.id ? undefined : g.id)} />)}
+        {muscleGroups.map((g) => <Chip key={g.id} label={`${g.emoji} ${muscleLabel(tr, g.label)}`} selected={group === g.id} onPress={() => setGroup(group === g.id ? undefined : g.id)} />)}
       </ScrollView>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>
         <Chip label="Any equipment" selected={!equipment} onPress={() => setEquipment(undefined)} />
         {equipmentGroups.map((g) => <Chip key={g.id} label={g.label} selected={equipment === g.id} onPress={() => setEquipment(equipment === g.id ? undefined : g.id)} />)}
       </ScrollView>
       <View style={s.chipsWrap}>
-        {(["beginner", "intermediate", "expert"] as const).map((l) => <Chip key={l} label={cap(l)} selected={level === l} onPress={() => setLevel(level === l ? undefined : l)} />)}
+        {(["beginner", "intermediate", "expert"] as const).map((l) => <Chip key={l} label={cap(tr(l))} selected={level === l} onPress={() => setLevel(level === l ? undefined : l)} />)}
       </View>
       {hidden > 0 ? (
         <View style={s.safety}>
           <Ionicons name="shield-checkmark" size={18} color={palette.good} />
-          <Text style={s.safetyText}>{hidden} exercises are hidden because they don’t suit the health details or movement limits in your profile. Your physical therapist can clear them.</Text>
+          <Text style={s.safetyText}>{tr("{n} exercises are hidden because they don’t suit the health details or movement limits in your profile. Your physical therapist can clear them.", { n: hidden })}</Text>
         </View>
       ) : null}
-      {mine.length ? <Pill label={`${mine.length} in My workout`} icon="barbell" /> : null}
-      <Text style={s.count}>{results.length} results</Text>
+      {mine.length ? <Pill label={tr("{n} in My workout", { n: mine.length })} icon="barbell" /> : null}
+      <Text style={s.count}>{tr("{n} results", { n: results.length })}</Text>
       <FlatList scrollEnabled={false} data={results.slice(0, 120)} keyExtractor={(r) => r.e.id}
         renderItem={({ item: { e, safety } }) => (
           <Pressable accessibilityRole="button" accessibilityLabel={e.name} onPress={() => setOpen(e)} style={s.row}>
             <Image source={{ uri: e.images[0] }} style={s.thumb} />
             <View style={{ flex: 1 }}>
               <Text style={s.name} numberOfLines={2}>{e.name}</Text>
-              <Text style={s.meta} numberOfLines={1}>{cap(e.primary.join(", "))} · {cap(e.equipment)} · {cap(e.level)}</Text>
+              <Text style={s.meta} numberOfLines={1}>{cap(e.primary.map((m) => tr(m)).join(", "))} · {cap(tr(e.equipment))} · {cap(tr(e.level))}</Text>
               {safety ? <Text style={s.caution} numberOfLines={1}>⚠️ {tr(safety.reason)}</Text> : null}
             </View>
             <Pressable accessibilityRole="button" accessibilityLabel={mine.includes(e.id) ? tr("Remove {name} from my workout", { name: e.name }) : tr("Add {name} to my workout", { name: e.name })} onPress={() => toggle(e.id)} hitSlop={8}>
@@ -124,11 +124,11 @@ function ExerciseDetail({ exercise, onClose, inWorkout, onToggle }: { exercise: 
 const s = StyleSheet.create({
   search: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: palette.card, borderRadius: 18, borderWidth: 1, borderColor: palette.line, paddingHorizontal: 14 },
   input: { flex: 1, fontSize: 16, color: palette.ink, paddingVertical: 12 },
-  chips: { gap: 8, paddingVertical: 2 },
-  chipsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chips: { gap: 8, paddingVertical: 4, paddingRight: 8 },
+  chipsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingVertical: 4 },
   safety: { flexDirection: "row", gap: 8, backgroundColor: palette.goodSoft, borderRadius: 16, padding: 12 },
   safetyText: { flex: 1, color: palette.good, fontSize: 13, lineHeight: 18 },
-  count: { color: palette.muted, fontSize: 13, fontWeight: "700" },
+  count: { color: palette.muted, fontSize: 13, fontWeight: "700", marginTop: 6 },
   row: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: palette.card, borderRadius: 18, padding: 10, marginBottom: 10, borderWidth: 1, borderColor: palette.hairline },
   thumb: { width: 64, height: 64, borderRadius: 14, backgroundColor: palette.bg },
   name: { color: palette.ink, fontSize: 15, fontWeight: "800" },
@@ -145,3 +145,9 @@ const s = StyleSheet.create({
   cautionBody: { color: palette.warn, fontSize: 14, lineHeight: 20 },
   small: { color: palette.muted, fontSize: 12, textAlign: "center" },
 });
+
+/** "Back" the muscle group differs from "Back" the button in Spanish, so group names use their own keys. */
+function muscleLabel(tr: (t: string) => string, label: string) {
+  const t = tr(`muscle: ${label}`);
+  return t.startsWith("muscle: ") ? label : t;
+}
