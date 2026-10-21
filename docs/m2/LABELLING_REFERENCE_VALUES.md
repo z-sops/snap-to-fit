@@ -378,6 +378,14 @@ Rules:
 5. **No value is derived by arithmetic without the derivation being written
    down.** Salt→sodium is the only likely case, and it is called out above as
    an open decision.
+6. **A lower bound is never presented as an exact figure.** A partly known
+   amount is written `200+ mg`, and its percentage is rounded **down** and
+   marked with a `+`, so the number shown is a true minimum. A fully known
+   amount keeps the ordinary rounding, so a United States user sees exactly
+   what they saw before.
+7. **The United States daily summary keeps its presentation.** It shows
+   amounts and reference bars, with no percentage text, because it never had
+   any. The food detail sheet, which did show a percentage, still does.
 
 ## 7. What is explicitly out of scope
 

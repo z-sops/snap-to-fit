@@ -79,15 +79,36 @@ disabled until the review below is done.
    kept for the United States, and a market without its own values is told
    so, with no percentage shown.
 
+### United States display compatibility
+
+The United States screens are compared against the accepted M2-0 baseline.
+
+| Screen | Before M2-1 | Now |
+|---|---|---|
+| Food screen, daily vitamins and minerals | amount and progress bar, **no percentage text** | **the same** — amount and progress bar, no percentage text |
+| Food screen, daily vitamins and minerals, a partly known value | `200 mg` | `200+ mg` — the plus is required by the lower-bound correction |
+| Food detail sheet, micronutrients | amount and percentage | **the same** — amount and percentage, with the same rounding |
+| Food screen, macro bars | amount, with a `+` on a lower bound | **the same** |
+
+The daily summary is **not** given percentage text, because it never had any.
+M2-1 had added percentages there; that was an unrequested presentation change
+and it has been removed, so the United States daily summary reads as it did
+before. The only difference in the United States is the `+` on a partly known
+value, which the lower-bound correction requires, and which the Home screen
+has used since M1.
+
+A screen test pins this: the United States daily rows carry no percentage,
+and the food detail sheet still does.
+
 ### What is implemented but disabled
 
 | Feature | State |
 |---|---|
-| The United States percentages | Enabled. Identical to today. |
+| The United States percentages | Enabled. Identical to today, except the `+` on a partly known value. |
 | The Canadian percentages | **Implemented and disabled.** The table is present and tested, but `ENABLED_MARKETS` does not include Canada. |
 | The United Kingdom percentages | **Implemented and disabled**, for the same reason. |
 | Any regional percentage for a market with no table | Shows an unavailable state, never a foreign number. |
-| The nutrient completeness contract | Unchanged and respected: an unknown value produces no percentage, and a partly known one is shown as a lower bound. |
+| The nutrient completeness contract | Unchanged and respected: an unknown value produces no percentage, and a partly known one is shown as a lower bound and its percentage is rounded **down** so the figure is a true minimum. |
 
 ### What is not implemented and not authorised
 
