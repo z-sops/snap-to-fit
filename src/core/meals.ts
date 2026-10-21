@@ -3,7 +3,7 @@
 // This is domain logic, not screen logic, so it lives here: the nutrient
 // completeness contract is then covered by the fast unit tests.
 import { calorieRange, scale, withAddedFat, nutrientKeys, type AddedFat, type Food } from "./foods";
-import type { Meal, MealSlotName } from "./model";
+import { numeric, type Meal, type MealSlotName } from "./model";
 
 export type NewMeal = Omit<Meal, "id" | "at">;
 
@@ -51,6 +51,47 @@ export function mealFromFood(
     range: calorieRange(calories, food.uncertainty + fatUncertainty),
     addedFat: fat,
     micros: microValues,
+    unknownNutrients: unknownNutrients.length ? unknownNutrients : undefined,
+  };
+}
+
+/**
+ * A meal typed in by hand.
+ *
+ * A field the user left empty was never reported, so it is recorded as
+ * unknown rather than as a measured zero. The calories are required, because
+ * a log with no calories at all is not a log.
+ */
+export function quickAddMeal(
+  input: { name: string; calories: string; protein: string; carbs: string; fat: string; fibre: string },
+  slot: MealSlotName,
+  photoUri?: string,
+): NewMeal {
+  const field = (raw: string, label: string) => {
+    const text = (raw || "").trim();
+    if (!text) return { value: 0, known: false };
+    return { value: numeric(text, 0, 500, label), known: true };
+  };
+  const protein = field(input.protein, "Protein");
+  const carbs = field(input.carbs, "Carbs");
+  const fat = field(input.fat, "Fat");
+  const fibre = field(input.fibre, "Fiber");
+  const unknownNutrients = [
+    ...(protein.known ? [] : ["protein"]),
+    ...(carbs.known ? [] : ["carbs"]),
+    ...(fat.known ? [] : ["fat"]),
+    ...(fibre.known ? [] : ["fibre"]),
+  ];
+  return {
+    name: input.name.trim() || "Quick add",
+    source: "quick",
+    slot,
+    photoUri,
+    calories: numeric(input.calories, 0, 5000, "Calories"),
+    protein: protein.value,
+    carbs: carbs.value,
+    fat: fat.value,
+    fibre: fibre.value,
     unknownNutrients: unknownNutrients.length ? unknownNutrients : undefined,
   };
 }

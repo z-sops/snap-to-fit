@@ -147,6 +147,8 @@ const TOTAL_LIMITS = {
   fat: 2000,
 } as const;
 type DailyTotals = { -readonly [K in keyof typeof TOTAL_LIMITS]: number };
+/** A total the client sent, and whether it is a confirmed figure or a lower bound. */
+export type VerifiedTotal = { value: number; complete: boolean };
 
 /**
  * Every call to the AI provider needs explicit consent from the account
@@ -173,18 +175,33 @@ function requireAIConsent(body: { aiConsent?: unknown }) {
 }
 
 /**
- * Validate the daily totals a client sends. Only allowlisted, finite,
- * in-range numbers survive; missing, negative, non-numeric and excessive
- * values are left out rather than passed on.
+ * Validate the daily totals a client sends.
+ *
+ * Each total has to say whether it is complete. A total that is not complete
+ * is a lower bound: some of the day's food did not report it. A nutrient the
+ * client did not send at all was never reported, so it is left out of the
+ * prompt rather than arriving as a zero. Only allowlisted, finite, in-range
+ * numbers survive; anything else is dropped.
  */
-export function validatedTotals(raw: unknown): Partial<DailyTotals> | undefined {
+export function validatedTotals(raw: unknown): Record<string, VerifiedTotal> | undefined {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
-  const out: Partial<DailyTotals> = {};
+  const out: Record<string, VerifiedTotal> = {};
   for (const key of Object.keys(TOTAL_LIMITS) as (keyof DailyTotals)[]) {
-    const value = (raw as Record<string, unknown>)[key];
-    if (typeof value !== "number" || !Number.isFinite(value)) continue;
-    if (value < 0 || value > TOTAL_LIMITS[key]) continue;
-    out[key] = Math.round(value * 10) / 10;
+    const entry = (raw as Record<string, unknown>)[key];
+    if (entry === undefined || entry === null) continue;
+    // A bare number comes from a client that cannot prove completeness, so it
+    // is treated as a lower bound rather than a confirmed total.
+    if (typeof entry === "number") {
+      if (!Number.isFinite(entry) || entry < 0 || entry > TOTAL_LIMITS[key]) continue;
+      out[key] = { value: Math.round(entry * 10) / 10, complete: false };
+      continue;
+    }
+    if (typeof entry !== "object") continue;
+    const e = entry as { value?: unknown; complete?: unknown };
+    if (typeof e.value !== "number" || !Number.isFinite(e.value)) continue;
+    if (e.value < 0 || e.value > TOTAL_LIMITS[key]) continue;
+    if (typeof e.complete !== "boolean") continue;
+    out[key] = { value: Math.round(e.value * 10) / 10, complete: e.complete };
   }
   return Object.keys(out).length ? out : undefined;
 }

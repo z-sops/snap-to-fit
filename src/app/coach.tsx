@@ -8,6 +8,7 @@ import { Screen, act, colors, soft } from "../components/ui";
 import { useStore } from "../services/store";
 import { api } from "../services/api";
 import { nutritionTargets, todayTotals } from "../core/nutrition";
+import { verifiedTotals } from "../core/food-log";
 import { urgentMessage, medicationRequest, restrictedHealthAdvice } from "../core/safety";
 import { uid, type Message } from "../core/model";
 import { emergencyInstruction, regionFor } from "../core/locale";
@@ -72,7 +73,10 @@ export default function Coach() {
             insulinSafety: usesInsulin(state)
               ? { types: state.medicines.filter((m) => m.kind === "insulin").map((m) => m.insulinType || "other"), recentLow: recentLow(state), notices: insulinNotices(state).map((n) => n.text) }
               : undefined,
-            totals: todayTotals(state.meals),
+            // Only a nutrient that is at least partly known is sent, and each
+            // one says whether it is a confirmed total or a lower bound. A
+            // nutrient nobody reported is left out rather than sent as zero.
+            totals: verifiedTotals(todayTotals(state.meals)),
           });
           answer = result.text;
         }

@@ -22,6 +22,29 @@ test("little food + planned workout warns about low glucose", () => {
   assert.ok(notices.some((n) => /Very little food/.test(n.text)));
 });
 
+test("a meal that never reported its carbohydrates still raises the warning", () => {
+  // The safety direction must not change: an incomplete log is treated as a
+  // small one, never the other way round.
+  const s = {
+    ...base,
+    meals: [
+      {
+        id: "m1",
+        at: now.toISOString(),
+        name: "Sandwich",
+        calories: 500,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        fibre: 0,
+        source: "quick" as const,
+        unknownNutrients: ["protein", "carbs", "fat", "fibre"],
+      },
+    ],
+  };
+  assert.ok(insulinNotices(s, { now }).some((n) => /Very little food/.test(n.text)));
+});
+
 test("rapid insulin in the last two hours before training is flagged", () => {
   const s = { ...base, doses: [{ id: "d", at: new Date(now.getTime() - 60 * 60_000).toISOString(), medicineId: "r", name: "Mealtime insulin", dose: "6 u", symptoms: "" }] };
   assert.ok(insulinNotices(s, { now, aboutToTrain: true }).some((n) => /Rapid-acting/.test(n.text)));

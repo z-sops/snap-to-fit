@@ -233,9 +233,9 @@ test("a meal is counted on the day the user actually ate it", () => {
     ];
     // 23:30 on 7 March locally is still the 7th, even though it is the 8th in UTC.
     const totalsFor7 = todayTotals(meals, new Date("2026-03-08T04:30:00Z"));
-    assert.equal(totalsFor7.calories, 500);
+    assert.equal(totalsFor7.totals.calories, 500);
     const totalsFor8 = todayTotals(meals, new Date("2026-03-08T12:00:00Z"));
-    assert.equal(totalsFor8.calories, 600);
+    assert.equal(totalsFor8.totals.calories, 600);
   });
 });
 

@@ -4,6 +4,7 @@
 // blood sugar more likely — little food logged, a workout, a recent low, rapid insulin just taken —
 // and remind the person to check their glucose and follow their own plan.
 import { localDay, type Medicine, type State } from "./model";
+import { nutrientTotals, nutrientValue } from "./food-log";
 
 export interface InsulinNotice { level: "urgent" | "caution" | "info"; text: string }
 
@@ -30,7 +31,12 @@ export function insulinNotices(
   const out: InsulinNotice[] = [];
   const plannedToday = s.mealPlan?.days.find((d) => d.date === today)?.training || (s.profile?.workoutDays || []).includes(now.getDay());
   const trainingSoon = opts.aboutToTrain || plannedToday;
-  const carbsToday = s.meals.filter((m) => localDay(m.at) === today).reduce((a, m) => a + (m.carbs || 0), 0);
+  // The day's carbohydrates through the shared completeness contract. A meal
+  // that never reported its carbohydrates counts as none, which keeps the
+  // notice conservative: an incomplete log may be treated as a small one, never
+  // the other way round. The safety behaviour is unchanged.
+  const dayMeals = s.meals.filter((m) => localDay(m.at) === today);
+  const carbsToday = nutrientValue(nutrientTotals(dayMeals), "carbs") ?? 0;
   const insulinIds = new Set(s.medicines.filter((m) => m.kind === "insulin").map((m) => m.id));
   const rapid = new Set(s.medicines.filter((m: Medicine) => m.kind === "insulin" && (m.insulinType === "rapid" || m.insulinType === "mixed")).map((m) => m.id));
   const rapidRecently = s.doses.some((d) => rapid.has(d.medicineId) && now.getTime() - new Date(d.at).getTime() < 2 * 3600_000);

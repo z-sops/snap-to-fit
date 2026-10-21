@@ -14,7 +14,7 @@ import {
   severityLabels, sideEffectAlerts, sideEffects, type InjectionSite, type SideEffectId,
 } from "../core/glp1";
 import { proteinGuidance } from "../core/targets";
-import { mealsOn } from "../core/food-log";
+import { mealsOn, nutrientTotals, nutrientValue } from "../core/food-log";
 import { uid, localDay, type Medicine } from "../core/model";
 
 const fmtDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(voiceLocale[activeLanguage()], { weekday: "short", month: "short", day: "numeric" });
@@ -42,8 +42,19 @@ export default function Glp1Companion() {
   const week = glp1Week(state);
   const protein = proteinGuidance(p);
   const last7 = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - i); return mealsOn(state.meals, d); });
-  const avgProtein = Math.round(last7.reduce((a, ms) => a + ms.reduce((x, m) => x + m.protein, 0), 0) / 7);
-  const avgFiber = Math.round(last7.reduce((a, ms) => a + ms.reduce((x, m) => x + m.fibre, 0), 0) / 7);
+  // The same completeness contract as everywhere else: a nutrient no food
+  // reported is unknown, not zero, and a partly reported week is a bound.
+  const weekTotals = last7.map((ms) => nutrientTotals(ms));
+  const proteinKnown = weekTotals.map((t) => nutrientValue(t, "protein"));
+  const fibreKnown = weekTotals.map((t) => nutrientValue(t, "fibre"));
+  const avgProtein = Math.round(
+    proteinKnown.reduce<number>((a, v) => a + (v ?? 0), 0) / 7,
+  );
+  const avgFiber = Math.round(
+    fibreKnown.reduce<number>((a, v) => a + (v ?? 0), 0) / 7,
+  );
+  const proteinComplete = proteinKnown.every((v) => v !== undefined);
+  const fibreComplete = fibreKnown.every((v) => v !== undefined);
   const strength = state.workouts.filter((w) => w.sets > 0 && new Date(w.at).getTime() > new Date().getTime() - 7 * 864e5);
   const strengthDays = new Set(strength.map((w) => localDay(w.at))).size;
   const weights = state.readings.filter((r) => r.kind === "weight").sort((a, b) => a.at.localeCompare(b.at)).slice(-20);
@@ -90,12 +101,12 @@ export default function Glp1Companion() {
         <Text style={s.h}>{tr("This week")}</Text>
         <View style={s.metric}>
           <Text style={s.metricLabel}>{tr("Protein (daily avg)")}</Text>
-          <Text style={s.metricValue}>{avgProtein} g{protein ? ` / ${protein.low}–${protein.high} g` : ""}</Text>
+          <Text style={s.metricValue}>{avgProtein}{proteinComplete ? "" : "+"} g{protein ? ` / ${protein.low}–${protein.high} g` : ""}</Text>
         </View>
         <Bar value={avgProtein} total={protein?.low || 100} color={palette.protein} />
         <View style={s.metric}>
           <Text style={s.metricLabel}>{tr("Fiber (daily avg)")}</Text>
-          <Text style={s.metricValue}>{avgFiber} / 28 g</Text>
+          <Text style={s.metricValue}>{avgFiber}{fibreComplete ? "" : "+"} / 28 g</Text>
         </View>
         <Bar value={avgFiber} total={28} color={palette.fiber} />
         <View style={s.metric}>

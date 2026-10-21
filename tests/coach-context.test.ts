@@ -104,19 +104,60 @@ test("consented totals reach the provider prompt itself", async () => {
     language: "en",
     aiConsent: true,
     profile,
-    totals: { calories: 1800, protein: 120, carbs: 200, fat: 60 },
+    totals: {
+      calories: { value: 1800, complete: true },
+      protein: { value: 120, complete: true },
+      carbs: { value: 200, complete: true },
+      fat: { value: 60, complete: true },
+    },
   });
   assert.equal(response.status, 200);
   const context = lastContext();
   assert.deepEqual(context.todayTotals, {
-    calories: 1800,
-    protein: 120,
-    carbs: 200,
-    fat: 60,
+    calories: { value: 1800, complete: true },
+    protein: { value: 120, complete: true },
+    carbs: { value: 200, complete: true },
+    fat: { value: 60, complete: true },
   });
   // The safety policy is still attached to the same request.
   const payload = JSON.parse(requests[requests.length - 1].body);
   assert.match(payload.systemInstruction.parts[0].text, /Never diagnose/);
+});
+
+test("a total that is not complete is passed on as a lower bound", async () => {
+  const response = await post({
+    question: "How am I doing against my targets today?",
+    aiConsent: true,
+    profile,
+    totals: {
+      calories: { value: 500, complete: true },
+      protein: { value: 0, complete: false },
+    },
+  });
+  assert.equal(response.status, 200);
+  const context = lastContext();
+  assert.deepEqual(context.todayTotals, {
+    calories: { value: 500, complete: true },
+    protein: { value: 0, complete: false },
+  });
+  // A nutrient nobody reported is not in the prompt at all.
+  assert.ok(!("carbs" in context.todayTotals));
+  assert.ok(!("fat" in context.todayTotals));
+});
+
+test("a bare number from a client that cannot prove completeness is a lower bound", async () => {
+  const response = await post({
+    question: "How am I doing against my targets today?",
+    aiConsent: true,
+    profile,
+    totals: { calories: 1800, protein: 120 },
+  });
+  assert.equal(response.status, 200);
+  const context = lastContext();
+  assert.deepEqual(context.todayTotals, {
+    calories: { value: 1800, complete: false },
+    protein: { value: 120, complete: false },
+  });
 });
 
 test("a request without totals sends none", async () => {
@@ -208,15 +249,30 @@ test("invalid and excessive values are dropped, valid ones survive", async () =>
     aiConsent: true,
     profile,
     totals: {
-      calories: 1800,
-      protein: 99999,
-      carbs: "200",
-      fat: 60,
+      calories: { value: 1800, complete: true },
+      protein: { value: 99999, complete: true },
+      carbs: { value: "200", complete: true },
+      fat: { value: 60, complete: true },
     },
   });
   assert.equal(response.status, 200);
   const context = lastContext();
-  assert.deepEqual(context.todayTotals, { calories: 1800, fat: 60 });
+  assert.deepEqual(context.todayTotals, {
+    calories: { value: 1800, complete: true },
+    fat: { value: 60, complete: true },
+  });
+});
+
+test("a total without a completeness flag is dropped", async () => {
+  const response = await post({
+    question: "How am I doing against my targets today?",
+    aiConsent: true,
+    profile,
+    totals: { calories: { value: 1800 }, fat: { value: 60, complete: "yes" } },
+  });
+  assert.equal(response.status, 200);
+  const context = lastContext();
+  assert.equal("todayTotals" in context, false);
 });
 
 test("a totals object with nothing usable sends no totals at all", async () => {

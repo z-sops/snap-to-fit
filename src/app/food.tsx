@@ -15,15 +15,21 @@ import { haptic } from "../services/feedback";
 import { foodReview } from "../core/food-review";
 import { effectiveProfile } from "../core/progress";
 import { nutritionTargets, validateMeal } from "../core/nutrition";
-import { bySlot, mealsOn, nutrientTotals, sumCalories } from "../core/food-log";
+import { bySlot, mealsOn, nutrientState, nutrientTotals, nutrientValue, sumCalories, type NutrientState } from "../core/food-log";
 import { foodById, nutrientInfo, type Food, type NutrientKey } from "../core/foods";
 import { loggedSourceDescriptions, loggedSourceOf } from "../core/food-sources";
+import { quickAddMeal } from "../core/meals";
 import type { PlannedMeal } from "../core/planning-types";
-import { uid, numeric, defaultSlot, localDay, mealSlotNames, type Meal, type MealSlotName } from "../core/model";
+import { uid, defaultSlot, localDay, mealSlotNames, nutrientUnknown, type Meal, type MealSlotName } from "../core/model";
 import { proteinGuidance } from "../core/targets";
 import { photoFood, type PhotoResult } from "../core/photo-estimate";
 
 type Flow = null | "search" | "barcode" | "detail" | "quick";
+
+/** A macro on a single meal, shown as unknown when the source never reported it. */
+function macroOnRecord(meal: Meal, key: "protein" | "carbs" | "fat") {
+  return nutrientUnknown(meal, key) ? "—" : Math.round(meal[key]);
+}
 
 export default function FoodScreen() {
   const tr = useT();
@@ -33,7 +39,8 @@ export default function FoodScreen() {
   const protein = proteinGuidance(p);
   const today = mealsOn(state.meals);
   const sections = bySlot(today);
-  const { totals, unknown, partial } = nutrientTotals(today);
+  const dayTotals = nutrientTotals(today);
+  const { totals, unknown, partial } = dayTotals;
   const [flow, setFlow] = useState<Flow>(null);
   const [slot, setSlot] = useState<MealSlotName>(defaultSlot());
   const [food, setFood] = useState<Food | null>(null);
@@ -122,7 +129,8 @@ export default function FoodScreen() {
     scan(true);
   }, [snap]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const eaten = Math.round(totals.calories || 0);
+  const caloriesKnown = nutrientValue(dayTotals, "calories");
+  const eaten = Math.round(caloriesKnown ?? 0);
   const left = targets.restricted ? null : targets.calories - eaten;
   const micros: NutrientKey[] = ["fibre", "sodium", "satFat", "sugar", "potassium", "calcium", "iron", "magnesium", "vitaminC", "vitaminD", "vitaminB12", "folate"];
 
@@ -132,7 +140,7 @@ export default function FoodScreen() {
         <View style={s.sumRow}>
           <View>
             <Text style={s.sumLabel}>{tr("Eaten today")}</Text>
-            <Text style={s.sumBig}>{eaten.toLocaleString()} <Text style={s.sumUnit}>kcal</Text></Text>
+            <Text style={s.sumBig}>{caloriesKnown === undefined ? tr("Not available") : eaten.toLocaleString()} {caloriesKnown === undefined ? "" : <Text style={s.sumUnit}>kcal</Text>}</Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={s.sumLabel}>{left === null ? tr("Calorie target") : left >= 0 ? tr("Left") : tr("Over")}</Text>
@@ -141,9 +149,9 @@ export default function FoodScreen() {
         </View>
         {left !== null ? <Bar value={eaten} total={targets.calories} color={left >= 0 ? "#6EA8FF" : palette.carbs} height={10} /> : null}
         <View style={s.macros}>
-          <MacroBarDark label="Protein" value={totals.protein || 0} total={targets.restricted ? protein?.low : targets.protein} color={palette.protein} />
-          <MacroBarDark label="Carbs" value={totals.carbs || 0} total={targets.restricted ? undefined : targets.carbs} color={palette.carbs} />
-          <MacroBarDark label="Fat" value={totals.fat || 0} total={targets.restricted ? undefined : targets.fat} color={palette.fat} />
+          <MacroBarDark label="Protein" value={nutrientValue(dayTotals, "protein")} state={nutrientState(dayTotals, "protein")} total={targets.restricted ? protein?.low : targets.protein} color={palette.protein} />
+          <MacroBarDark label="Carbs" value={nutrientValue(dayTotals, "carbs")} state={nutrientState(dayTotals, "carbs")} total={targets.restricted ? undefined : targets.carbs} color={palette.carbs} />
+          <MacroBarDark label="Fat" value={nutrientValue(dayTotals, "fat")} state={nutrientState(dayTotals, "fat")} total={targets.restricted ? undefined : targets.fat} color={palette.fat} />
         </View>
         {targets.restricted && protein ? (
           <Text style={s.sumNote}>Protein range {protein.low}–{protein.high} g/day to protect muscle — confirm with your doctor. Calorie targets stay with your care team.</Text>
@@ -181,11 +189,17 @@ export default function FoodScreen() {
 
       {mealSlotNames.map((m) => {
         const list = sections[m.id];
+        const slotTotals = nutrientTotals(list);
+        const slotCalories = nutrientValue(slotTotals, "calories");
         return (
           <Surface key={m.id}>
             <View style={s.slotHead}>
               <Text style={s.slotTitle}>{m.emoji}  {tr(m.label)}</Text>
-              <Text style={s.slotKcal}>{sumCalories(list)} kcal</Text>
+              <Text style={s.slotKcal}>
+                {slotCalories === undefined
+                  ? tr("Not available")
+                  : `${sumCalories(list)}${nutrientState(slotTotals, "calories") === "partial" ? "+" : ""} kcal`}
+              </Text>
               <Pressable accessibilityRole="button" accessibilityLabel={tr("Add to {slot}", { slot: tr(m.label) })} onPress={() => open(m.id, "search")} hitSlop={8} style={s.plus}>
                 <Ionicons name="add" size={22} color="#fff" />
               </Pressable>
@@ -214,7 +228,7 @@ export default function FoodScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={s.itemName} numberOfLines={1}>{tr(meal.name)}</Text>
                   <Text style={s.itemMeta} numberOfLines={1}>
-                    {meal.servingLabel ? `${meal.servings && meal.servings !== 1 ? `${meal.servings} × ` : ""}${meal.servingLabel} · ` : ""}P {Math.round(meal.protein)} · C {Math.round(meal.carbs)} · F {Math.round(meal.fat)}
+                    {meal.servingLabel ? `${meal.servings && meal.servings !== 1 ? `${meal.servings} × ` : ""}${meal.servingLabel} · ` : ""}P {macroOnRecord(meal, "protein")} · C {macroOnRecord(meal, "carbs")} · F {macroOnRecord(meal, "fat")}
                   </Text>
                   <Text style={s.itemSource} numberOfLines={1}>{tr(loggedSourceDescriptions[loggedSourceOf(meal)].label)}</Text>
                 </View>
@@ -266,13 +280,18 @@ export default function FoodScreen() {
   );
 }
 
-function MacroBarDark(props: { label: string; value: number; total?: number; color: string }) {
+function MacroBarDark(props: { label: string; value?: number; total?: number; color: string; state?: NutrientState }) {
   const tr = useT();
+  const known = props.value !== undefined;
+  const partial = props.state === "partial";
   return (
     <View style={{ flex: 1, gap: 6 }}>
       <Text style={s.darkLabel}>{tr(props.label)}</Text>
-      <Bar value={props.value} total={props.total || props.value || 1} color={props.color} />
-      <Text style={s.darkValue}>{Math.round(props.value)}<Text style={s.darkTotal}>{props.total ? ` / ${props.total}g` : "g"}</Text></Text>
+      <Bar value={known ? props.value! : 0} total={props.total || (known ? props.value! : 0) || 1} color={props.color} />
+      <Text style={s.darkValue}>
+        {known ? `${Math.round(props.value!)}${partial ? "+" : ""}` : tr("Not available")}
+        {known ? <Text style={s.darkTotal}>{props.total ? ` / ${props.total}g` : "g"}</Text> : null}
+      </Text>
     </View>
   );
 }
@@ -297,13 +316,11 @@ function QuickAdd({ visible, slot, onClose, onAdd, photoUri }: { visible: boolea
   return (
     <Sheet visible={visible} title="Quick add" onClose={onClose}
       footer={<PrimaryButton title="Save meal" icon="checkmark" onPress={() => act(async () => {
-        const meal: NewMeal = {
-          name: name.trim() || "Quick add", source: "quick", slot: where, photoUri,
-          calories: numeric(values.calories, 0, 5000, "Calories"), protein: numeric(values.protein || "0", 0, 500, "Protein"),
-          carbs: numeric(values.carbs || "0", 0, 500, "Carbs"), fat: numeric(values.fat || "0", 0, 500, "Fat"), fibre: numeric(values.fibre || "0", 0, 500, "Fiber"),
-          // A field the user left blank was never known, not measured as zero.
-          unknownNutrients: fields.filter(([k]) => !values[k].trim()).map(([k]) => k),
-        };
+        const meal = quickAddMeal(
+          { name, calories: values.calories, protein: values.protein, carbs: values.carbs, fat: values.fat, fibre: values.fibre },
+          where,
+          photoUri,
+        );
         onAdd(meal);
         setName(""); setValues({ calories: "", protein: "", carbs: "", fat: "", fibre: "" });
       })} />}>

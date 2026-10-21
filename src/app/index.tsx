@@ -14,6 +14,8 @@ import { ProgressRing, theme } from "../components/onboarding-ui";
 import { useStore, useOptionalStore } from "../services/store";
 import { effectiveProfile } from "../core/progress";
 import { nutritionTargets, todayTotals } from "../core/nutrition";
+import { nutrientState, nutrientValue, type NutrientState } from "../core/food-log";
+import { nutrientUnknown } from "../core/model";
 import { weeklySchedule } from "../core/schedule";
 import { localDay, type Meal } from "../core/model";
 import { formatTime, regionFor } from "../core/locale";
@@ -41,7 +43,13 @@ export default function Today() {
     });
   const targets = nutritionTargets(p);
   const selected = new Date(`${day}T12:00:00`);
-  const totals = todayTotals(state.meals, selected);
+  // One completeness contract for the whole app: a nutrient no food reported
+  // is unknown, not zero, and one only some food reported is a lower bound.
+  const dayTotals = todayTotals(state.meals, selected);
+  const caloriesState = nutrientState(dayTotals, "calories");
+  const proteinState = nutrientState(dayTotals, "protein");
+  const calories = nutrientValue(dayTotals, "calories");
+  const protein = nutrientValue(dayTotals, "protein");
   const isToday = day === localDay();
   const week = weeklySchedule(p, state.workouts, p.place, new Date());
   const todayPlan = week.find((d) => d.date === localDay());
@@ -49,7 +57,7 @@ export default function Today() {
     .filter((m) => localDay(m.at) === day)
     .sort((a, b) => b.at.localeCompare(a.at))
     .slice(0, 3);
-  const left = Math.round(targets.calories - totals.calories);
+  const left = calories === undefined ? null : Math.round(targets.calories - calories);
 
   const featured: Tile[] = [
     { href: "/medicines", title: "GLP-1 companion", detail: p.glp1 ? tr("{v0} · shots, side effects, protein", { v0: p.glp1.split(" (")[0] }) : "Ozempic, Wegovy, Mounjaro, Zepbound", icon: "medkit", tint: soft("#F3EDFF") },
@@ -85,7 +93,7 @@ export default function Today() {
         {targets.restricted ? (
           <View style={s.heroRow}>
             <ProgressRing size={150} stroke={14} progress={0} color={theme.brand}>
-              <Text style={s.heroNum}>{Math.round(totals.calories).toLocaleString()}</Text>
+              <Text style={s.heroNum}>{calories === undefined ? tr("Not available") : Math.round(calories).toLocaleString()}</Text>
               <Text style={s.heroUnit}>{tr("kcal eaten")}</Text>
             </ProgressRing>
             <View style={{ flex: 1 }}>
@@ -95,29 +103,32 @@ export default function Today() {
           </View>
         ) : (
           <View style={s.heroRow}>
-            <ProgressRing size={150} stroke={14} progress={totals.calories / targets.calories} color={left < 0 ? theme.protein : theme.brand}>
-              <Text style={s.heroNum}>{Math.abs(left).toLocaleString()}</Text>
-              <Text style={s.heroUnit}>{tr(left < 0 ? "kcal over" : "kcal left")}</Text>
+            <ProgressRing size={150} stroke={14} progress={left === null ? 0 : Math.max(0, left) / targets.calories} color={left !== null && left < 0 ? theme.protein : theme.brand}>
+              <Text style={s.heroNum}>{left === null ? tr("Not available") : Math.abs(left).toLocaleString()}</Text>
+              <Text style={s.heroUnit}>{left === null ? tr("calories not reported") : tr(left < 0 ? "kcal over" : "kcal left")}</Text>
             </ProgressRing>
             <View style={{ flex: 1, gap: 12 }}>
-              <Stat label="Eaten" value={`${Math.round(totals.calories).toLocaleString()} kcal`} />
+              <Stat label="Eaten" value={calories === undefined ? tr("Not available") : `${Math.round(calories).toLocaleString()} kcal`} />
               <Stat label="Daily estimate" value={`${targets.calories.toLocaleString()} kcal`} />
             </View>
           </View>
         )}
         <View style={s.macros}>
-          <MacroRing label="Protein" eaten={totals.protein} target={targets.restricted ? 0 : targets.protein} color={theme.protein} />
-          <MacroRing label="Carbs" eaten={totals.carbs} target={targets.restricted ? 0 : targets.carbs} color={theme.carbs} />
-          <MacroRing label="Fat" eaten={totals.fat} target={targets.restricted ? 0 : targets.fat} color={theme.fat} />
+          <MacroRing label="Protein" eaten={nutrientValue(dayTotals, "protein")} state={proteinState} target={targets.restricted ? 0 : targets.protein} color={theme.protein} />
+          <MacroRing label="Carbs" eaten={nutrientValue(dayTotals, "carbs")} state={nutrientState(dayTotals, "carbs")} target={targets.restricted ? 0 : targets.carbs} color={theme.carbs} />
+          <MacroRing label="Fat" eaten={nutrientValue(dayTotals, "fat")} state={nutrientState(dayTotals, "fat")} target={targets.restricted ? 0 : targets.fat} color={theme.fat} />
         </View>
+        {caloriesState === "partial" || proteinState === "partial" ? (
+          <Text style={s.heroText}>{tr("Some foods did not report every value, so those numbers are lower bounds and may be higher.")}</Text>
+        ) : null}
       </View>
 
-      {isToday && pTarget > 0 && totals.protein >= pTarget ? (
+      {isToday && pTarget > 0 && protein !== undefined && protein >= pTarget ? (
         <View style={s.win} accessibilityRole="alert">
           <Text style={s.winEmoji}>🎉</Text>
           <View style={{ flex: 1 }}>
             <Text style={s.winTitle}>{tr("Protein goal reached!")}</Text>
-            <Text style={s.winText}>{Math.round(totals.protein)} g today — that’s how you keep muscle while you get lean.</Text>
+            <Text style={s.winText}>{Math.round(protein)} g today — that’s how you keep muscle while you get lean.</Text>
           </View>
         </View>
       ) : null}
@@ -151,11 +162,14 @@ export default function Today() {
         <View style={s.reportHead}>
           <View style={{ flex: 1 }}>
             <Text style={s.cardKicker}>{tr("This week")}</Text>
-            <Text style={s.cardTitle}>{report.daysLogged ? tr("{v0} kcal · {avgProtein} g protein avg", { v0: report.avgCalories.toLocaleString(), avgProtein: report.avgProtein }) : tr("Your weekly report starts today")}</Text>
+            <Text style={s.cardTitle}>{report.daysLogged ? tr("{v0} kcal · {avgProtein} g protein avg", { v0: report.avgCalories === null ? tr("Not available") : `${report.avgCalories.toLocaleString()}${report.caloriesComplete ? "" : "+"}`, avgProtein: report.avgProtein === null ? tr("Not available") : `${report.avgProtein}${report.proteinComplete ? "" : "+"}` }) : tr("Your weekly report starts today")}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={theme.muted} />
         </View>
-        <WeekBars values={report.days.map((d) => d.calories)} labels={report.days.map((d) => d.label)} target={report.calorieTarget} />
+        <WeekBars values={report.days.map((d) => d.calories ?? 0)} labels={report.days.map((d) => d.label)} target={report.calorieTarget} />
+        {!report.caloriesComplete || !report.proteinComplete ? (
+          <Text style={s.cardText}>{tr("Some days did not report every value, so those averages are lower bounds and may be higher.")}</Text>
+        ) : null}
         <Text style={s.cardText}>{tr(report.highlights[0]) || tr("Log meals for a few days to see your trends.")}</Text>
       </Pressable>
 
@@ -271,25 +285,38 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function MacroRing({ label, eaten, target, color }: { label: string; eaten: number; target: number; color: string }) {
+function MacroRing({ label, eaten, target, color, state }: { label: string; eaten?: number; target: number; color: string; state: NutrientState }) {
   const tr = useT();
+  const known = eaten !== undefined;
   return (
     <View style={s.macro}>
-      <ProgressRing size={66} stroke={7} progress={target ? eaten / target : 0} color={color}>
-        <Text style={s.macroNum}>{Math.round(eaten)}g</Text>
+      <ProgressRing size={66} stroke={7} progress={target && known ? eaten / target : 0} color={color}>
+        <Text style={s.macroNum}>{known ? `${Math.round(eaten)}${state === "partial" ? "+" : ""}g` : "—"}</Text>
       </ProgressRing>
       <Text style={s.macroLabel}>{tr(label)}</Text>
-      <Text style={s.macroSub}>{target ? tr("{n}g left", { n: Math.max(0, Math.round(target - eaten)) }) : tr("logged")}</Text>
+      <Text style={s.macroSub}>
+        {!known
+          ? tr("not available")
+          : state === "partial"
+            ? tr("at least")
+            : target
+              ? tr("{n}g left", { n: Math.max(0, Math.round(target - eaten)) })
+              : tr("logged")}
+      </Text>
     </View>
   );
+}
+
+/** A macro on a single meal, shown as unknown when the source never reported it. */
+function macroOnRecord(meal: Meal, key: string) {
+  return nutrientUnknown(meal, key) ? "—" : Math.round(meal[key as "protein" | "carbs" | "fat"]);
 }
 
 function MealRow({ meal }: { meal: Meal }) {
   const tr = useT();
   const time = formatTime(meal.at, regionFor(useOptionalStore()?.state.profile?.country));
   const source = loggedSourceOf(meal);
-  const icon = source === "photo" ? "camera" : source === "barcode" ? "barcode" : source === "recipe" ? "restaurant" : source === "manual" ? "flash" : "leaf";
-  return (
+  const icon = source === "photo" ? "camera" : source === "barcode" ? "barcode" : source === "recipe" ? "restaurant" : source === "manual" ? "flash" : "leaf";  return (
     <View style={s.mealRow}>
       <View style={[s.tileIcon, { backgroundColor: soft("#FFF1E6") }]}>
         <Ionicons name={icon as never} size={20} color={theme.ink} />
@@ -297,9 +324,9 @@ function MealRow({ meal }: { meal: Meal }) {
       <View style={{ flex: 1 }}>
         <Text style={s.mealName} numberOfLines={1}>{tr(meal.name)}</Text>
         <View style={s.chips}>
-          <Chip text={`P ${Math.round(meal.protein)}g`} color={theme.protein} />
-          <Chip text={`C ${Math.round(meal.carbs)}g`} color={theme.carbs} />
-          <Chip text={`F ${Math.round(meal.fat)}g`} color={theme.fat} />
+          <Chip text={`P ${macroOnRecord(meal, "protein")}g`} color={theme.protein} />
+          <Chip text={`C ${macroOnRecord(meal, "carbs")}g`} color={theme.carbs} />
+          <Chip text={`F ${macroOnRecord(meal, "fat")}g`} color={theme.fat} />
         </View>
       </View>
       <View style={{ alignItems: "flex-end" }}>

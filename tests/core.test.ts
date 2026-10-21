@@ -93,7 +93,7 @@ test("totals use local calendar date and exclude yesterday", () => {
         { ...base, id: "y", at: prev.toISOString() },
       ],
       at,
-    ).calories,
+    ).totals.calories,
     165,
   );
   assert.equal(localDay(at), "2026-10-06");

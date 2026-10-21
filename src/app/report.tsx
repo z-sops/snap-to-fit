@@ -29,23 +29,25 @@ export default function Report() {
 
       <View style={s.row}>
         <StatTile label="Days logged" value={`${r.daysLogged}/7`} />
-        <StatTile label="Avg calories" value={r.avgCalories.toLocaleString()} unit="kcal" />
+        <StatTile label="Avg calories" value={r.avgCalories === null ? tr("Not available") : `${r.avgCalories.toLocaleString()}${r.caloriesComplete ? "" : "+"}`} unit={r.avgCalories === null ? undefined : "kcal"} />
       </View>
       <View style={s.row}>
-        <StatTile label="Avg protein" value={r.avgProtein} unit="g" color={palette.protein} />
+        <StatTile label="Avg protein" value={r.avgProtein === null ? tr("Not available") : `${r.avgProtein}${r.proteinComplete ? "" : "+"}`} unit={r.avgProtein === null ? undefined : "g"} color={palette.protein} />
         <StatTile label="Workouts" value={r.workouts} color={palette.brand} />
       </View>
 
       <Surface>
         <Text style={s.h}>{tr("Calories")}</Text>
-        <WeekBars values={r.days.map((d) => d.calories)} labels={r.days.map((d) => d.label)} target={r.calorieTarget} />
+        <WeekBars values={r.days.map((d) => d.calories ?? 0)} labels={r.days.map((d) => d.label)} target={r.calorieTarget} />
         <Text style={s.p}>{r.calorieTarget ? tr("Dashed line: your {v0} kcal daily estimate. Amber bars ran more than 5% over.", { v0: r.calorieTarget.toLocaleString() }) : tr("Your care team sets your calorie target.")}</Text>
+        {!r.caloriesComplete ? <Text style={s.p}>{tr("Some days did not report every value, so those averages are lower bounds and may be higher.")}</Text> : null}
       </Surface>
 
       <Surface>
         <Text style={s.h}>{tr("Protein")}</Text>
-        <WeekBars values={r.days.map((d) => d.protein)} labels={r.days.map((d) => d.label)} target={r.proteinTarget || null} color={palette.protein} />
+        <WeekBars values={r.days.map((d) => d.protein ?? 0)} labels={r.days.map((d) => d.label)} target={r.proteinTarget || null} color={palette.protein} />
         <Text style={s.p}>{r.proteinTarget ? tr("Goal reached on {proteinDays} of 7 days (target {proteinTarget} g).", { proteinDays: r.proteinDays, proteinTarget: r.proteinTarget }) : tr("Log meals to see your protein trend.")}</Text>
+        {!r.proteinComplete ? <Text style={s.p}>{tr("Some days did not report every value, so those averages are lower bounds and may be higher.")}</Text> : null}
       </Surface>
 
       <Surface>
