@@ -70,6 +70,8 @@
     "lint": "expo lint",
     "test": "node --import tsx --test tests/*.test.ts",
     "movement": "node scripts/build-movement.mjs",
+    "aliases:build": "node --import tsx scripts/build-ingredient-aliases.ts",
+    "aliases:golden": "node --import tsx scripts/build-ingredient-alias-golden.ts",
     "data:verify": "node --import tsx pipeline/cli.ts verify",
     "data:fetch": "node --import tsx pipeline/cli.ts fetch",
     "data:build": "node --import tsx pipeline/cli.ts build",
