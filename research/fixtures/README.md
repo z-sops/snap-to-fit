@@ -1,0 +1,51 @@
+# Research fixtures (M2-0)
+
+**These files are research inputs for the M2 data-governance work. They are not
+imported by the shipping app and are not part of any bundle.**
+
+Nothing in this directory is referenced from `src/` or `server/`. The Expo
+bundler only walks the import graph from the entry point, so these files cannot
+reach a device build.
+
+## Contents
+
+| File | Origin | Licence | SHA-256 | Rows |
+|---|---|---|---|---|
+| `cnf-2026-nutrient-source.csv` | Health Canada, Canadian Nutrient File 2026 | Open Government Licence – Canada | `4ac902cf2893107f4e41edc0c9d232503d68762d542fee808364f0bb7347312e` | 22 |
+| `cnf-2026-food-source.csv` | Health Canada, Canadian Nutrient File 2026 | Open Government Licence – Canada | `03aef914ac6cdc98f0b819cfd5bc51a392ecb9d9ac12972e285294a660117aec` | 18 |
+| `cnf-2026-nutrient-name.csv` | Health Canada, Canadian Nutrient File 2026 | Open Government Licence – Canada | `708a942fc8a6a4913b106cd964f4f3b116845ec72942a936477241be8889f785` | 173 |
+| `cnf-2026-food-group.csv` | Health Canada, Canadian Nutrient File 2026 | Open Government Licence – Canada | `468e10d666551f90c37ab8e8e149dbbc7a76fc0215f74530b8d43fd1eacfe4bb` | 23 |
+| `cnf-2026-nutrient-amount.synthetic.csv` | **Synthetic.** Written for this repository. | Project code | n/a | 14 |
+| `cofid-2021-sentinels.synthetic.csv` | **Synthetic.** Written for this repository. No CoFID data is reproduced. | Project code | n/a | 9 |
+
+## Why the CNF tables are real and the CoFID file is not
+
+The Canadian Nutrient File is published by Health Canada under the **Open
+Government Licence – Canada**, which permits use, reproduction and redistribution
+including commercial use, provided the source is acknowledged. These four files
+are small reference tables (a code list, a food-group list, a nutrient-name
+list) and are reproduced here with attribution so the normalisation rules can
+be written against the authoritative 2026 release.
+
+The UK CoFID material is **not** reproduced, in any form, because its
+commercial-use terms are unresolved — see `docs/m2/UK_LICENCE_QUESTION.md`. The
+CoFID fixture is synthetic: it contains invented rows that illustrate the
+**documented sentinel values** (`N`, `Tr`, bracketed estimates) so the parsing
+rules can be tested without touching the dataset.
+
+## Provenance of the CNF 2026 release
+
+- Publisher: Health Canada, Government of Canada
+- Dataset: Canadian Nutrient File, 2026
+- Dataset record: <https://open.canada.ca/data/en/dataset/1b6139bd-ed7e-4043-bc28-ff00e10f3109>
+- Landing page: <https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/nutrient-data/canadian-nutrient-file-about-us.html>
+- Retrieved: 2026-10-21
+- Download used: `cnf_fcen_all-files-data_2026.zip`
+  - SHA-256 `f5faad8977ee6bbdd9d69c8649077cacd87d8658ad200509a4047db1e29edcdd`, 26,656,195 bytes
+  - Contains the nine relational CSVs and the users' guide and database-structure PDFs
+- Citation: Health Canada. 2026. Canadian Nutrient File. Ottawa, Health Canada.
+
+**Authorisation note.** The large tables (`Nutrient_Amount.csv`, 21.1 MB;
+`Food_Name.csv`, 1.0 MB; `Measure_Weight_Conversion.csv`, 0.8 MB) are **not**
+committed. They are downloaded on demand by the verification script and their
+checksums are recorded in the source manifest.
