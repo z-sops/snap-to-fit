@@ -165,7 +165,10 @@ canonical keys, plus the evidence for each one:
 - **The inedible part is kept, not dropped.** A refuse measure is not a
   portion, so it is never a serving, but it travels with the record: the
   nutrient values are per 100 g of the *edible* part, and the difference
-  between the two is exactly what a refuse measure says.
+  between the two is exactly what a refuse measure says. A published zero
+  refuse is a **known zero** — the publisher says the food has no inedible
+  part — and it is not the same as the publisher saying nothing at all. A
+  refuse share outside the range a share can take is refused and reported.
 - **A documented zero is only a zero when the source says so.** The code `12`
   means "assumed zero" in the Canadian file. When such a row's amount is
   `0`, it is a documented zero. When it is not `0`, the row contradicts itself,
@@ -238,9 +241,9 @@ States and Canadian sources:
 
 | | bytes | gzip | parsed at start-up | heap |
 | --- | --- | --- | --- | --- |
-| A, one merged catalogue | 40.4 MB | 1.69 MB | 40.4 MB, ~344 ms | 134 MB |
-| B, one catalogue per market | 40.4 MB | 1.69 MB | the market in use: 22.6 MB (US) or 17.7 MB (CA), ~189 ms | 45 MB (US), 57 MB (CA) |
-| C, a search index and a separate detail store | 37.5 MB | 1.55 MB | the index only: 925 KB, ~13 ms | 3 MB |
+| A, one merged catalogue | 40.6 MB | 1.70 MB | 40.6 MB, ~361 ms | 135 MB |
+| B, one catalogue per market | 40.6 MB | 1.70 MB | the market in use: 22.6 MB (US) or 17.7 MB (CA), ~172 ms | 45 MB (US), 57 MB (CA) |
+| C, a search index and a separate detail store | 37.5 MB | 1.55 MB | the index only: 925 KB, ~11 ms | 3 MB |
 
 A lookup costs 0.10 to 0.24 microseconds in all three, so the choice is about
 start-up cost and memory, not about speed.

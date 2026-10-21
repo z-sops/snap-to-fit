@@ -99,6 +99,10 @@ export interface PipelineFood {
    * is the inedible material from the cooked state. A value of 11 therefore
    * means eleven parts per hundred of the food as purchased.
    *
+   * A published zero is a **known zero**: the publisher states that the food
+   * has no inedible part. It is not the same as the publisher saying nothing,
+   * which is the absence of this property altogether.
+   *
    * These are not servings. The nutrient values are per 100 g of the *edible*
    * part, so a measure of the food and its refuse are two different things.
    */

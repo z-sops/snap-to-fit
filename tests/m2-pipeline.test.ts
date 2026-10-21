@@ -6,7 +6,7 @@ import path from "node:path";
 import { buildDataset, serialise, writeBuild, SCHEMA_VERSION, type BuildInput } from "../pipeline/build/build";
 import { lintDataset, summariseFindings } from "../pipeline/build/lint";
 import { readUsda, shippedUsdaPath } from "../pipeline/adapters/usda";
-import { readCnf, measureWeightGrams } from "../pipeline/adapters/cnf";
+import { readCnf, measureWeightGrams, refuseShare } from "../pipeline/adapters/cnf";
 import { cell, readCsv } from "../pipeline/adapters/csv";
 import { CANONICAL_NUTRIENT_KEYS, CNF_SOURCE_QUALITY, CNF_TAG_BY_APP_KEY } from "../pipeline/adapters/nutrients";
 import { mayUse, readManifest, sha256, verifyFile, verifyInputs } from "../pipeline/fetch";
@@ -407,6 +407,59 @@ test("an unusable portion conversion never becomes a serving", () => {
   // The published share, as the release states it: eleven parts per hundred
   // of the apple as purchased.
   assert.ok(total!.per100 > 0 && total!.per100 <= 100);
+});
+
+test("a published zero refuse is a known zero, and is not the same as no refuse data", () => {
+  // Food 1700, unsweetened applesauce, has no inedible part, and the
+  // publisher says so: the total refuse is published as zero. A zero is a
+  // known zero, and it is not the same as the publisher saying nothing.
+  const applesauce = cnfDataset.foods.find((f) => f.id === "cnf:1700");
+  assert.ok(applesauce, "the fixture has no applesauce");
+  assert.ok(applesauce!.refuse?.length, "the published zero refuse was dropped");
+  const zero = applesauce!.refuse!.find((r) => r.label === "total refuse");
+  assert.ok(zero, "the total refuse of the applesauce is missing");
+  assert.equal(zero!.per100, 0);
+
+  // The two are distinguished: a food with a published zero refuse has the
+  // property, and a food the publisher said nothing about does not.
+  const apple = cnfDataset.foods.find((f) => f.id === "cnf:7215");
+  assert.ok(apple);
+  assert.notEqual(apple!.refuse?.find((r) => r.label === "total refuse")?.per100, 0);
+  const withoutRefuse = cnfDataset.foods.filter((f) => f.refuse === undefined);
+  for (const food of withoutRefuse) {
+    // Nothing is said about the inedible part of this food, which is not the
+    // same as saying it has none.
+    assert.equal(food.refuse, undefined);
+  }
+
+  // A refuse share is a share: it can be zero, and it cannot be negative or
+  // more than the whole food.
+  for (const published of [undefined, "", "   ", "-1", "101", "100.5", "not a number", "NaN", "Infinity"])
+    assert.equal(refuseShare(published), undefined, `${String(published)} became a refuse share`);
+  assert.equal(refuseShare("0"), 0);
+  assert.equal(refuseShare("11"), 11);
+  assert.equal(refuseShare("100"), 100);
+
+  // And no record carries a refuse share that is not a share.
+  for (const food of cnfDataset.foods)
+    for (const entry of food.refuse ?? []) {
+      assert.ok(entry.per100 >= 0 && entry.per100 <= 100, `${food.id} ${entry.label} is ${entry.per100}`);
+    }
+});
+
+test("a zero weight is still not a serving", () => {
+  // The refuse and the servings have separate rules, and the serving rule is
+  // unchanged: a weight of nothing is not a portion.
+  assert.equal(measureWeightGrams("0"), undefined);
+  assert.equal(measureWeightGrams("0.0"), undefined);
+  assert.equal(measureWeightGrams("-5"), undefined);
+  assert.equal(measureWeightGrams("167"), 167);
+
+  for (const food of cnfDataset.foods)
+    for (const serving of food.servings) {
+      assert.ok(serving.grams > 0, `${food.id} ${serving.label} weighs nothing`);
+      assert.equal(serving.grams, measureWeightGrams(String(serving.grams)));
+    }
 });
 /**
  * A source folder on disk, with the manifest pins for what is in it.

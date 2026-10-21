@@ -74,6 +74,32 @@ export function measureWeightGrams(published: string | undefined): number | unde
   return grams;
 }
 
+/**
+ * The share of a food that is inedible, from a published refuse measure.
+ *
+ * A refuse measure is not a portion of food, so it is not a weight and it is
+ * not held to the same rule as one. The release expresses it as a share of
+ * the food as purchased: for raw meats the items are raw as purchased, and
+ * for cooked meats the refuse is the inedible material from the cooked state.
+ * A value of 11 therefore means eleven parts per hundred of the food as
+ * purchased.
+ *
+ * **A published zero is a known zero.** The publisher states that the food
+ * has no inedible part, which is different from the publisher not saying
+ * anything at all, so a zero is kept. It is also different from a serving of
+ * no weight, which is not a serving and never becomes one.
+ *
+ * A share outside the range a share can take is not a share, and is refused.
+ */
+export function refuseShare(published: string | undefined): number | undefined {
+  if (published === undefined) return undefined;
+  const text = published.trim();
+  if (!text) return undefined;
+  const share = Number(text);
+  if (!Number.isFinite(share) || share < 0 || share > 100) return undefined;
+  return share;
+}
+
 export function readCnf(input: CnfInput): { foods: PipelineFood[]; findings: Finding[] } {
   const findings: Finding[] = [];
   const dir = input.dir;
@@ -164,19 +190,33 @@ export function readCnf(input: CnfInput): { foods: PipelineFood[]; findings: Fin
       const measure = cell(row, table.index, "Measure_Code");
       const published = cell(row, table.index, "Measure_Weight_Conversion");
       if (!foodCode || !measure) continue;
-      // The published value is the weight of the measure, in grams.
-      const grams = measureWeightGrams(published);
-      if (grams === undefined) continue;
       const label = measureNames.get(measure) ?? measure;
+
       if (type === "3") {
         // A refuse measure is the inedible part of the food, not a portion of
         // it, so it is never a serving. It is kept, because the nutrient
         // values are per 100 g of the edible part and the difference matters.
+        // Its own rule: a published zero is a known zero, and a share outside
+        // the range a share can take is not a share.
+        const share = refuseShare(published);
+        if (share === undefined) {
+          findings.push({
+            kind: "malformed-record",
+            id: `cnf:${foodCode}`,
+            detail: `the refuse measure ${label} has a value that is not a share of the food: ${published ?? "nothing"}`,
+          });
+          continue;
+        }
         const list = refuseByFood.get(foodCode) ?? [];
-        if (!list.some((r) => r.label === label)) list.push({ label, per100: grams });
+        if (!list.some((r) => r.label === label)) list.push({ label, per100: share });
         refuseByFood.set(foodCode, list);
         continue;
       }
+
+      // The published value is the weight of the measure, in grams. A weight
+      // of nothing is not a portion.
+      const grams = measureWeightGrams(published);
+      if (grams === undefined) continue;
       const list = servingsByFood.get(foodCode) ?? [];
       if (!list.some((s) => s.label === label)) list.push({ label, grams });
       servingsByFood.set(foodCode, list);

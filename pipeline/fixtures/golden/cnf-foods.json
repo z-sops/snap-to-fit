@@ -156,6 +156,12 @@
      "observations": 2
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:28145210"
@@ -333,6 +339,12 @@
      "observations": 2
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:01163"
@@ -512,6 +524,12 @@
      "observations": 1
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:01168"
@@ -694,6 +712,12 @@
      "observations": 5
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:01019"
@@ -877,6 +901,12 @@
      "observations": 4
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:01022"
@@ -1052,6 +1082,12 @@
      "observations": 0
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:06449"
@@ -1225,6 +1261,12 @@
      "observations": 7
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:01088"
@@ -1624,6 +1666,12 @@
      "observations": 0
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:09152"
@@ -1811,6 +1859,12 @@
      "observations": 0
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:09019"
@@ -2381,7 +2435,13 @@
      "observations": 0,
      "standardError": 0
     }
-   }
+   },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ]
   },
   {
    "id": "cnf:4",
@@ -2551,7 +2611,13 @@
      "observations": 0,
      "standardError": 0
     }
-   }
+   },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ]
   },
   {
    "id": "cnf:5",
@@ -2734,6 +2800,12 @@
      "observations": 0
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:36623"
@@ -3055,7 +3127,13 @@
      "observations": 0,
      "standardError": 0
     }
-   }
+   },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ]
   },
   {
    "id": "cnf:7",
@@ -3228,7 +3306,13 @@
      "observations": 3,
      "standardError": 0.1969
     }
-   }
+   },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ]
   },
   {
    "id": "cnf:7215",
@@ -3565,7 +3649,13 @@
      "sourceDescription": "Nutrient analyzed in a Canadian government lab",
      "observations": 1
     }
-   }
+   },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ]
   },
   {
    "id": "cnf:8",
@@ -3737,7 +3827,13 @@
      "sourceDescription": "Nutrient analyzed in a Canadian government lab",
      "observations": 3
     }
-   }
+   },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ]
   },
   {
    "id": "cnf:9",
@@ -3863,7 +3959,13 @@
      "observations": 0,
      "standardError": 0
     }
-   }
+   },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 0
+    }
+   ]
   }
  ],
  "findings": [

@@ -12,42 +12,42 @@
   "architectures": [
     {
       "architecture": "A-merged",
-      "uncompressed_bytes": 40401261,
-      "compressed_bytes": 1702455,
-      "startup_bytes": 40401261,
+      "uncompressed_bytes": 40622913,
+      "compressed_bytes": 1705902,
+      "startup_bytes": 40622913,
       "search_index_bytes": 0,
       "detail_bytes": 0,
-      "startup_parse_ms": 343.861,
-      "lookup_ms": 5.614,
-      "lookup_us": 0.2807,
-      "memory_mb": 134.134,
+      "startup_parse_ms": 360.572,
+      "lookup_ms": 3.253,
+      "lookup_us": 0.1626,
+      "memory_mb": 135.275,
       "records": 14250
     },
     {
       "architecture": "B-per-market",
-      "uncompressed_bytes": 40401291,
-      "compressed_bytes": 1702133,
+      "uncompressed_bytes": 40622943,
+      "compressed_bytes": 1705367,
       "startup_bytes": 22555769,
       "search_index_bytes": 0,
       "detail_bytes": 0,
-      "startup_parse_ms": 188.982,
-      "lookup_ms": 2.81,
-      "lookup_us": 0.1405,
-      "memory_mb": 44.578,
+      "startup_parse_ms": 171.561,
+      "lookup_ms": 2.637,
+      "lookup_us": 0.1318,
+      "memory_mb": 44.806,
       "records": 14250,
       "per_market": [
         {
           "region": "CA",
-          "bytes": 17845522,
-          "compressed_bytes": 980281,
-          "parse_ms": 170.108,
-          "memory_mb": 57.345
+          "bytes": 18067174,
+          "compressed_bytes": 983515,
+          "parse_ms": 164.577,
+          "memory_mb": 58.873
         },
         {
           "region": "US",
           "bytes": 22555769,
           "compressed_bytes": 721852,
-          "parse_ms": 173.952,
+          "parse_ms": 168.426,
           "memory_mb": 44.806
         }
       ]
@@ -59,10 +59,10 @@
       "startup_bytes": 925044,
       "search_index_bytes": 925044,
       "detail_bytes": 36502093,
-      "startup_parse_ms": 12.557,
-      "lookup_ms": 3.231,
-      "lookup_us": 0.1616,
-      "memory_mb": 2.512,
+      "startup_parse_ms": 10.623,
+      "lookup_ms": 2.191,
+      "lookup_us": 0.1096,
+      "memory_mb": 2.961,
       "records": 14250
     }
   ],
