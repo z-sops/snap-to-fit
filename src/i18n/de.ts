@@ -1437,6 +1437,11 @@ export const de: Record<string, string> = {
   "Dumbbell and barbell weights are a separate choice from the units you read your body weight in. Loads are never entered in stone, so a number always means one thing.": "Hantel- und Stangen Gewichte werden getrennt von den Einheiten gewählt, in denen du dein Körpergewicht liest. Gewichte werden nie in Stone eingegeben, damit eine Zahl immer genau eine Sache bedeutet.",
   "Use this for a package label or a restaurant menu that lists calories. Leave a field empty if the label does not say it, so it is not counted as zero.": "Nutze das für ein Produktetikett oder eine Speisekarte mit Kalorienangaben. Lass ein Feld leer, wenn das Etikett es nicht nennt, damit es nicht als null gezählt wird.",
   "Some nutrients were not reported by every food, so those totals are lower bounds rather than confirmed values.": "Manche Nährstoffe wurden nicht von jedem Lebensmittel angegeben, diese Summen sind also Untergrenzen und keine bestätigten Werte.",
+  // M2-1: regional labelling reference values.
+  "Labelling reference values are not available for your market yet, so no percentage is shown.": "Referenzwerte für die Kennzeichnung sind für deinen Markt noch nicht verfügbar, daher wird kein Prozentwert angezeigt.",
+  "A + means some food did not report that value, so the figure is a lower bound and may be higher.": "Ein + bedeutet, dass ein Lebensmittel diesen Wert nicht angegeben hat: die Zahl ist also eine Untergrenze und kann höher sein.",
+  "Sodium, potassium, calcium, iron, vitamins C, D, B12 and more.": "Natrium, Kalium, Calcium, Eisen, Vitamine C, D, B12 und mehr.",
+  "Today’s fiber, sodium, potassium, iron, vitamins and more. Foods from search and barcode carry full nutrients; quick adds don’t.": "Ballaststoffe, Natrium, Kalium, Eisen, Vitamine und mehr von heute. Lebensmittel aus Suche und Barcode enthalten alle Nährstoffe, Schnelleinträge nicht.",
   // M1 integration correction: unknown and partly known nutrition values.
   "not available": "nicht verfügbar",
   "at least": "mindestens",

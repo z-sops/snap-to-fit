@@ -16,6 +16,7 @@ import { foodReview } from "../core/food-review";
 import { effectiveProfile } from "../core/progress";
 import { nutritionTargets, validateMeal } from "../core/nutrition";
 import { bySlot, mealsOn, nutrientState, nutrientTotals, nutrientValue, sumCalories, type NutrientState } from "../core/food-log";
+import { ENABLED_MARKETS, marketForCountry, resolvePercent } from "../core/reference-values";
 import { foodById, nutrientInfo, type Food, type NutrientKey } from "../core/foods";
 import { loggedSourceDescriptions, loggedSourceOf } from "../core/food-sources";
 import { quickAddMeal } from "../core/meals";
@@ -41,6 +42,11 @@ export default function FoodScreen() {
   const sections = bySlot(today);
   const dayTotals = nutrientTotals(today);
   const { totals, unknown, partial } = dayTotals;
+  // The market whose labelling values the percentages come from. It follows the
+  // country the user chose, and a market with no values shows no percentage
+  // rather than another country's.
+  const market = marketForCountry(p.country);
+  const marketEnabled = !!market && ENABLED_MARKETS.includes(market);
   const [flow, setFlow] = useState<Flow>(null);
   const [slot, setSlot] = useState<MealSlotName>(defaultSlot());
   const [food, setFood] = useState<Food | null>(null);
@@ -254,14 +260,27 @@ export default function FoodScreen() {
         {showMicros ? micros.map((k) => {
           const info = nutrientInfo[k];
           const v = totals[k];
+          // The completeness of the day's total decides the marker, and the
+          // market's own labelling value decides the percentage.
+          const state = nutrientState(dayTotals, k);
+          const reference = resolvePercent(market, k, v, state);
           return (
             <View key={k} style={s.microRow}>
               <Text style={s.microName}>{tr(info.label)}</Text>
-              <View style={{ flex: 1 }}>{info.dv ? <Bar value={v || 0} total={info.dv} color={info.limit && (v || 0) > info.dv ? palette.bad : info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
-              <Text style={s.microValue}>{unknown.includes(k) ? tr("Not available") : v === undefined ? "—" : `${v} ${info.unit}`}</Text>
+              <View style={{ flex: 1 }}>{reference.percent !== undefined && reference.value ? <Bar value={v || 0} total={reference.value.value} color={info.limit && (v || 0) > reference.value.value ? palette.bad : info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
+              <Text style={s.microValue}>
+                {state === "unknown" ? tr("Not available") : v === undefined ? "—" : `${state === "partial" ? "+" : ""}${v} ${info.unit}`}
+                {reference.percent !== undefined ? `  ${reference.percent}%` : ""}
+              </Text>
             </View>
           );
-        }) : <Text style={s.empty}>{tr("Today’s fiber, sodium, potassium, iron, vitamins and more vs. FDA Daily Values. Foods from search and barcode carry full nutrients; quick adds don’t.")}</Text>}
+        }) : <Text style={s.empty}>{marketEnabled ? tr("Today’s fiber, sodium, potassium, iron, vitamins and more vs. FDA Daily Values. Foods from search and barcode carry full nutrients; quick adds don’t.") : tr("Today’s fiber, sodium, potassium, iron, vitamins and more. Foods from search and barcode carry full nutrients; quick adds don’t.")}</Text>}
+        {marketEnabled ? null : (
+          <Text style={s.empty}>{tr("Labelling reference values are not available for your market yet, so no percentage is shown.")}</Text>
+        )}
+        {partial.length ? (
+          <Text style={s.empty}>{tr("A + means some food did not report that value, so the figure is a lower bound and may be higher.")}</Text>
+        ) : null}
       </Surface>
 
       <SectionHeader title="Plan ahead" />
@@ -271,7 +290,7 @@ export default function FoodScreen() {
         onPick={(f) => { setFood(f); setFlow("detail"); }} onBarcode={() => setFlow("barcode")} />
       <BarcodeScanner visible={flow === "barcode"} onClose={() => setFlow(null)}
         onFound={(f) => { setFood(f); setFlow("detail"); }} onSearchInstead={() => setFlow("search")} />
-      <FoodDetail key={`${food?.id || "none"}-${qty || 1}`} food={food} visible={flow === "detail"} initialSlot={slot} initialQty={qty}
+      <FoodDetail key={`${food?.id || "none"}-${qty || 1}`} food={food} visible={flow === "detail"} initialSlot={slot} initialQty={qty} market={market}
         photo={food?.id === "photo"} photoUri={photo?.uri} photoThumb={photo?.thumb} note={food?.id === "photo" ? photo?.note : undefined}
         initialFat={food?.id === "photo" ? photo?.fat : undefined}
         review={review} onClose={() => setFlow(food?.id === "photo" ? null : "search")} onAdd={add} />
