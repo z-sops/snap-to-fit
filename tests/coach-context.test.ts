@@ -98,8 +98,31 @@ function lastContext(): Record<string, any> {
   return JSON.parse(payload.contents[0].parts[0].text);
 }
 
+/**
+ * Waits until a new provider request has been captured.
+ *
+ * The request is captured from the child process's output, so it arrives after
+ * the HTTP response. Reading "the last one" straight away can therefore read
+ * the previous test's request instead of this one's.
+ */
+async function waitForProviderRequest(previousCount: number) {
+  for (let i = 0; i < 400; i++) {
+    if (requests.length > previousCount) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  assert.fail("the provider request was never captured");
+}
+
+/** Posts to the coach and waits for the provider request it should cause. */
+async function postAndCapture(body: unknown) {
+  const before = requests.length;
+  const response = await post(body);
+  await waitForProviderRequest(before);
+  return response;
+}
+
 test("consented totals reach the provider prompt itself", async () => {
-  const response = await post({
+  const response = await postAndCapture({
     question: "How am I doing against my targets today?",
     language: "en",
     aiConsent: true,
@@ -125,7 +148,7 @@ test("consented totals reach the provider prompt itself", async () => {
 });
 
 test("a total that is not complete is passed on as a lower bound", async () => {
-  const response = await post({
+  const response = await postAndCapture({
     question: "How am I doing against my targets today?",
     aiConsent: true,
     profile,
@@ -146,7 +169,7 @@ test("a total that is not complete is passed on as a lower bound", async () => {
 });
 
 test("a bare number from a client that cannot prove completeness is a lower bound", async () => {
-  const response = await post({
+  const response = await postAndCapture({
     question: "How am I doing against my targets today?",
     aiConsent: true,
     profile,
@@ -161,7 +184,7 @@ test("a bare number from a client that cannot prove completeness is a lower boun
 });
 
 test("a request without totals sends none", async () => {
-  const response = await post({
+  const response = await postAndCapture({
     question: "How am I doing against my targets today?",
     aiConsent: true,
     profile,
@@ -244,7 +267,7 @@ test("a food photo is not sent to the provider without confirmed consent", async
 });
 
 test("invalid and excessive values are dropped, valid ones survive", async () => {
-  const response = await post({
+  const response = await postAndCapture({
     question: "How am I doing against my targets today?",
     aiConsent: true,
     profile,
@@ -264,7 +287,7 @@ test("invalid and excessive values are dropped, valid ones survive", async () =>
 });
 
 test("a total without a completeness flag is dropped", async () => {
-  const response = await post({
+  const response = await postAndCapture({
     question: "How am I doing against my targets today?",
     aiConsent: true,
     profile,
@@ -276,7 +299,7 @@ test("a total without a completeness flag is dropped", async () => {
 });
 
 test("a totals object with nothing usable sends no totals at all", async () => {
-  const response = await post({
+  const response = await postAndCapture({
     question: "How am I doing against my targets today?",
     aiConsent: true,
     profile,
@@ -289,7 +312,7 @@ test("a totals object with nothing usable sends no totals at all", async () => {
 
 test("a totals value that is not an object is ignored", async () => {
   for (const totals of ["1800", 1800, [1, 2, 3], null]) {
-    const response = await post({
+    const response = await postAndCapture({
       question: "How am I doing against my targets today?",
       aiConsent: true,
       profile,
@@ -302,7 +325,7 @@ test("a totals value that is not an object is ignored", async () => {
 });
 
 test("only allowlisted numbers are forwarded, never meals or identifiers", async () => {
-  const response = await post({
+  const response = await postAndCapture({
     question: "How am I doing against my targets today?",
     aiConsent: true,
     profile,
@@ -327,7 +350,7 @@ test("only allowlisted numbers are forwarded, never meals or identifiers", async
 });
 
 test("a restricted profile keeps null targets and gets no totals", async () => {
-  const response = await post({
+  const response = await postAndCapture({
     question: "How am I doing against my targets today?",
     aiConsent: true,
     profile: { ...profile, conditions: ["type2"] },
@@ -340,7 +363,7 @@ test("a restricted profile keeps null targets and gets no totals", async () => {
 });
 
 test("the prompt stays minimal: no meal history and no user identity", async () => {
-  await post({
+  await postAndCapture({
     question: "How am I doing against my targets today?",
     aiConsent: true,
     profile,

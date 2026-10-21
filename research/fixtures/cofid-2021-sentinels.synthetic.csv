@@ -1,0 +1,19 @@
+food_code,nutrient_name,value
+9001,Energy (kcal),234
+9001,Protein (g),12.5
+9001,Sodium (mg),340
+9002,Energy (kcal),N
+9002,Protein (g),9.0
+9002,Sodium (mg),Tr
+9003,Energy (kcal),( 187 )
+9003,Protein (g),( 11.4 )
+9003,Sodium (mg),0
+9004,Energy (kcal),
+9004,Protein (g),13.1
+9004,Sodium (mg),420
+9005,Energy (kcal),0
+9005,Protein (g),0
+9005,Sodium (mg),0
+9006,Energy (kcal),98.2 [1]
+9006,Protein (g),3.4
+9006,Sodium (mg),12
