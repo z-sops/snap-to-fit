@@ -12,6 +12,7 @@ import { useStore } from "../services/store";
 import { haptic } from "../services/feedback";
 import { connectHealth, installHealthConnect, openHealthSettings, HealthIssue, type HealthSnapshot } from "../services/health";
 import { uid, numeric, type Reading } from "../core/model";
+import { formatDateTime, formatNumber, formatTime, regionFor } from "../core/locale";
 
 type Kind = Reading["kind"];
 const kinds: { id: Kind; label: string; emoji: string; tint: string }[] = [
@@ -21,9 +22,9 @@ const kinds: { id: Kind; label: string; emoji: string; tint: string }[] = [
   { id: "glucose", label: "Glucose", emoji: "🩸", tint: "#FFF4DE" },
 ];
 const devices = [
-  { name: "Apple Watch", icon: "watch-outline" as const, platform: "ios", route: "Via Apple Health on iPhone", detail: "Pair your watch with iPhone and let it sync to Apple Health. Then allow Snap to Fit to read steps, weight and heart rate." },
-  { name: "Android health", icon: "heart-circle-outline" as const, platform: "android", route: "Via Health Connect", detail: "Enable Health Connect on your phone. Let your tracker app share steps, weight and heart rate, then grant Snap to Fit read access." },
-  { name: "Fitbit / Google Health", icon: "fitness-outline" as const, platform: "android", route: "Via Health Connect on Android", detail: "In the Fitbit app, turn on sharing to Health Connect. Then refresh here. This does not sign into your Fitbit cloud account." },
+  { name: "Apple Watch", icon: "watch-outline" as const, platform: "ios", route: "Via Apple Health on iPhone", detail: "Pair your watch with iPhone and let it sync to Apple Health. Then allow Snap to Fit read-only access to steps, weight and heart rate. Workout sessions are not imported." },
+  { name: "Android health", icon: "heart-circle-outline" as const, platform: "android", route: "Via Health Connect", detail: "Enable Health Connect on your phone. Let your tracker app share steps, weight and heart rate, then grant Snap to Fit read-only access. Workout sessions are not imported." },
+  { name: "Fitbit / Google Health", icon: "fitness-outline" as const, platform: "android", route: "Via Health Connect on Android", detail: "In the Fitbit app, turn on sharing to Health Connect. Then refresh here. This does not sign into your Fitbit cloud account and does not import workouts." },
 ];
 
 export default function Health() {
@@ -31,6 +32,7 @@ export default function Health() {
   const { state, update } = useStore();
   const p = state.profile!;
   const imperial = (p.units || "imperial") === "imperial";
+  const region = regionFor(p.country);
   const [entry, setEntry] = useState<Kind | null>(null);
   const [trend, setTrend] = useState<Kind>("weight");
   const [snapshot, setSnapshot] = useState<HealthSnapshot | null>(null);
@@ -55,7 +57,7 @@ export default function Health() {
         ? translateActive(snap.note)
         : translateActive("Connected to {source}. Steps: {steps} · Heart rate: {hr}", {
             source: snap.source,
-            steps: snap.steps != null ? snap.steps.toLocaleString() : "—",
+            steps: snap.steps != null ? formatNumber(snap.steps, region) : "—",
             hr: snap.heartRate != null ? `${snap.heartRate} bpm` : "—",
           });
       if (Platform.OS === "web") notify(msg);
@@ -82,11 +84,11 @@ export default function Health() {
       <Surface dark>
         <Text style={s.darkLabel}>{tr("Latest")}</Text>
         <View style={s.heroRow}>
-          <Hero label="Steps today" value={snapshot?.steps != null ? snapshot.steps.toLocaleString() : "—"} />
+          <Hero label="Steps today" value={snapshot?.steps != null ? formatNumber(snapshot.steps, region) : "—"} />
           <Hero label="Weight" value={show(latest("weight"))} />
           <Hero label="Heart rate" value={snapshot?.heartRate != null ? `${snapshot.heartRate} bpm` : "—"} />
         </View>
-        <Text style={s.darkSmall}>{snapshot ? `${snapshot.source} · ${new Date(snapshot.at).toLocaleTimeString(tr("en-US"), { hour: "numeric", minute: "2-digit" })}` : tr("Connect your watch or tracker below for steps and heart rate.")}</Text>
+        <Text style={s.darkSmall}>{snapshot ? `${snapshot.source} · ${formatTime(snapshot.at, region)}` : tr("Connect your watch or tracker below for steps and heart rate.")}</Text>
       </Surface>
 
       <SectionHeader title="Log a reading" />
@@ -147,7 +149,7 @@ export default function Health() {
           <Text style={s.readEmoji}>{kinds.find((k) => k.id === r.kind)?.emoji}</Text>
           <View style={{ flex: 1 }}>
             <Text style={s.readValue}>{show(r)}</Text>
-            <Text style={s.small}>{new Date(r.at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}{r.context ? ` · ${r.context}` : ""}</Text>
+            <Text style={s.small}>{formatDateTime(r.at, region)}{r.context ? ` · ${r.context}` : ""}</Text>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={tr("Remove reading")} hitSlop={8} onPress={() => act(() => update((x) => ({ ...x, readings: x.readings.filter((y) => y.id !== r.id) })))}>
             <Ionicons name="trash-outline" size={18} color={palette.muted} />

@@ -3,8 +3,9 @@ import React, { useRef, useState } from "react";
 import { Platform, StyleSheet, Text, TextInput, View, Linking } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Sheet, PrimaryButton, palette } from "../design";
-import { lookupBarcode } from "../../services/barcode";
+import { lookupBarcode, type BarcodeErrorKind } from "../../services/barcode";
 import { validBarcode } from "../../core/barcode";
+import { openFoodFactsCredit } from "../../core/food-sources";
 import type { Food } from "../../core/foods";
 import { haptic } from "../../services/feedback";
 
@@ -16,9 +17,17 @@ export function BarcodeScanner({ visible, onClose, onFound, onSearchInstead }: {
   const [permission, requestPermission] = useCameraPermissions();
   const [code, setCode] = useState("");
   const [status, setStatus] = useState<"idle" | "looking" | "missing" | "error">("idle");
-  const [message, setMessage] = useState("");
+  const [problem, setProblem] = useState<BarcodeErrorKind | "unknown" | null>(null);
   const busy = useRef(false);
   const camera = Platform.OS !== "web";
+
+  const problemText: Record<BarcodeErrorKind | "unknown", string> = {
+    invalid: tr("That does not look like a product barcode."),
+    offline: tr("You appear to be offline. Search by name instead."),
+    timeout: tr("The product database took too long to answer. Search by name instead."),
+    unavailable: tr("The product database is busy. Try again or search by name."),
+    unknown: tr("This product isn’t in the open database yet. Search by name or use Quick add with the label."),
+  };
 
   const look = async (raw: string) => {
     const c = raw.replace(/\D/g, "");
@@ -26,6 +35,7 @@ export function BarcodeScanner({ visible, onClose, onFound, onSearchInstead }: {
     busy.current = true;
     setCode(c);
     setStatus("looking");
+    setProblem(null);
     haptic("tap");
     try {
       const food = await lookupBarcode(c);
@@ -35,11 +45,17 @@ export function BarcodeScanner({ visible, onClose, onFound, onSearchInstead }: {
         onFound(food);
       } else {
         setStatus("missing");
-        setMessage("This product isn’t in the open database yet. Search by name or use Quick add with the label.");
+        setProblem("unknown");
       }
     } catch (e) {
       setStatus("error");
-      setMessage((e as Error).message);
+      // The lookup reports why it failed; anything unexpected reads as offline.
+      const kind = (e as { kind?: string })?.kind;
+      setProblem(
+        kind === "timeout" || kind === "offline" || kind === "unavailable" || kind === "invalid"
+          ? kind
+          : "offline",
+      );
     } finally {
       busy.current = false;
     }
@@ -51,7 +67,7 @@ export function BarcodeScanner({ visible, onClose, onFound, onSearchInstead }: {
         <View style={s.cameraWrap}>
           <CameraView style={StyleSheet.absoluteFill} facing="back"
             barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e"] }}
-            onBarcodeScanned={status === "looking" || status === "missing" ? undefined : (r) => void look(r.data)} />
+            onBarcodeScanned={status === "looking" ? undefined : (r) => void look(r.data)} />
           <View pointerEvents="none" style={s.frame}>
             {[s.tl, s.tr, s.bl, s.br].map((c, i) => <View key={i} style={[s.corner, c]} />)}
           </View>
@@ -62,9 +78,12 @@ export function BarcodeScanner({ visible, onClose, onFound, onSearchInstead }: {
           <Text style={s.h}>{tr("Allow the camera to scan barcodes")}</Text>
           <Text style={s.note}>{tr("Only the barcode number is sent to Open Food Facts to find the product.")}</Text>
           {permission?.canAskAgain === false ? (
-            <PrimaryButton title="Open phone settings" onPress={() => void Linking.openSettings()} />
+            <>
+              <Text style={s.note}>{tr("Camera access is switched off for this app. Turn it on in your phone settings, or type the number below.")}</Text>
+              <PrimaryButton title={tr("Open phone settings")} onPress={() => void Linking.openSettings()} />
+            </>
           ) : (
-            <PrimaryButton title="Allow camera" icon="camera" onPress={() => void requestPermission()} />
+            <PrimaryButton title={tr("Allow camera")} icon="camera" onPress={() => void requestPermission()} />
           )}
         </View>
       ) : null}
@@ -74,11 +93,11 @@ export function BarcodeScanner({ visible, onClose, onFound, onSearchInstead }: {
       <PrimaryButton title={status === "looking" ? tr("Looking up…") : tr("Find product")} disabled={status === "looking" || !validBarcode(code.replace(/\D/g, ""))} onPress={() => void look(code)} />
       {status === "missing" || status === "error" ? (
         <View style={s.alert}>
-          <Text style={s.alertText}>{message}</Text>
-          <PrimaryButton title="Search by name" icon="search" onPress={() => { setStatus("idle"); onSearchInstead(); }} />
+          <Text style={s.alertText}>{problem ? problemText[problem] : ""}</Text>
+          <PrimaryButton title={tr("Search by name")} icon="search" onPress={() => { setStatus("idle"); setProblem(null); onSearchInstead(); }} />
         </View>
       ) : null}
-      <Text style={s.credit}>{tr("Product data © Open Food Facts contributors (ODbL). Always check the package label.")}</Text>
+      <Text style={s.credit}>{tr(openFoodFactsCredit)}</Text>
     </Sheet>
   );
 }

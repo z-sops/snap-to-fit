@@ -1,9 +1,10 @@
 import { doctorNotice } from "./safety";
+import { nutrientKeys, type NutrientKey } from "./foods";
+import { mealsOn, nutrientTotals, type NutrientTotals } from "./food-log";
 import {
   type Profile,
   type Targets,
   type Meal,
-  localDay,
   validateProfile,
 } from "./model";
 export function nutritionTargets(p: Profile): Targets {
@@ -55,19 +56,13 @@ export function nutritionTargets(p: Profile): Targets {
     restricted,
   };
 }
-export function todayTotals(meals: Meal[], date = new Date()) {
-  return meals
-    .filter((m) => localDay(m.at) === localDay(date))
-    .reduce(
-      (a, m) => ({
-        calories: a.calories + m.calories,
-        protein: a.protein + m.protein,
-        carbs: a.carbs + m.carbs,
-        fat: a.fat + m.fat,
-        fibre: a.fibre + m.fibre,
-      }),
-      { calories: 0, protein: 0, carbs: 0, fat: 0, fibre: 0 },
-    );
+/**
+ * The day's totals, with the same completeness contract as every other total
+ * in the app: a nutrient no food reported is unknown, not zero, and one only
+ * some food reported is a lower bound. There is one aggregation, not several.
+ */
+export function todayTotals(meals: Meal[], date = new Date()): NutrientTotals {
+  return nutrientTotals(mealsOn(meals, date));
 }
 export function weightProjection(p: Profile) {
   const t = nutritionTargets(p);
@@ -89,4 +84,12 @@ export function validateMeal(m: Omit<Meal, "id" | "at">) {
       m[k] > (k === "calories" ? 5000 : 500)
     )
       throw new Error(`Invalid ${k}.`);
+  // The nutrients the source did not know must be named from the known list.
+  if (
+    m.unknownNutrients !== undefined &&
+    (!Array.isArray(m.unknownNutrients) ||
+      m.unknownNutrients.length > 30 ||
+      m.unknownNutrients.some((k) => !nutrientKeys.includes(k as NutrientKey)))
+  )
+    throw new Error("Invalid nutrient completeness metadata.");
 }

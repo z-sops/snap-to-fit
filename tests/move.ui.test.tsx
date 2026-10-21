@@ -26,7 +26,7 @@ test("guided workout speaks cues, counts sets with rest, and saves the session",
   await waitFor(() => expect(Speech.speak).toHaveBeenCalledWith(expect.stringMatching(/^Let's go\./), expect.anything()));
   fireEvent.click(screen.getByRole("button", { name: /^Done · set 1 of 2/ }));
   expect(await screen.findByLabelText("Rest 60 seconds")).toBeTruthy();
-  expect(Speech.speak).toHaveBeenCalledWith("Nice. Rest 60 seconds.", expect.anything());
+  await waitFor(() => expect(Speech.speak).toHaveBeenCalledWith("Nice. Rest 60 seconds.", expect.anything()));
   fireEvent.click(screen.getByRole("button", { name: "Skip rest" }));
   fireEvent.click(screen.getByRole("button", { name: /^Done · set 2 of 2/ }));
   for (let i = 0; i < 4; i++) fireEvent.click(screen.getByRole("button", { name: "Skip this exercise" }));
@@ -38,10 +38,34 @@ test("guided workout speaks cues, counts sets with rest, and saves the session",
   expect(localDay(w.at)).toBe(localDay());
 });
 
-test("voice coach can be switched off and is remembered", async () => {
+test("spoken cues can be switched off and are remembered", async () => {
   render(<StoreProvider><Ready /></StoreProvider>);
-  fireEvent.click(await screen.findByRole("button", { name: "🔊 Voice coach on" }));
+  fireEvent.click(await screen.findByRole("button", { name: "🔊 Spoken cues on" }));
   await waitFor(async () => expect((await loadState()).voiceCues).toBe(false));
+});
+
+test("a British user in stone enters exercise loads in pounds, never in stone", async () => {
+  const today = new Date().getDay();
+  await saveState({ ...emptyState, profile: { ...newProfile, name: "Alex", age: 30, height: 175, weight: 80, targetWeight: 80, consent: true, country: "GB", units: "metric", weightDisplay: "st", days: 1, workoutDays: [today] } }, "guest");
+  render(<StoreProvider><Ready /></StoreProvider>);
+  fireEvent.click(await screen.findByRole("button", { name: "Start workout" }));
+  await screen.findByText("Exercise 1 of 5");
+  const field = screen.getByLabelText("Weight used");
+  // The load field says pounds. It never says stone, so a number means one thing.
+  expect(field.getAttribute("placeholder")).toBe("Weight (lb) — leave empty for bodyweight");
+  expect(field.getAttribute("placeholder")).not.toContain("st");
+  fireEvent.change(field, { target: { value: "100" } });
+  fireEvent.click(screen.getByRole("button", { name: /^Done · set 1 of 2/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Skip rest" }));
+  fireEvent.click(screen.getByRole("button", { name: /^Done · set 2 of 2/ }));
+  for (let i = 0; i < 4; i++) fireEvent.click(screen.getByRole("button", { name: "Skip this exercise" }));
+  await screen.findByText("Workout complete!");
+  fireEvent.click(screen.getByRole("button", { name: "Save workout" }));
+  await waitFor(async () => expect((await loadState()).workouts.length).toBe(1));
+  const w = (await loadState()).workouts[0];
+  // 100 pounds, stored in kilograms. It is nowhere near 100 stone.
+  expect(w.weight).toBe(45.4);
+  expect(w.weight).toBeLessThan(100);
 });
 
 test("insulin users confirm a low-glucose checklist before a workout starts", async () => {

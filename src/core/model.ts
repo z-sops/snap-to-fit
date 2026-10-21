@@ -23,6 +23,17 @@ export type Condition =
 export interface Profile {
   /** Display/input units; values are always stored in kg and cm. */
   units?: "imperial" | "metric";
+  /**
+   * How the weight itself is written: kilograms, pounds, or UK stone and pounds.
+   * Display only — the stored weight stays in kilograms.
+   */
+  weightDisplay?: "kg" | "lb" | "st";
+  /**
+   * The unit exercise loads are entered in, chosen separately from the
+   * body-weight display. Stone is never used for a load. Stored loads are
+   * always in kilograms.
+   */
+  loadUnits?: "imperial" | "metric";
   /** Profile picture: an emoji avatar on a colour, or a local photo. */
   avatar?: { emoji?: string; color?: string; photoUri?: string };
   /** GLP-1 medication named by the user from their prescription (record only). */
@@ -89,6 +100,12 @@ export interface Meal {
   addedFat?: "none" | "tsp" | "tbsp" | "lots";
   /** Micronutrients for the logged amount (keys from core/foods nutrientKeys). */
   micros?: Record<string, number>;
+  /**
+   * Nutrients the source did not know for this entry, so an unknown value is
+   * never read as a measured zero. Absent on older records, where every
+   * stored number is treated as known.
+   */
+  unknownNutrients?: string[];
   photoUri?: string;
 }
 export type MealSlotName = "breakfast" | "lunch" | "dinner" | "snack";
@@ -234,6 +251,14 @@ export function localDay(at: string | Date = new Date()) {
   const d = new Date(at);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+
+/**
+ * True when a meal's value for a nutrient was not known, rather than measured
+ * as zero. A meal saved before this metadata existed has no unknown values.
+ */
+export function nutrientUnknown(meal: { unknownNutrients?: string[] } | undefined, key: string) {
+  return !!meal?.unknownNutrients?.includes(key);
+}
 export function uid() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
@@ -328,6 +353,10 @@ export function validateProfile(p: Profile) {
     throw new Error("Invalid familiar-food preferences.");
   if (p.units !== undefined && !["imperial", "metric"].includes(p.units))
     throw new Error("Invalid unit preference.");
+  if (p.weightDisplay !== undefined && !["kg", "lb", "st"].includes(p.weightDisplay))
+    throw new Error("Invalid weight display preference.");
+  if (p.loadUnits !== undefined && !["imperial", "metric"].includes(p.loadUnits))
+    throw new Error("Invalid exercise load unit preference.");
   if (p.glp1 !== undefined && (typeof p.glp1 !== "string" || p.glp1.length > 80))
     throw new Error("Invalid medication entry.");
   if (!p.name.trim()) throw new Error("Please enter your name.");

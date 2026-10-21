@@ -31,11 +31,13 @@ import {
   heightOptions,
   heightToCm,
   kgToWeightValue,
+  weightDisplayFor,
   weightOptions,
   weightToKg,
   formatWeight,
   type Units,
 } from "../core/units";
+import { regionFor, weightDisplayOptions, type WeightDisplay } from "../core/locale";
 import menuArt from "../../assets/menu-nutrition.png";
 import { glp1Choices } from "../core/glp1";
 
@@ -88,6 +90,13 @@ export default function Onboarding() {
       .trim(),
   );
   const units: Units = p.units ?? "imperial";
+  // The weight display is the user's own choice; when they have not made one it
+  // follows the unit system, and it never rewrites the stored kilogram value.
+  const weightDisplay = weightDisplayFor(p);
+  const weightChoices = weightDisplayOptions(regionFor(p.country)).map((d) => ({
+    value: d,
+    label: d === "kg" ? "Kilograms (kg)" : d === "lb" ? "Pounds (lb)" : "Stone (st)",
+  }));
   const change = <K extends keyof Profile>(key: K, value: Profile[K]) =>
     setP((prev) => ({ ...prev, [key]: value }));
 
@@ -202,8 +211,7 @@ export default function Onboarding() {
   switch (id) {
     case "country":
       return shell("Where do you live?", "Sets your units, date format and the official health sources we show. Language is separate — change it any time in Settings.",
-        <CountryPicker value={p.country} onChange={(c) => setP((prev) => ({ ...prev, country: c, units: editing ? prev.units : defaultUnits(c) }))} />);
-    case "name":
+        <CountryPicker value={p.country} onChange={(c) => setP((prev) => ({ ...prev, country: c, units: editing ? prev.units : defaultUnits(c) }))} />);    case "name":
       return shell("What should we call you?", "Your first name personalises your plan.",
         <TextInput
           value={p.name}
@@ -238,10 +246,10 @@ export default function Onboarding() {
     case "weight":
       return shell("What is your current weight?", undefined,
         <>
-          <Segmented value={units} onChange={(u) => change("units", u)}
-            options={[{ value: "imperial", label: "lb" }, { value: "metric", label: "kg" }]} />
-          <WheelPicker label="Weight" options={weightOptions(units)} value={kgToWeightValue(p.weight, units)}
-            onChange={(v) => change("weight", weightToKg(v, units))} />
+          <Segmented value={weightDisplay} onChange={(d) => change("weightDisplay", d as WeightDisplay)}
+            options={weightChoices} />
+          <WheelPicker label="Weight" options={weightOptions(units, weightDisplay)} value={kgToWeightValue(p.weight, units, weightDisplay)}
+            onChange={(v) => change("weight", weightToKg(v, units, weightDisplay))} />
         </>);
     case "goal":
       return shell("What is your main goal?", undefined,
@@ -251,9 +259,9 @@ export default function Onboarding() {
           <OptionCard label="Build muscle" detail="A small calorie surplus" emoji="💪" selected={p.goal === "gain"} onPress={() => change("goal", "gain")} />
         </>);
     case "target":
-      return shell("What is your target weight?", `You are ${formatWeight(p.weight, units)} today. Timelines are estimates.`,
-        <WheelPicker label="Target weight" options={weightOptions(units)} value={kgToWeightValue(p.targetWeight, units)}
-          onChange={(v) => change("targetWeight", weightToKg(v, units))} />);
+      return shell("What is your target weight?", `You are ${formatWeight(p.weight, units, weightDisplay)} today. Timelines are estimates.`,
+        <WheelPicker label="Target weight" options={weightOptions(units, weightDisplay)} value={kgToWeightValue(p.targetWeight, units, weightDisplay)}
+          onChange={(v) => change("targetWeight", weightToKg(v, units, weightDisplay))} />);
     case "activity":
       return shell("What is your lifestyle?", "Your usual day, outside planned workouts.",
         <>

@@ -62,7 +62,7 @@ test("muscle-loss topic explains what and why, with the kidney exception for pro
 });
 
 test("emergency red flags are present for heart, back, neck and kidney-urine topics", () => {
-  assert.match(text(articles.find((a) => a.id === "heart-stent")!), /call 911/);
+  assert.match(text(articles.find((a) => a.id === "heart-stent")!), /call your local emergency number \(911 in the US and Canada, 999 in the UK\)/);
   assert.match(text(articles.find((a) => a.id === "slip-disc")!), /bladder or bowel/);
   assert.match(text(articles.find((a) => a.id === "cervical")!), /clumsy hands/);
   assert.match(text(articles.find((a) => a.id === "protein-urine")!), /foamy/);

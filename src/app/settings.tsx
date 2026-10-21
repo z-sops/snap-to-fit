@@ -1,5 +1,6 @@
 import { CountryPicker } from "../components/CountryPicker";
-import { formatHeight, formatWeight } from "../core/units";
+import { formatHeight, formatWeight, loadUnitFor, presentationFor, weightDisplayFor, type LoadUnit, type Units } from "../core/units";
+import { weightDisplayOptions, type WeightDisplay } from "../core/locale";
 import React, { useState } from "react";
 import { Platform, Alert, Share } from "react-native";
 import { router } from "expo-router";
@@ -27,6 +28,16 @@ export default function Settings() {
   const p = state.profile!;
   const lang = useLang();
   const tr = useT();
+  const presentation = presentationFor(p);
+  const units: Units = p.units || "metric";
+  const weightDisplay = weightDisplayFor(p);
+  const loadUnit = loadUnitFor(p);
+  const weightChoices = weightDisplayOptions(presentation.region).map((d) => ({
+    value: d,
+    label: d === "kg" ? "Kilograms (kg)" : d === "lb" ? "Pounds (lb)" : "Stone and pounds (st)",
+  }));
+  const setProfile = (patch: Partial<typeof p>) =>
+    act(() => update((x) => (x.profile ? { ...x, profile: { ...x.profile, ...patch } } : x)));
   const erase = () =>
     act(async () => {
       await cancelNotifications([
@@ -52,13 +63,48 @@ export default function Settings() {
       </Card>
       <Card>
         <H>{tr("Country")}</H>
-        <P>{tr("Sets date format and the official health sources we show. Units stay as you chose them.")}</P>
-        <CountryPicker value={p.country} onChange={(c) => act(() => update((x) => (x.profile ? { ...x, profile: { ...x.profile, country: c } } : x)))} />
+        <P>{tr("Sets the date format, the spoken voice and the official health sources we show. Units stay as you chose them.")}</P>
+        <CountryPicker value={p.country} onChange={(c) => setProfile({ country: c })} />
+      </Card>
+      <Card>
+        <H>{tr("Units")}</H>
+        <P>{tr("Your weight and height are always stored in kilograms and centimetres. Changing this changes what you see and enter — it never rewrites your logs.")}</P>
+        <Chips
+          values={[
+            { value: "metric" as Units, label: "Metric (kg, cm)" },
+            { value: "imperial" as Units, label: "Imperial (lb, ft/in)" },
+          ]}
+          selected={units}
+          onChange={(v) => setProfile({ units: v, weightDisplay: v === "imperial" ? "lb" : "kg" })}
+        />
+        <H>{tr("Show weight in")}</H>
+        <Chips values={weightChoices} selected={weightDisplay} onChange={(v) => setProfile({ weightDisplay: v as WeightDisplay })} />
+        <H>{tr("Enter exercise loads in")}</H>
+        <P>{tr("Dumbbell and barbell weights are a separate choice from the units you read your body weight in. Loads are never entered in stone, so a number always means one thing.")}</P>
+        <Chips
+          values={[
+            { value: "kg" as LoadUnit, label: "Kilograms (kg)" },
+            { value: "lb" as LoadUnit, label: "Pounds (lb)" },
+          ]}
+          selected={loadUnit}
+          onChange={(v) => setProfile({ loadUnits: v === "lb" ? "imperial" : "metric" })}
+        />
+        <P>{tr("Dates look like {date}, times like {time} and numbers like {number}.", { date: presentation.dateFormat, time: presentation.timeFormat, number: presentation.numberFormat })}</P>
+        <P>{tr("The emergency number for your region is {number}.", { number: presentation.emergencyService })}</P>
+      </Card>
+      <Card>
+        <H>{tr("Spoken workout cues")}</H>
+        <P>{tr("Your phone reads the exercise names, set counts and rest times out loud. This is one-way audio only — the app never listens to you or records your voice.")}</P>
+        <Check
+          label="Read workout cues out loud"
+          value={state.voiceCues !== false}
+          onChange={(v) => act(() => update((x) => ({ ...x, voiceCues: v })))}
+        />
       </Card>
       <Card>
         <H>{tr("{name}’s profile", { name: p.name })}</H>
         <P>
-          {tr("{age} years", { age: p.age })} · {formatHeight(p.height, p.units || "imperial")} · {formatWeight(p.weight, p.units || "imperial")} {tr("at setup")} · {tr(p.goal === "lose" ? "lose weight" : p.goal === "gain" ? "build muscle" : "maintain")}
+          {tr("{age} years", { age: p.age })} · {formatHeight(p.height, units)} · {formatWeight(p.weight, units, weightDisplay)} {tr("at setup")} · {tr(p.goal === "lose" ? "lose weight" : p.goal === "gain" ? "build muscle" : "maintain")}
         </P>
         <Button
           title="Edit health profile & preferences"

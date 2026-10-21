@@ -8,8 +8,10 @@ import { Screen, act, colors, soft } from "../components/ui";
 import { useStore } from "../services/store";
 import { api } from "../services/api";
 import { nutritionTargets, todayTotals } from "../core/nutrition";
+import { verifiedTotals } from "../core/food-log";
 import { urgentMessage, medicationRequest, restrictedHealthAdvice } from "../core/safety";
 import { uid, type Message } from "../core/model";
+import { emergencyInstruction, regionFor } from "../core/locale";
 export default function Coach() {
   const tr = useT();
   const lang = useLang();
@@ -17,6 +19,7 @@ export default function Coach() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const p = effectiveProfile(state)!;
+  const region = regionFor(p.country);
   const send = (question = text) =>
     act(async () => {
       if (busy || !question.trim()) return;
@@ -39,6 +42,8 @@ export default function Coach() {
           const result = await api<{ text: string }>("/chat", {
             question,
             language: lang,
+            // The server only sends context when the user has agreed to AI.
+            aiConsent: p.aiConsent,
             history: state.messages.slice(-8),
             profile: {
               age: p.age,
@@ -68,7 +73,10 @@ export default function Coach() {
             insulinSafety: usesInsulin(state)
               ? { types: state.medicines.filter((m) => m.kind === "insulin").map((m) => m.insulinType || "other"), recentLow: recentLow(state), notices: insulinNotices(state).map((n) => n.text) }
               : undefined,
-            totals: todayTotals(state.meals),
+            // Only a nutrient that is at least partly known is sent, and each
+            // one says whether it is a confirmed total or a lower bound. A
+            // nutrient nobody reported is left out rather than sent as zero.
+            totals: verifiedTotals(todayTotals(state.meals)),
           });
           answer = result.text;
         }
@@ -112,7 +120,7 @@ export default function Coach() {
         <View style={c.botAvatar}><Text style={{ fontSize: 26 }}>✨</Text></View>
         <View style={{ flex: 1 }}>
           <Text style={c.heroTitle}>Hi {p.name}, I’m your Snap coach</Text>
-          <Text style={c.heroText}>{tr("Ask about meals, macros, workouts or habits. I don’t diagnose, change medicines or handle emergencies — call 911 for an emergency.")}</Text>
+          <Text style={c.heroText}>{tr("Ask about meals, macros, workouts or habits. I don’t diagnose, change medicines or handle emergencies — in an emergency {emergency}.", { emergency: emergencyInstruction(region) })}</Text>
         </View>
       </View>
       <View style={c.prompts}>

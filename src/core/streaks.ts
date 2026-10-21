@@ -1,6 +1,7 @@
 // Habit loop: logging streaks, daily wins and the weekly report card.
 import { localDay, type State } from "./model";
 import { nutritionTargets } from "./nutrition";
+import { nutrientState, nutrientTotals, nutrientValue, type NutrientState } from "./food-log";
 import { proteinGuidance } from "./targets";
 import { effectiveProfile } from "./progress";
 
@@ -41,11 +42,32 @@ export function proteinTarget(s: State) {
   return proteinGuidance(p)?.low || 0;
 }
 
-export interface DaySummary { date: string; label: string; calories: number; protein: number; meals: number; workouts: number }
+export interface DaySummary {
+  date: string;
+  label: string;
+  /** The day's calories, or null when no food that day reported them. */
+  calories: number | null;
+  /** The day's protein, or null when no food that day reported it. */
+  protein: number | null;
+  /** How complete each of those two figures is. */
+  state: { calories: NutrientState; protein: NutrientState };
+  meals: number;
+  workouts: number;
+}
 export interface WeekReport {
   days: DaySummary[];
-  avgCalories: number; avgProtein: number; daysLogged: number; proteinDays: number;
-  workouts: number; weightChange: number | null; calorieTarget: number | null; proteinTarget: number;
+  /** The weekly averages, or null when the week's data is not complete enough. */
+  avgCalories: number | null;
+  avgProtein: number | null;
+  /** True when every logged day reported the calories the average is based on. */
+  caloriesComplete: boolean;
+  /** True when every logged day reported the protein the average is based on. */
+  proteinComplete: boolean;  daysLogged: number;
+  proteinDays: number;
+  workouts: number;
+  weightChange: number | null;
+  calorieTarget: number | null;
+  proteinTarget: number;
   highlights: string[];
 }
 
@@ -58,11 +80,17 @@ export function weekReport(s: State, now = new Date()): WeekReport {
     const d = addDays(now, -i);
     const key = dayKey(d);
     const meals = s.meals.filter((m) => localDay(m.at) === key);
+    // The same completeness contract as the day's totals: a value no food
+    // reported is unknown, not zero, and a partly reported one is a bound.
+    const day = nutrientTotals(meals);
+    const calories = nutrientValue(day, "calories");
+    const protein = nutrientValue(day, "protein");
     days.push({
       date: key,
       label: d.toLocaleDateString(undefined, { weekday: "narrow" }),
-      calories: Math.round(meals.reduce((a, m) => a + m.calories, 0)),
-      protein: Math.round(meals.reduce((a, m) => a + m.protein, 0)),
+      calories: calories === undefined ? null : Math.round(calories),
+      protein: protein === undefined ? null : Math.round(protein),
+      state: { calories: nutrientState(day, "calories"), protein: nutrientState(day, "protein") },
       meals: meals.length,
       workouts: s.workouts.filter((w) => localDay(w.at) === key).length,
     });
@@ -72,7 +100,13 @@ export function weekReport(s: State, now = new Date()): WeekReport {
   const from = addDays(now, -7).toISOString();
   const weights = s.readings.filter((r) => r.kind === "weight" && r.at >= from).sort((a, b) => a.at.localeCompare(b.at));
   const weightChange = weights.length >= 2 ? Math.round((weights[weights.length - 1].value - weights[0].value) * 10) / 10 : null;
-  const proteinDays = pt ? logged.filter((d) => d.protein >= pt).length : 0;
+  // A day counts as reaching the protein goal when the protein that is known
+  // already passes the target: a complete day's total is final, and a partly
+  // reported day can only be higher than the part that was reported. A day
+  // that reported no protein at all cannot be counted.
+  const proteinDays = pt
+    ? logged.filter((d) => d.protein !== null && d.protein >= pt).length
+    : 0;
   const workouts = days.reduce((a, d) => a + d.workouts, 0);
   const highlights: string[] = [];
   const st = streak(s, now);
@@ -80,10 +114,23 @@ export function weekReport(s: State, now = new Date()): WeekReport {
   if (proteinDays) highlights.push(`💪 Protein goal hit on ${proteinDays} day${proteinDays > 1 ? "s" : ""}`);
   if (workouts) highlights.push(`🏋️ ${workouts} workout${workouts > 1 ? "s" : ""} logged`);
   if (logged.length === 7) highlights.push("⭐ Logged every day this week");
+  // A week of partly reported data still gives an average, but it is a lower
+  // bound rather than a confirmed figure, and the report says so.
+  const calorieDays = logged.filter((d) => d.calories !== null);
+  const proteinValues = logged.filter((d) => d.protein !== null);
   return {
-    days, avgCalories: avg(logged.map((d) => d.calories)), avgProtein: avg(logged.map((d) => d.protein)),
-    daysLogged: logged.length, proteinDays, workouts, weightChange,
-    calorieTarget: t && !t.restricted ? t.calories : null, proteinTarget: pt, highlights,
+    days,
+    avgCalories: calorieDays.length ? avg(calorieDays.map((d) => d.calories!)) : null,
+    avgProtein: proteinValues.length ? avg(proteinValues.map((d) => d.protein!)) : null,
+    caloriesComplete: logged.length > 0 && logged.every((d) => d.state.calories === "known"),
+    proteinComplete: logged.length > 0 && logged.every((d) => d.state.protein === "known"),
+    daysLogged: logged.length,
+    proteinDays,
+    workouts,
+    weightChange,
+    calorieTarget: t && !t.restricted ? t.calories : null,
+    proteinTarget: pt,
+    highlights,
   };
 }
 

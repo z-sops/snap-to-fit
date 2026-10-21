@@ -5,37 +5,22 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Sheet, Surface, Pill, StatTile, Stepper, Chip, PrimaryButton, palette, Bar } from "../design";
 import {
-  addedFat, calorieRange, nutrientInfo, nutrientKeys, scale, withAddedFat,
+  addedFat, nutrientInfo, nutrientKeys, scale, withAddedFat,
   type AddedFat, type Food, type NutrientKey,
 } from "../../core/foods";
-import { mealSlotNames, type Meal, type MealSlotName } from "../../core/model";
+import { mealFromFood, type NewMeal } from "../../core/meals";
+import { openFoodFactsCredit, sourceDescriptions } from "../../core/food-sources";
+import { mealSlotNames, type MealSlotName } from "../../core/model";
+
+export type { NewMeal } from "../../core/meals";
 
 const sourceBadge: Record<string, { label: string; icon: string; color: string; bg: string }> = {
-  usda: { label: "USDA lab data", icon: "shield-checkmark", color: palette.good, bg: palette.goodSoft },
-  recipe: { label: "Recipe estimate", icon: "restaurant", color: palette.warn, bg: palette.warnSoft },
-  barcode: { label: "Package label", icon: "barcode", color: palette.brand, bg: palette.brandSoft },
-  photo: { label: "AI photo estimate", icon: "sparkles", color: "#6D28D9", bg: soft("#F3EDFF") },
+  usda: { label: sourceDescriptions.usda.label, icon: "shield-checkmark", color: palette.good, bg: palette.goodSoft },
+  recipe: { label: sourceDescriptions.recipe.label, icon: "restaurant", color: palette.warn, bg: palette.warnSoft },
+  barcode: { label: sourceDescriptions.barcode.label, icon: "barcode", color: palette.brand, bg: palette.brandSoft },
+  photo: { label: sourceDescriptions.photo.label, icon: "sparkles", color: "#6D28D9", bg: soft("#F3EDFF") },
 };
 const micros: NutrientKey[] = nutrientKeys.filter((k) => !["calories", "protein", "carbs", "fat"].includes(k));
-
-export type NewMeal = Omit<Meal, "id" | "at">;
-
-/** Builds the meal entry for an amount of a food, with range and hidden fat. */
-export function mealFromFood(food: Food, grams: number, servings: number, servingLabel: string, fat: AddedFat, slot: MealSlotName, photo?: boolean): NewMeal {
-  const n = withAddedFat(scale(food, grams), fat);
-  const r = (x?: number) => Math.round((x || 0) * 10) / 10;
-  const microValues: Record<string, number> = {};
-  for (const k of micros) if (n[k] !== undefined) microValues[k] = r(n[k]);
-  const calories = Math.round(n.calories || 0);
-  const fatUncertainty = fat === "none" ? 0 : 0.05;
-  return {
-    name: food.name,
-    source: photo ? "photo" : food.source === "barcode" ? "barcode" : "database",
-    calories, protein: r(n.protein), carbs: r(n.carbs), fat: r(n.fat), fibre: r(n.fibre),
-    slot, foodId: photo ? undefined : food.id, grams: Math.round(grams), servings, servingLabel,
-    range: calorieRange(calories, food.uncertainty + fatUncertainty), addedFat: fat, micros: microValues,
-  };
-}
 
 export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUri, photoThumb, photo, note, review, initialFat, initialQty }: {
   food: Food | null; visible: boolean; onClose: () => void; onAdd: (meal: NewMeal) => void;
@@ -55,11 +40,31 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
     () => (food && serving ? mealFromFood(food, serving.grams * qty, qty, serving.label, fat, slot, photo) : null),
     [food, serving, qty, fat, slot, photo],
   );
+  // The nutrients of this exact amount. A nutrient the source does not know
+  // stays undefined, so it can be shown as unavailable instead of as zero.
+  const scaled = useMemo(
+    () => (food ? withAddedFat(scale(food, (serving?.grams || 0) * qty), fat) : null),
+    [food, serving, qty, fat],
+  );
   if (!food || !serving || !meal) return null;
   const concerns = review?.(meal) || null;
   const blocked = !!concerns && !ack;
-  const badge = sourceBadge[photo ? "photo" : food.source];
+  const source = photo ? "photo" : food.source;
+  const badge = sourceBadge[source];
+  const description = sourceDescriptions[source];
   const slotLabel = mealSlotNames.find((s) => s.id === slot)!.label;
+  const nutrient = (key: NutrientKey) => scaled?.[key];
+  const tile = (key: NutrientKey, label: string, color: string) => {
+    const value = nutrient(key);
+    return (
+      <StatTile
+        label={label}
+        value={value === undefined ? "—" : Math.round(value)}
+        unit={value === undefined ? undefined : "g"}
+        color={color}
+      />
+    );
+  };
   return (
     <Sheet visible={visible} title={photo ? tr("Review your meal") : tr("Add food")} onClose={onClose} closeLabel="Back"
       footer={<PrimaryButton title={tr("Add to {slot}", { slot: tr(slotLabel) })} icon="add-circle" disabled={blocked} onPress={() => onAdd({ ...meal, photoUri: photoThumb || photoUri })} />}>
@@ -68,6 +73,7 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
         <Pill label={badge.label} icon={badge.icon} color={badge.color} bg={badge.bg} />
         <Text style={s.name}>{tr(food.name)}</Text>
         {food.detail ? <Text style={s.detail}>{tr(food.detail)}</Text> : null}
+        <Text style={s.note}>{tr(description.detail)}</Text>
         {note ? <Text style={s.note}>{note}</Text> : null}
         <View style={s.kcalRow}>
           <View>
@@ -80,11 +86,12 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
           </View>
         </View>
         <View style={s.tiles}>
-          <StatTile label="Protein" value={Math.round(meal.protein)} unit="g" color={palette.protein} />
-          <StatTile label="Carbs" value={Math.round(meal.carbs)} unit="g" color={palette.carbs} />
-          <StatTile label="Fat" value={Math.round(meal.fat)} unit="g" color={palette.fat} />
-          <StatTile label="Fiber" value={Math.round(meal.fibre)} unit="g" color={palette.fiber} />
+          {tile("protein", "Protein", palette.protein)}
+          {tile("carbs", "Carbs", palette.carbs)}
+          {tile("fat", "Fat", palette.fat)}
+          {tile("fibre", "Fiber", palette.fiber)}
         </View>
+        {source === "barcode" ? <Text style={s.note}>{tr(openFoodFactsCredit)}</Text> : null}
       </Surface>
 
       {concerns ? (
@@ -156,12 +163,13 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
         {showMicros ? (
           micros.map((k) => {
             const info = nutrientInfo[k];
-            const v = meal.micros?.[k] ?? (k === "fibre" ? meal.fibre : undefined);
+            // Unavailable stays unavailable; only a real zero shows as zero.
+            const v = nutrient(k);
             return (
               <View key={k} style={s.microRow}>
                 <Text style={s.microName}>{tr(info.label)}</Text>
                 <View style={{ flex: 1 }}>{v !== undefined && info.dv ? <Bar value={v} total={info.dv} color={info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
-                <Text style={s.microValue}>{v === undefined ? "—" : `${v} ${info.unit}`}{v !== undefined && info.dv ? `  ${Math.round((v / info.dv) * 100)}%` : ""}</Text>
+                <Text style={s.microValue}>{v === undefined ? tr("Not available") : `${v} ${info.unit}`}{v !== undefined && info.dv ? `  ${Math.round((v / info.dv) * 100)}%` : ""}</Text>
               </View>
             );
           })
