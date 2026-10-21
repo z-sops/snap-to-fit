@@ -1,0 +1,75 @@
+{
+  "generated_from": [
+    {
+      "source_id": "ca-cnf-2026",
+      "sha256": "f5faad8977ee6bbdd9d69c8649077cacd87d8658ad200509a4047db1e29edcdd"
+    },
+    {
+      "source_id": "usda-sr28",
+      "sha256": "f2b1a828ce58ee0731d076938b483c16c194bc276294a99d7263cc137fd060a2"
+    }
+  ],
+  "architectures": [
+    {
+      "architecture": "A-merged",
+      "uncompressed_bytes": 40312885,
+      "compressed_bytes": 1685537,
+      "startup_bytes": 40312885,
+      "search_index_bytes": 0,
+      "detail_bytes": 0,
+      "startup_parse_ms": 397.211,
+      "lookup_ms": 3.878,
+      "lookup_us": 0.1939,
+      "memory_mb": 133.66,
+      "records": 14250
+    },
+    {
+      "architecture": "B-per-market",
+      "uncompressed_bytes": 40312915,
+      "compressed_bytes": 1685203,
+      "startup_bytes": 22555769,
+      "search_index_bytes": 0,
+      "detail_bytes": 0,
+      "startup_parse_ms": 188.574,
+      "lookup_ms": 2.071,
+      "lookup_us": 0.1035,
+      "memory_mb": 44.806,
+      "records": 14250,
+      "per_market": [
+        {
+          "region": "CA",
+          "bytes": 17757146,
+          "compressed_bytes": 963351,
+          "parse_ms": 228.659,
+          "memory_mb": 56.872
+        },
+        {
+          "region": "US",
+          "bytes": 22555769,
+          "compressed_bytes": 721852,
+          "parse_ms": 205.62,
+          "memory_mb": 44.806
+        }
+      ]
+    },
+    {
+      "architecture": "C-search-index",
+      "uncompressed_bytes": 37441377,
+      "compressed_bytes": 1545766,
+      "startup_bytes": 925044,
+      "search_index_bytes": 925044,
+      "detail_bytes": 36516333,
+      "startup_parse_ms": 24.84,
+      "lookup_ms": 4.724,
+      "lookup_us": 0.2362,
+      "memory_mb": 2.961,
+      "records": 14250
+    }
+  ],
+  "notes": [
+    "B's start-up figures are for the largest market, which is what the app would actually parse; the per-market breakdown is in the report.",
+    "C's start-up figure is the search index alone; the nutrient detail is a separate store, read only for a food the user opens.",
+    "Each architecture was loaded in a process of its own, so the heap figure is the catalogue and nothing else.",
+    "The shipped United States catalogue is 1420723 bytes, for comparison."
+  ]
+}

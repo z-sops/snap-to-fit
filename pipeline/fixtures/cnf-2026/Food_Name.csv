@@ -1,0 +1,21 @@
+Food_Code,Food_Description_EN,Food_Description_FR,Alternate_Description_EN,Alternate_Description_FR,Food_Source_Code,USDA_NDB_Code,CNF_Food_Group_Code,Comment_EN,Comment_FR,ScientificName,Food_Last_Updated_Date
+2,Cheese souffle,Soufflé au fromage,,,20,,22,,,,2012-06-28
+4,"Chop suey, with meat, canned","Chop suey, avec viande, conserve",,chopsuey,20,,22,,,,2026-01-28
+5,"Chinese dish, chow mein, chicken","Mets chinois, chow mein, poulet",,,0,36623,22,"Rice not included in the analyses.  May include onions, cabbage, carrots and/or broccoli.","Riz non inclus dans l'analyse. Peut inclure: oignons, chou, carottes et/ou brocoli.",,2026-01-28
+6,Corn fritter,"Maïs, beignet",,beignet de mais,20,,18,,,,2026-01-28
+7,"Frozen entree, beef pot roast with potatoes and vegetables, heated","Met surgelé, bœuf braisé, pomme de terre et légumes, réchauffé","Beef pot roast, beef stew, Rôti de bœuf, bœuf braisé","patate, patates, pommes de terre",37,,22,,,,2026-01-28
+8,"Frozen entree, fried chicken with mashed potatoes and vegetables, heated","Met surgelé, poulet frit avec pommes de terre en purée et légumes, réchauffé","potato, chicken nugget,nuggets","patate, patates, pilée, pilées, croquette, croquettes, croquettes de poulet",37,,22,,,,2026-01-28
+9,"Meat loaf with tomato sauce, mashed potatoes and peas","Pain de viande avec sauce aux tomates, pommes de terre en purée et pois","potato, potatoes, mash, mashed","patate, patates, pomme de terre, pilée, pilées",11,,22,,,,2026-01-28
+10,"Frozen entree, turkey with potato, vegetables and gravy, heated","Met surgelé, dinde avec pommes de terre, légumes et sauce, réchauffé","potato, potatoes, mash, mashed","patate, patates, pomme de terre, pilée, pilées",37,28145210,22,,,,2026-01-28
+100,"Cheese fondue, swiss/emmental/gruyere, ready-to-serve","Fondue au fromage, suisse/emmental/gruyère, prête-à-servir",,,37,01163,1,,,,2026-01-28
+105,"Cheese, low fat (4% M.F.)",Fromage faible en gras (4% M.G.),"low fat, low in fat, little fat, low source of fat","faible teneur en lipides, pauvre en lipides, peu de lipides, faible teneur en matières grasses, pauvre en matières grasses, peu de matières grasses, faible teneur en gras, pauvre en gras, peu de gras, faible teneur en graisses, pauvre en graisses, peu de graisses",37,01168,1,,,,2026-01-28
+108,"Cheese, feta",Fromage féta,,,37,01019,1,,,,2026-01-28
+109,"Cheese, gouda",Fromage gouda,,,37,01022,1,,,,2026-01-28
+124,"Milk, fluid, buttermilk, 1% M.F.","Lait, liquide, babeurre (lait de beurre), 1% M.G.",,,37,01088,1,"Sealtest, Neilson, Dairyland, Beatrice","Sealtest, Neilson, Dairyland, Béatrice",,2026-01-28
+1124,"Soup, pea, green, canned, condensed, water added","Soupe, pois verts, conserve, condensée, eau ajoutée",,,3,06449,6,,,,2012-07-11
+1587,"Lemon, raw, without peel","Citron, cru, sans pelure",,,0,09150,9,,,Citrus limon,2012-07-10
+1589,"Lemon juice, raw","Citron, jus, frais",,,0,09152,9,,,,2026-01-28
+1714,"Grapefruit, pink, red or white, all areas, raw","Pamplemousse, rose, rouge ou blanc, toutes régions, cru",,,3,09111,9,,,Citrus paradisi,2012-07-10
+1792,"Pork, loin, rib chop (rib end), bone-in, lean and fat, roasted","Porc, longe, côtelette bout côte, avec os, maigre et gras, rôti",,,0,10047,10,,,,2026-01-28
+5224,"Goose, wild (Canada goose), Indigenous, leg, meat and skin, fire roasted","Bernache du canada (outarde), autochtone, cuisse, viande et peau, rôtie sur le feu",,,28,,5,"Kuhnlein & Belinsky, JFCA (2000), 13, 101-115","Kuhnlein & Belinsky, JFCA (2000), 13, 101-115",Branta canadensis,2026-01-28
+7529,"Babyfood, vegetable and grain, jarred, creamed corn with rice","Aliment pour bébé, légumes et produits céréaliers, en pot, maïs en crème avec riz",,,37,,3,,,,2026-01-28

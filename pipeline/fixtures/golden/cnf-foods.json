@@ -1,0 +1,3546 @@
+{
+ "foods": [
+  {
+   "id": "cnf:10",
+   "name": "Frozen entree, turkey with potato, vegetables and gravy, heated",
+   "group": "Mixed Dishes",
+   "per100": {
+    "protein": 4.778658985,
+    "fat": 2.125347839,
+    "carbs": 15.603643233,
+    "calories": 100.657339422,
+    "sugar": 4.099461323,
+    "fibre": 1.423126882,
+    "calcium": 19.605240279,
+    "iron": 0.743761073,
+    "magnesium": 13.734308929,
+    "potassium": 170.064706468,
+    "sodium": 292.031372867,
+    "zinc": 0.403742448,
+    "vitaminA": 6.5,
+    "vitaminD": 0.0449,
+    "vitaminC": 0.24,
+    "vitaminB12": 0.071974829,
+    "folate": 28.78901301,
+    "cholesterol": 11.382507112,
+    "satFat": 0.497082244
+   },
+   "servings": [
+    {
+     "label": "140 g",
+     "grams": 14000
+    },
+    {
+     "label": "1 package",
+     "grams": 39370.2
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "37",
+    "description": "CNF Sampling and Analysis Program (SNAP-CAN)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "fat": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "sugar": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "fibre": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "calcium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "iron": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "magnesium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "potassium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "sodium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "zinc": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "vitaminA": {
+     "quality": "calculated",
+     "sourceCode": "16",
+     "sourceDescription": "Calculated field"
+    },
+    "vitaminD": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "vitaminC": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "vitaminB12": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "16",
+     "sourceDescription": "Calculated field"
+    },
+    "cholesterol": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "satFat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:28145210"
+   }
+  },
+  {
+   "id": "cnf:100",
+   "name": "Cheese fondue, swiss/emmental/gruyere, ready-to-serve",
+   "group": "Dairy and Egg Products",
+   "per100": {
+    "protein": 15.19,
+    "fat": 15.141,
+    "carbs": 5.5,
+    "calories": 230,
+    "sugar": 0,
+    "fibre": 0,
+    "calcium": 555,
+    "iron": 0.82,
+    "magnesium": 21,
+    "potassium": 70,
+    "sodium": 662,
+    "zinc": 2.14,
+    "vitaminA": 187,
+    "vitaminD": 0.1,
+    "vitaminC": 0,
+    "vitaminB12": 0.63,
+    "folate": 2,
+    "cholesterol": 56,
+    "satFat": 10.011
+   },
+   "servings": [
+    {
+     "label": "100 ml",
+     "grams": 10750
+    },
+    {
+     "label": "125 ml",
+     "grams": 13440
+    },
+    {
+     "label": "250 ml",
+     "grams": 26880
+    },
+    {
+     "label": "50 g",
+     "grams": 5000
+    },
+    {
+     "label": "100 g",
+     "grams": 10000
+    },
+    {
+     "label": "60 ml",
+     "grams": 6450
+    },
+    {
+     "label": "15 ml",
+     "grams": 1610
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "37",
+    "description": "CNF Sampling and Analysis Program (SNAP-CAN)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "fat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "sugar": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "fibre": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "calcium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "iron": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "magnesium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "potassium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "sodium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "zinc": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "vitaminA": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "vitaminD": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "vitaminC": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "vitaminB12": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "cholesterol": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    },
+    "satFat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 2
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:01163"
+   }
+  },
+  {
+   "id": "cnf:105",
+   "name": "Cheese, low fat (4% M.F.)",
+   "group": "Dairy and Egg Products",
+   "per100": {
+    "protein": 36.06,
+    "fat": 4.251,
+    "carbs": 2.05,
+    "calories": 199,
+    "sugar": 0,
+    "fibre": 0,
+    "calcium": 989,
+    "iron": 0.87,
+    "magnesium": 38,
+    "potassium": 68,
+    "sodium": 756,
+    "zinc": 4.78,
+    "vitaminA": 60,
+    "vitaminD": 0,
+    "vitaminC": 0,
+    "vitaminB12": 1.54,
+    "folate": 27,
+    "cholesterol": 28,
+    "satFat": 2.911
+   },
+   "servings": [
+    {
+     "label": "100 ml diced",
+     "grams": 5579
+    },
+    {
+     "label": "100 ml shredded",
+     "grams": 4776
+    },
+    {
+     "label": "50 g",
+     "grams": 5000
+    },
+    {
+     "label": "250 ml diced",
+     "grams": 13947.6
+    },
+    {
+     "label": "250 ml shredded",
+     "grams": 11940
+    },
+    {
+     "label": "30 g",
+     "grams": 3000
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "37",
+    "description": "CNF Sampling and Analysis Program (SNAP-CAN)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "fat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "sugar": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "fibre": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "calcium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "iron": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "magnesium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "potassium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "sodium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "zinc": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminD": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "vitaminC": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminB12": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "cholesterol": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "satFat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:01168"
+   }
+  },
+  {
+   "id": "cnf:108",
+   "name": "Cheese, feta",
+   "group": "Dairy and Egg Products",
+   "per100": {
+    "protein": 16.77,
+    "fat": 22.461,
+    "carbs": 0.37,
+    "calories": 270,
+    "sugar": 0.18,
+    "fibre": 0,
+    "calcium": 399,
+    "iron": 0.59,
+    "magnesium": 10,
+    "potassium": 52,
+    "sodium": 1843,
+    "zinc": 1.65,
+    "vitaminA": 125,
+    "vitaminD": 0.1,
+    "vitaminC": 0,
+    "vitaminB12": 0.45,
+    "folate": 2,
+    "cholesterol": 81,
+    "satFat": 14.586
+   },
+   "servings": [
+    {
+     "label": "100 ml crumbled",
+     "grams": 6339.8
+    },
+    {
+     "label": "50 g",
+     "grams": 5000
+    },
+    {
+     "label": "250 ml, crumbled",
+     "grams": 15849.5
+    },
+    {
+     "label": "30 g",
+     "grams": 3000
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "37",
+    "description": "CNF Sampling and Analysis Program (SNAP-CAN)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6,
+     "standardError": 0.908
+    },
+    "fat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "sugar": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6
+    },
+    "fibre": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calcium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6,
+     "standardError": 50.141
+    },
+    "iron": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6,
+     "standardError": 0.08
+    },
+    "magnesium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6,
+     "standardError": 2.047
+    },
+    "potassium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6,
+     "standardError": 7.441
+    },
+    "sodium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6,
+     "standardError": 191.474
+    },
+    "zinc": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6,
+     "standardError": 0.268
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminD": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "vitaminC": {
+     "quality": "calculated",
+     "sourceCode": "4",
+     "sourceDescription": "Nutrient calculated from USDA data",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminB12": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6,
+     "standardError": 0.058
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "cholesterol": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 6,
+     "standardError": 3.109
+    },
+    "satFat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 5
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:01019"
+   }
+  },
+  {
+   "id": "cnf:109",
+   "name": "Cheese, gouda",
+   "group": "Dairy and Egg Products",
+   "per100": {
+    "protein": 23.36,
+    "fat": 33.22,
+    "carbs": 0.32,
+    "calories": 393,
+    "sugar": 0.09,
+    "fibre": 0,
+    "calcium": 745,
+    "iron": 1.03,
+    "magnesium": 28,
+    "potassium": 68,
+    "sodium": 773,
+    "zinc": 3.6,
+    "vitaminA": 165,
+    "vitaminD": 0.156,
+    "vitaminC": 0,
+    "vitaminB12": 1.8,
+    "folate": 6,
+    "cholesterol": 106,
+    "satFat": 21.76
+   },
+   "servings": [
+    {
+     "label": "100 ml diced",
+     "grams": 5579
+    },
+    {
+     "label": "50 g",
+     "grams": 5000
+    },
+    {
+     "label": "250 ml, diced",
+     "grams": 13975
+    },
+    {
+     "label": "30 g",
+     "grams": 3000
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "37",
+    "description": "CNF Sampling and Analysis Program (SNAP-CAN)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 1.117
+    },
+    "fat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "sugar": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4
+    },
+    "fibre": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calcium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 37.134
+    },
+    "iron": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 0.15
+    },
+    "magnesium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 1.645
+    },
+    "potassium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 6.836
+    },
+    "sodium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 41.959
+    },
+    "zinc": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 0.224
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 4
+    },
+    "vitaminD": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "vitaminC": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminB12": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 0.229
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "cholesterol": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 6.107
+    },
+    "satFat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:01022"
+   }
+  },
+  {
+   "id": "cnf:1124",
+   "name": "Soup, pea, green, canned, condensed, water added",
+   "group": "Soups, Sauces and Gravies",
+   "per100": {
+    "protein": 3.2,
+    "fat": 1.09,
+    "carbs": 9.88,
+    "calories": 61,
+    "sugar": 3.19,
+    "fibre": 1.9,
+    "calcium": 12,
+    "iron": 0.73,
+    "magnesium": 15,
+    "potassium": 71,
+    "sodium": 336,
+    "zinc": 0.64,
+    "vitaminA": 3,
+    "vitaminD": 0,
+    "vitaminC": 0.6,
+    "vitaminB12": 0,
+    "folate": 1,
+    "cholesterol": 0,
+    "satFat": 0.524
+   },
+   "servings": [
+    {
+     "label": "100 ml",
+     "grams": 10566.4
+    },
+    {
+     "label": "125 ml",
+     "grams": 13207.9
+    },
+    {
+     "label": "250 ml",
+     "grams": 26415.9
+    },
+    {
+     "label": "1 can diluted",
+     "grams": 59968.9
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "3",
+    "description": "Food based on data from USDA: some nutrients analyzed in the Canadian product"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "fat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "carbs": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calories": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sugar": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "fibre": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 16,
+     "standardError": 0
+    },
+    "calcium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "iron": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "magnesium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "potassium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sodium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 1
+    },
+    "zinc": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminD": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA"
+    },
+    "vitaminC": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminB12": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "4",
+     "sourceDescription": "Nutrient calculated from USDA data",
+     "observations": 0
+    },
+    "cholesterol": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "satFat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:06449"
+   }
+  },
+  {
+   "id": "cnf:124",
+   "name": "Milk, fluid, buttermilk, 1% M.F.",
+   "group": "Dairy and Egg Products",
+   "per100": {
+    "protein": 3.79,
+    "fat": 0.818,
+    "carbs": 3.23,
+    "calories": 36,
+    "sugar": 3.19,
+    "fibre": 0,
+    "calcium": 116,
+    "iron": 0.24,
+    "magnesium": 11,
+    "potassium": 156,
+    "sodium": 61,
+    "zinc": 0.4,
+    "vitaminA": 14,
+    "vitaminD": 0,
+    "vitaminC": 1,
+    "vitaminB12": 0.339,
+    "folate": 2.1,
+    "cholesterol": 3,
+    "satFat": 0.552
+   },
+   "servings": [
+    {
+     "label": "100 ml",
+     "grams": 10355
+    },
+    {
+     "label": "250 ml",
+     "grams": 25887.6
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "37",
+    "description": "CNF Sampling and Analysis Program (SNAP-CAN)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 0.23
+    },
+    "fat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "sugar": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 0.11
+    },
+    "fibre": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "calcium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 2.94
+    },
+    "iron": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 0.02
+    },
+    "magnesium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 0.18
+    },
+    "potassium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 3.66
+    },
+    "sodium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 6.82
+    },
+    "zinc": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 0.01
+    },
+    "vitaminA": {
+     "quality": "imputed",
+     "sourceCode": "5",
+     "sourceDescription": "Nutrient imputed from a similar USDA food",
+     "observations": 0
+    },
+    "vitaminD": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "vitaminC": {
+     "quality": "imputed",
+     "sourceCode": "5",
+     "sourceDescription": "Nutrient imputed from a similar USDA food",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminB12": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 0.151
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "cholesterol": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7,
+     "standardError": 0.26
+    },
+    "satFat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 7
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:01088"
+   }
+  },
+  {
+   "id": "cnf:1587",
+   "name": "Lemon, raw, without peel",
+   "group": "Fruits and fruit juices",
+   "per100": {
+    "protein": 1.1,
+    "fat": 0.3,
+    "carbs": 9.32,
+    "calories": 29,
+    "sugar": 2.5,
+    "fibre": 2.8,
+    "calcium": 26,
+    "iron": 0.6,
+    "magnesium": 8,
+    "potassium": 138,
+    "sodium": 2,
+    "zinc": 0.06,
+    "vitaminA": 1,
+    "vitaminD": 0,
+    "vitaminC": 53,
+    "vitaminB12": 0,
+    "folate": 11,
+    "cholesterol": 0,
+    "satFat": 0.039
+   },
+   "servings": [
+    {
+     "label": "1 medium fruit (5.4 cm dia)",
+     "grams": 5800
+    },
+    {
+     "label": "1 large fruit (6 cm dia)",
+     "grams": 8400
+    },
+    {
+     "label": "100 ml sections",
+     "grams": 8960.3
+    },
+    {
+     "label": "125 ml sections",
+     "grams": 11200.3
+    },
+    {
+     "label": "250 ml sections",
+     "grams": 22400.7
+    },
+    {
+     "label": "1 wedge or slice of medium fruit",
+     "grams": 700
+    },
+    {
+     "label": "55 g",
+     "grams": 5500
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "0",
+    "description": "Food based on data from USDA: No changes"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "fat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "carbs": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calories": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sugar": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "fibre": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calcium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "iron": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "magnesium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "potassium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sodium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "zinc": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 1
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminD": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminC": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminB12": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "4",
+     "sourceDescription": "Nutrient calculated from USDA data",
+     "observations": 0
+    },
+    "cholesterol": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "satFat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:09150"
+   }
+  },
+  {
+   "id": "cnf:1589",
+   "name": "Lemon juice, raw",
+   "group": "Fruits and fruit juices",
+   "per100": {
+    "protein": 0.35,
+    "fat": 0.24,
+    "carbs": 6.9,
+    "calories": 22,
+    "sugar": 2.52,
+    "fibre": 0.3,
+    "calcium": 6,
+    "iron": 0.08,
+    "magnesium": 6,
+    "potassium": 103,
+    "sodium": 1,
+    "zinc": 0.05,
+    "vitaminA": 0,
+    "vitaminD": 0,
+    "vitaminC": 38.7,
+    "vitaminB12": 0,
+    "folate": 20,
+    "cholesterol": 0,
+    "satFat": 0.04
+   },
+   "servings": [
+    {
+     "label": "100 ml",
+     "grams": 10312.8
+    },
+    {
+     "label": "125 ml",
+     "grams": 12891
+    },
+    {
+     "label": "15 ml",
+     "grams": 1546.9
+    },
+    {
+     "label": "250 ml",
+     "grams": 25781.9
+    },
+    {
+     "label": "5 ml",
+     "grams": 515.6
+    },
+    {
+     "label": "1 fruit yields",
+     "grams": 4700
+    },
+    {
+     "label": "1 wedge yields",
+     "grams": 590
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "0",
+    "description": "Food based on data from USDA: No changes"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.003
+    },
+    "fat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.164
+    },
+    "carbs": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calories": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sugar": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 4,
+     "standardError": 0.105
+    },
+    "fibre": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.092
+    },
+    "calcium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 2.15
+    },
+    "iron": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 4,
+     "standardError": 0.005
+    },
+    "magnesium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.915
+    },
+    "potassium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 8,
+     "standardError": 6.063
+    },
+    "sodium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 15,
+     "standardError": 0.178
+    },
+    "zinc": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.021
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 1
+    },
+    "vitaminD": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminC": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 8,
+     "standardError": 2.474
+    },
+    "vitaminB12": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "folate": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "cholesterol": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero",
+     "observations": 0
+    },
+    "satFat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:09152"
+   }
+  },
+  {
+   "id": "cnf:1714",
+   "name": "Grapefruit, pink, red or white, all areas, raw",
+   "group": "Fruits and fruit juices",
+   "per100": {
+    "protein": 0.63,
+    "fat": 0.1,
+    "carbs": 8.08,
+    "calories": 32,
+    "sugar": 6.98,
+    "fibre": 1.77,
+    "calcium": 12,
+    "iron": 0.09,
+    "magnesium": 8,
+    "potassium": 139,
+    "sodium": 0,
+    "zinc": 0.07,
+    "vitaminA": 46,
+    "vitaminD": 0,
+    "vitaminC": 34.4,
+    "vitaminB12": 0,
+    "folate": 10,
+    "cholesterol": 0,
+    "satFat": 0.014
+   },
+   "servings": [
+    {
+     "label": "100 ml sections",
+     "grams": 9721
+    },
+    {
+     "label": "125 ml sections",
+     "grams": 12151.3
+    },
+    {
+     "label": "250 ml sections",
+     "grams": 24302.6
+    },
+    {
+     "label": "1/2 fruit (approx 11.5cm dia)",
+     "grams": 16600
+    },
+    {
+     "label": "1/2 fruit (approx 10cm dia)",
+     "grams": 12800
+    },
+    {
+     "label": "1/2 fruit (approx 9cm dia)",
+     "grams": 10000
+    },
+    {
+     "label": "140 g",
+     "grams": 14000
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "3",
+    "description": "Food based on data from USDA: some nutrients analyzed in the Canadian product"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 51,
+     "standardError": 0.009
+    },
+    "fat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "carbs": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calories": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sugar": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "fibre": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 20,
+     "standardError": 0
+    },
+    "calcium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 49,
+     "standardError": 0.265
+    },
+    "iron": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 35,
+     "standardError": 0.004
+    },
+    "magnesium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 97,
+     "standardError": 0.313
+    },
+    "potassium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 73,
+     "standardError": 2.089
+    },
+    "sodium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 36,
+     "standardError": 0.028
+    },
+    "zinc": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 1
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminD": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminC": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 49,
+     "standardError": 0.71
+    },
+    "vitaminB12": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "4",
+     "sourceDescription": "Nutrient calculated from USDA data",
+     "observations": 0
+    },
+    "cholesterol": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "satFat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:09111"
+   }
+  },
+  {
+   "id": "cnf:1792",
+   "name": "Pork, loin, rib chop (rib end), bone-in, lean and fat, roasted",
+   "group": "Pork Products",
+   "per100": {
+    "protein": 26.99,
+    "fat": 14.68,
+    "carbs": 0,
+    "calories": 248,
+    "sugar": 0,
+    "fibre": 0,
+    "calcium": 19,
+    "iron": 0.96,
+    "magnesium": 21,
+    "potassium": 272,
+    "sodium": 91,
+    "zinc": 2.91,
+    "vitaminA": 5,
+    "vitaminD": 0.7,
+    "vitaminC": 0,
+    "vitaminB12": 0.87,
+    "folate": 0,
+    "cholesterol": 78,
+    "satFat": 5.442
+   },
+   "servings": [
+    {
+     "label": "100 g raw as purchased",
+     "grams": 4938.3
+    },
+    {
+     "label": "100 ml chopped or diced",
+     "grams": 5664
+    },
+    {
+     "label": "250 ml chopped or diced",
+     "grams": 14160
+    },
+    {
+     "label": "100 g",
+     "grams": 10000
+    },
+    {
+     "label": "75 g",
+     "grams": 7500
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "0",
+    "description": "Food based on data from USDA: No changes"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "fat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "carbs": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calories": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sugar": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "fibre": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero",
+     "observations": 0
+    },
+    "calcium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "iron": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "magnesium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "potassium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sodium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "zinc": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminD": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminC": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminB12": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "folate": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "cholesterol": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "satFat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:10047"
+   }
+  },
+  {
+   "id": "cnf:2",
+   "name": "Cheese souffle",
+   "group": "Mixed Dishes",
+   "per100": {
+    "protein": 9.54415,
+    "fat": 15.7047,
+    "carbs": 5.911,
+    "calories": 204,
+    "sugar": 2.661,
+    "fibre": 0.117,
+    "calcium": 184.314,
+    "iron": 0.743,
+    "magnesium": 13.44,
+    "potassium": 119.443,
+    "sodium": 317.752,
+    "zinc": 1.1039,
+    "vitaminA": 193.758,
+    "vitaminD": 1.973,
+    "vitaminC": 0.04933,
+    "vitaminB12": 0.60432,
+    "folate": 30.44898,
+    "cholesterol": 129.182,
+    "satFat": 5.742
+   },
+   "servings": [
+    {
+     "label": "100 ml",
+     "grams": 4015.2
+    },
+    {
+     "label": "125 ml",
+     "grams": 5019
+    },
+    {
+     "label": "250 ml",
+     "grams": 10038
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "20",
+    "description": "Food available in the Canadian food supply, but not found in the USDA: no changes from Nutrition Canada Survey (1970–1972)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "fat": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "sugar": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "fibre": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "calcium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "iron": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "magnesium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "potassium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "sodium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "zinc": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminA": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "vitaminD": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminC": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminB12": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "4",
+     "sourceDescription": "Nutrient calculated from USDA data"
+    },
+    "cholesterol": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "satFat": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    }
+   }
+  },
+  {
+   "id": "cnf:4",
+   "name": "Chop suey, with meat, canned",
+   "group": "Mixed Dishes",
+   "per100": {
+    "protein": 4.074,
+    "fat": 2.799,
+    "carbs": 5.293,
+    "calories": 60,
+    "sugar": 3.396,
+    "fibre": 1.149,
+    "calcium": 16.653,
+    "iron": 0.594,
+    "magnesium": 12.568,
+    "potassium": 163.635,
+    "sodium": 489.79,
+    "zinc": 0.391,
+    "vitaminA": 5.229,
+    "vitaminD": 0.0291,
+    "vitaminC": 4.464,
+    "vitaminB12": 0.0584,
+    "folate": 24.69398,
+    "cholesterol": 6.005,
+    "satFat": 0.364
+   },
+   "servings": [
+    {
+     "label": "100 ml",
+     "grams": 9298.4
+    },
+    {
+     "label": "125 ml",
+     "grams": 11623
+    },
+    {
+     "label": "250 ml",
+     "grams": 23246
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "20",
+    "description": "Food available in the Canadian food supply, but not found in the USDA: no changes from Nutrition Canada Survey (1970–1972)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "fat": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "sugar": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "fibre": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "calcium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "iron": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "magnesium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "potassium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "sodium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "zinc": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "vitaminA": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "vitaminD": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "vitaminC": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminB12": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "4",
+     "sourceDescription": "Nutrient calculated from USDA data"
+    },
+    "cholesterol": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "satFat": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    }
+   }
+  },
+  {
+   "id": "cnf:5",
+   "name": "Chinese dish, chow mein, chicken",
+   "group": "Mixed Dishes",
+   "per100": {
+    "protein": 6.76,
+    "fat": 2.8,
+    "carbs": 8.29,
+    "calories": 85,
+    "sugar": 1.74,
+    "fibre": 1,
+    "calcium": 21,
+    "iron": 0.67,
+    "magnesium": 11,
+    "potassium": 124,
+    "sodium": 311,
+    "zinc": 0.32,
+    "vitaminA": 19,
+    "vitaminD": 0.01465,
+    "vitaminC": 2,
+    "vitaminB12": 0.07,
+    "folate": 32.0984,
+    "cholesterol": 16,
+    "satFat": 0.49
+   },
+   "servings": [
+    {
+     "label": "1 order",
+     "grams": 60400
+    },
+    {
+     "label": "100 ml",
+     "grams": 9298.9
+    },
+    {
+     "label": "250 ml",
+     "grams": 23247.2
+    },
+    {
+     "label": "125 ml",
+     "grams": 11623.6
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "0",
+    "description": "Food based on data from USDA: No changes"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.538
+    },
+    "fat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 12,
+     "standardError": 0.406
+    },
+    "carbs": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calories": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sugar": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.163
+    },
+    "fibre": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.075
+    },
+    "calcium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 12,
+     "standardError": 1.614
+    },
+    "iron": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 12,
+     "standardError": 0.151
+    },
+    "magnesium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 12,
+     "standardError": 0.88
+    },
+    "potassium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 12,
+     "standardError": 8.601
+    },
+    "sodium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 12,
+     "standardError": 36.558
+    },
+    "zinc": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 12,
+     "standardError": 0.045
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminD": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "vitaminC": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.503
+    },
+    "vitaminB12": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "2",
+     "sourceDescription": "Nutrient calculated from data other than USDA"
+    },
+    "cholesterol": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 1.666
+    },
+    "satFat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:36623"
+   }
+  },
+  {
+   "id": "cnf:5224",
+   "name": "Goose, wild (Canada goose), Indigenous, leg, meat and skin, fire roasted",
+   "group": "Poultry Products",
+   "per100": {
+    "protein": 28.79,
+    "fat": 17.09,
+    "carbs": 0,
+    "calories": 277,
+    "sugar": 0,
+    "fibre": 0,
+    "calcium": 8.59,
+    "iron": 5.58,
+    "sodium": 71,
+    "zinc": 4.1,
+    "vitaminA": 21,
+    "vitaminC": 0,
+    "satFat": 4.30366
+   },
+   "servings": [
+    {
+     "label": "1 leg",
+     "grams": 17400
+    },
+    {
+     "label": "100 ml chopped or diced",
+     "grams": 5917.2
+    },
+    {
+     "label": "100 g",
+     "grams": 10000
+    },
+    {
+     "label": "250 ml chopped or diced",
+     "grams": 14792.9
+    },
+    {
+     "label": "75 g",
+     "grams": 7500
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "28",
+    "description": "Traditional food"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "estimated",
+     "sourceCode": "10",
+     "sourceDescription": "Nutrient derived from scientific literature",
+     "observations": 1
+    },
+    "fat": {
+     "quality": "estimated",
+     "sourceCode": "10",
+     "sourceDescription": "Nutrient derived from scientific literature",
+     "observations": 1
+    },
+    "carbs": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero",
+     "observations": 0
+    },
+    "calories": {
+     "quality": "estimated",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero",
+     "observations": 0,
+     "needsReview": true,
+     "reviewReason": "the source marks this value as an assumed zero, but the amount it published is not zero"
+    },
+    "sugar": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "fibre": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "calcium": {
+     "quality": "estimated",
+     "sourceCode": "10",
+     "sourceDescription": "Nutrient derived from scientific literature",
+     "observations": 1
+    },
+    "iron": {
+     "quality": "estimated",
+     "sourceCode": "10",
+     "sourceDescription": "Nutrient derived from scientific literature",
+     "observations": 1
+    },
+    "sodium": {
+     "quality": "calculated",
+     "sourceCode": "2",
+     "sourceDescription": "Nutrient calculated from data other than USDA"
+    },
+    "zinc": {
+     "quality": "estimated",
+     "sourceCode": "10",
+     "sourceDescription": "Nutrient derived from scientific literature",
+     "observations": 1
+    },
+    "vitaminA": {
+     "quality": "imputed",
+     "sourceCode": "5",
+     "sourceDescription": "Nutrient imputed from a similar USDA food"
+    },
+    "vitaminC": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "satFat": {
+     "quality": "calculated",
+     "sourceCode": "2",
+     "sourceDescription": "Nutrient calculated from data other than USDA",
+     "observations": 0
+    }
+   }
+  },
+  {
+   "id": "cnf:6",
+   "name": "Corn fritter",
+   "group": "Baked Products",
+   "per100": {
+    "protein": 8.55,
+    "fat": 21.238,
+    "carbs": 38.623,
+    "calories": 374,
+    "sugar": 2.851,
+    "fibre": 1.994,
+    "calcium": 73.534,
+    "iron": 2.502,
+    "magnesium": 22.463,
+    "potassium": 154.209,
+    "sodium": 441.257,
+    "zinc": 0.844,
+    "vitaminA": 50.311,
+    "vitaminD": 0.519,
+    "vitaminC": 0.327,
+    "vitaminB12": 0.319,
+    "folate": 112.3139,
+    "cholesterol": 61.098,
+    "satFat": 5.455
+   },
+   "servings": [
+    {
+     "label": "1 fritter",
+     "grams": 3500
+    },
+    {
+     "label": "100 ml",
+     "grams": 4522.4
+    },
+    {
+     "label": "125 ml",
+     "grams": 5653
+    },
+    {
+     "label": "250 ml",
+     "grams": 11306
+    },
+    {
+     "label": "55 g",
+     "grams": 5500
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "20",
+    "description": "Food available in the Canadian food supply, but not found in the USDA: no changes from Nutrition Canada Survey (1970–1972)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "fat": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "sugar": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "fibre": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "calcium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "iron": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "magnesium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "potassium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "sodium": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "zinc": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminA": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "vitaminD": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminC": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminB12": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "2",
+     "sourceDescription": "Nutrient calculated from data other than USDA"
+    },
+    "cholesterol": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    },
+    "satFat": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe",
+     "observations": 0,
+     "standardError": 0
+    }
+   }
+  },
+  {
+   "id": "cnf:7",
+   "name": "Frozen entree, beef pot roast with potatoes and vegetables, heated",
+   "group": "Mixed Dishes",
+   "per100": {
+    "protein": 5.457754485,
+    "fat": 1.909353185,
+    "carbs": 9.258947951,
+    "calories": 76.050988411,
+    "sugar": 1.642639262,
+    "fibre": 1.664603493,
+    "calcium": 18.903816215,
+    "iron": 1.156338111,
+    "magnesium": 14.404063515,
+    "potassium": 246.933062328,
+    "sodium": 197.664659693,
+    "zinc": 1.026725089,
+    "vitaminA": 15.469,
+    "vitaminD": 0,
+    "vitaminC": 1.87,
+    "vitaminB12": 0.171601085,
+    "folate": 19.605119021,
+    "cholesterol": 14.308890479,
+    "satFat": 0.812205884
+   },
+   "servings": [
+    {
+     "label": "140 g",
+     "grams": 14000
+    },
+    {
+     "label": "1 package",
+     "grams": 26378
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "37",
+    "description": "CNF Sampling and Analysis Program (SNAP-CAN)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.2087
+    },
+    "fat": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data",
+     "standardError": 0.7702
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data",
+     "standardError": 6.471
+    },
+    "sugar": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data",
+     "standardError": 0.2046
+    },
+    "fibre": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.1856
+    },
+    "calcium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.7989
+    },
+    "iron": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.2917
+    },
+    "magnesium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.5044
+    },
+    "potassium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 20.1692
+    },
+    "sodium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 30.4952
+    },
+    "zinc": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.1054
+    },
+    "vitaminA": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "vitaminD": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0
+    },
+    "vitaminC": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0
+    },
+    "vitaminB12": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.0802
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "16",
+     "sourceDescription": "Calculated field"
+    },
+    "cholesterol": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 1.6241
+    },
+    "satFat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.1969
+    }
+   }
+  },
+  {
+   "id": "cnf:7529",
+   "name": "Babyfood, vegetable and grain, jarred, creamed corn with rice",
+   "group": "Babyfoods",
+   "per100": {
+    "protein": 1.78,
+    "fat": 1.27,
+    "carbs": 12.01,
+    "calories": 58,
+    "sugar": 3.96,
+    "fibre": 1.5,
+    "calcium": 5,
+    "iron": 0.23,
+    "magnesium": 15,
+    "potassium": 118,
+    "sodium": 1,
+    "zinc": 0.31,
+    "vitaminA": 0,
+    "vitaminD": 0,
+    "vitaminC": 0,
+    "vitaminB12": 0,
+    "folate": 5,
+    "cholesterol": 1,
+    "satFat": 0.273
+   },
+   "servings": [
+    {
+     "label": "1 small container",
+     "grams": 12800
+    },
+    {
+     "label": "100 ml",
+     "grams": 10513.5
+    },
+    {
+     "label": "30 ml",
+     "grams": 3154
+    },
+    {
+     "label": "60 ml",
+     "grams": 6308
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "37",
+    "description": "CNF Sampling and Analysis Program (SNAP-CAN)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "fat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "sugar": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "fibre": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "calcium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "iron": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "magnesium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "potassium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "sodium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "zinc": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "vitaminA": {
+     "quality": "estimated",
+     "sourceCode": "9",
+     "sourceDescription": "Nutrient from the label declaration"
+    },
+    "vitaminD": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "vitaminC": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    },
+    "vitaminB12": {
+     "quality": "documented-zero",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero"
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "cholesterol": {
+     "quality": "estimated",
+     "sourceCode": "12",
+     "sourceDescription": "Nutrient value is an assumed zero",
+     "needsReview": true,
+     "reviewReason": "the source marks this value as an assumed zero, but the amount it published is not zero"
+    },
+    "satFat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 1
+    }
+   }
+  },
+  {
+   "id": "cnf:8",
+   "name": "Frozen entree, fried chicken with mashed potatoes and vegetables, heated",
+   "group": "Mixed Dishes",
+   "per100": {
+    "protein": 7.854376634,
+    "fat": 8.001006618,
+    "carbs": 20.298021464,
+    "calories": 184.61865195,
+    "sugar": 5.163940289,
+    "fibre": 1.809102717,
+    "calcium": 15.531012628,
+    "iron": 2.036992628,
+    "magnesium": 23.281843226,
+    "potassium": 206.726844098,
+    "sodium": 351.048089232,
+    "zinc": 0.531602618,
+    "vitaminA": 29.5,
+    "vitaminD": 0.0919,
+    "vitaminC": 0.71,
+    "vitaminB12": 0.040920979,
+    "folate": 97.088402072,
+    "cholesterol": 28.007613777,
+    "satFat": 1.758698014
+   },
+   "servings": [
+    {
+     "label": "140 g",
+     "grams": 14000
+    },
+    {
+     "label": "1 package",
+     "grams": 37214.9
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "37",
+    "description": "CNF Sampling and Analysis Program (SNAP-CAN)"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.0454
+    },
+    "fat": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data"
+    },
+    "carbs": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data",
+     "standardError": 0.4677
+    },
+    "calories": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data",
+     "standardError": 7.153
+    },
+    "sugar": {
+     "quality": "calculated",
+     "sourceCode": "17",
+     "sourceDescription": "Calculated from analytical Canadian data",
+     "standardError": 0.5075
+    },
+    "fibre": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.1333
+    },
+    "calcium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 1.7052
+    },
+    "iron": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.293
+    },
+    "magnesium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.9662
+    },
+    "potassium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 11.2695
+    },
+    "sodium": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 38.5247
+    },
+    "zinc": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.0439
+    },
+    "vitaminA": {
+     "quality": "calculated",
+     "sourceCode": "16",
+     "sourceDescription": "Calculated field"
+    },
+    "vitaminD": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0
+    },
+    "vitaminC": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0
+    },
+    "vitaminB12": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 0.0034
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "16",
+     "sourceDescription": "Calculated field"
+    },
+    "cholesterol": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3,
+     "standardError": 2.5298
+    },
+    "satFat": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 3
+    }
+   }
+  },
+  {
+   "id": "cnf:9",
+   "name": "Meat loaf with tomato sauce, mashed potatoes and peas",
+   "group": "Mixed Dishes",
+   "per100": {
+    "protein": 8,
+    "fat": 6.7,
+    "carbs": 9.8,
+    "calories": 131,
+    "fibre": 1.17,
+    "calcium": 19,
+    "iron": 1.3,
+    "potassium": 115,
+    "sodium": 393,
+    "vitaminA": 21.5,
+    "vitaminC": 4,
+    "cholesterol": 31,
+    "satFat": 3
+   },
+   "servings": [
+    {
+     "label": "195 g",
+     "grams": 19500
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "11",
+    "description": "Food based on data from USDA. Food has been deleted from USDA"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "fat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "carbs": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "calories": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "fibre": {
+     "quality": "calculated",
+     "sourceCode": "51",
+     "sourceDescription": "Calculated using a recipe"
+    },
+    "calcium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "iron": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "potassium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "sodium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "vitaminA": {
+     "quality": "calculated",
+     "sourceCode": "16",
+     "sourceDescription": "Calculated field"
+    },
+    "vitaminC": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "cholesterol": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    },
+    "satFat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0,
+     "standardError": 0
+    }
+   }
+  }
+ ],
+ "findings": [
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:10",
+   "detail": "the source names usda:28145210 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:100",
+   "detail": "the source names usda:01163 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:105",
+   "detail": "the source names usda:01168 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:108",
+   "detail": "the source names usda:01019 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:109",
+   "detail": "the source names usda:01022 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:1124",
+   "detail": "the source names usda:06449 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:124",
+   "detail": "the source names usda:01088 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:1587",
+   "detail": "the source names usda:09150 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:1589",
+   "detail": "the source names usda:09152 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:1714",
+   "detail": "the source names usda:09111 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:1792",
+   "detail": "the source names usda:10047 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:5",
+   "detail": "the source names usda:36623 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "source-conflict",
+   "id": "cnf:5224",
+   "nutrient": "calories",
+   "detail": "the source marks this value as an assumed zero, but the amount it published is not zero"
+  },
+  {
+   "kind": "source-conflict",
+   "id": "cnf:7529",
+   "nutrient": "cholesterol",
+   "detail": "the source marks this value as an assumed zero, but the amount it published is not zero"
+  }
+ ],
+ "schema_version": 2
+}

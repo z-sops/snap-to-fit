@@ -1,0 +1,1147 @@
+{
+  "schema_version": 2,
+  "built_from": [
+    {
+      "source_id": "ca-cnf-2026",
+      "sha256": "f5faad8977ee6bbdd9d69c8649077cacd87d8658ad200509a4047db1e29edcdd"
+    },
+    {
+      "source_id": "usda-sr28",
+      "sha256": "f2b1a828ce58ee0731d076938b483c16c194bc276294a99d7263cc137fd060a2"
+    }
+  ],
+  "records": 14250,
+  "records_by_region": {
+    "CA": 5993,
+    "US": 8257
+  },
+  "records_with_any_value": 14250,
+  "records_with_no_value": 0,
+  "findings_total": 222,
+  "findings_by_kind": {
+    "unresolved-cross-reference": 220,
+    "source-conflict": 2
+  },
+  "value_quality_counts": {
+    "inherited": 214086,
+    "calculated": 15893,
+    "analysed": 12198,
+    "documented-zero": 4325,
+    "estimated": 3835,
+    "imputed": 2737
+  },
+  "findings": [
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:10",
+      "detail": "the source names usda:28145210 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:100",
+      "detail": "the source names usda:01163 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1057",
+      "detail": "the source names usda:06425 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1064",
+      "detail": "the source names usda:06445 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1068",
+      "detail": "the source names usda:06455 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1076",
+      "detail": "the source names usda:06473 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1077",
+      "detail": "the source names usda:06474 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1080",
+      "detail": "the source names usda:06477 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1086",
+      "detail": "the source names usda:06485 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1087",
+      "detail": "the source names usda:06486 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1091",
+      "detail": "the source names usda:06493 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1092",
+      "detail": "the source names usda:06495 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1095",
+      "detail": "the source names usda:06499 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1096",
+      "detail": "the source names usda:06500 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1097",
+      "detail": "the source names usda:06501 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1719",
+      "detail": "the source names usda:09136 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1720",
+      "detail": "the source names usda:09137 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1857",
+      "detail": "the source names usda:10129 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:1869",
+      "detail": "the source names usda:10147 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:2062",
+      "detail": "the source names usda:11159 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:2683",
+      "detail": "the source names usda:13295 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:2881",
+      "detail": "the source names usda:14228 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:2882",
+      "detail": "the source names usda:14229 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:2894",
+      "detail": "the source names usda:14302 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:2905",
+      "detail": "the source names usda:14346 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:2958",
+      "detail": "the source names usda:14266 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:2962",
+      "detail": "the source names usda:14289 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:2963",
+      "detail": "the source names usda:14290 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:3227",
+      "detail": "the source names usda:15279 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:3228",
+      "detail": "the source names usda:15283 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:3731",
+      "detail": "the source names usda:18068 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:3757",
+      "detail": "the source names usda:18099 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:3790",
+      "detail": "the source names usda:18137 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4264",
+      "detail": "the source names usda:19211 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4268",
+      "detail": "the source names usda:19215 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4284",
+      "detail": "the source names usda:19245 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4426",
+      "detail": "the source names usda:20056 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4427",
+      "detail": "the source names usda:20057 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4648",
+      "detail": "the source names usda:21122 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4649",
+      "detail": "the source names usda:21123 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4935",
+      "detail": "the source names usda:22578 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4936",
+      "detail": "the source names usda:22579 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4939",
+      "detail": "the source names usda:22582 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4940",
+      "detail": "the source names usda:22583 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4941",
+      "detail": "the source names usda:22585 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4942",
+      "detail": "the source names usda:22595 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:4954",
+      "detail": "the source names usda:22690 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5002",
+      "detail": "the source names usda:07239 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "source-conflict",
+      "id": "cnf:5224",
+      "nutrient": "calories",
+      "detail": "the source marks this value as an assumed zero, but the amount it published is not zero"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5292",
+      "detail": "the source names usda:14383 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5371",
+      "detail": "the source names usda:06979 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5424",
+      "detail": "the source names usda:14435 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5472",
+      "detail": "the source names usda:42149 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5518",
+      "detail": "the source names usda:43018 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5632",
+      "detail": "the source names usda:47011 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5768",
+      "detail": "the source names usda:35014 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5857",
+      "detail": "the source names usda:19872 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5871",
+      "detail": "the source names usda:35001 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5872",
+      "detail": "the source names usda:35225 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5873",
+      "detail": "the source names usda:35003 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5874",
+      "detail": "the source names usda:35004 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5875",
+      "detail": "the source names usda:35010 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5876",
+      "detail": "the source names usda:35012 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5877",
+      "detail": "the source names usda:35013 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5879",
+      "detail": "the source names usda:35016 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5881",
+      "detail": "the source names usda:35026 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5882",
+      "detail": "the source names usda:35034 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5883",
+      "detail": "the source names usda:35038 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5884",
+      "detail": "the source names usda:35039 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5885",
+      "detail": "the source names usda:35040 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5886",
+      "detail": "the source names usda:35041 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5887",
+      "detail": "the source names usda:35042 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5888",
+      "detail": "the source names usda:35047 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5889",
+      "detail": "the source names usda:35050 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5890",
+      "detail": "the source names usda:35055 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5891",
+      "detail": "the source names usda:35057 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5892",
+      "detail": "the source names usda:35058 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5893",
+      "detail": "the source names usda:35059 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5894",
+      "detail": "the source names usda:35060 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5895",
+      "detail": "the source names usda:35064 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5896",
+      "detail": "the source names usda:35065 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5897",
+      "detail": "the source names usda:35066 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5898",
+      "detail": "the source names usda:35067 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5899",
+      "detail": "the source names usda:35068 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5900",
+      "detail": "the source names usda:35074 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5901",
+      "detail": "the source names usda:35079 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5902",
+      "detail": "the source names usda:35080 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5903",
+      "detail": "the source names usda:35083 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5904",
+      "detail": "the source names usda:35084 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5905",
+      "detail": "the source names usda:35085 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5906",
+      "detail": "the source names usda:35086 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5907",
+      "detail": "the source names usda:35087 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5908",
+      "detail": "the source names usda:35092 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5909",
+      "detail": "the source names usda:35093 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5910",
+      "detail": "the source names usda:35142 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:5911",
+      "detail": "the source names usda:35147 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6249",
+      "detail": "the source names usda:21409 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6256",
+      "detail": "the source names usda:25002 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6259",
+      "detail": "the source names usda:35154 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6260",
+      "detail": "the source names usda:35179 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6261",
+      "detail": "the source names usda:35180 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6262",
+      "detail": "the source names usda:35181 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6263",
+      "detail": "the source names usda:35183 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6264",
+      "detail": "the source names usda:35184 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6265",
+      "detail": "the source names usda:35185 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6266",
+      "detail": "the source names usda:35192 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6267",
+      "detail": "the source names usda:35193 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6268",
+      "detail": "the source names usda:35194 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6328",
+      "detail": "the source names usda:14606 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6342",
+      "detail": "the source names usda:22927 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6347",
+      "detail": "the source names usda:172106 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6351",
+      "detail": "the source names usda:35195 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6352",
+      "detail": "the source names usda:35203 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6356",
+      "detail": "the source names usda:43584 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6379",
+      "detail": "the source names usda:35015 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6381",
+      "detail": "the source names usda:35155 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6404",
+      "detail": "the source names usda:35028 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6416",
+      "detail": "the source names usda:35029 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6444",
+      "detail": "the source names usda:35043 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6530",
+      "detail": "the source names usda:35202 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6551",
+      "detail": "the source names usda:03217 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6561",
+      "detail": "the source names usda:35048 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6562",
+      "detail": "the source names usda:35024 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6576",
+      "detail": "the source names usda:35078 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6579",
+      "detail": "the source names usda:11887 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6685",
+      "detail": "the source names usda:35226 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6686",
+      "detail": "the source names usda:35227 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6687",
+      "detail": "the source names usda:35228 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6688",
+      "detail": "the source names usda:35229 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6689",
+      "detail": "the source names usda:35230 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6690",
+      "detail": "the source names usda:35231 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6932",
+      "detail": "the source names usda:35190 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6934",
+      "detail": "the source names usda:35200 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6935",
+      "detail": "the source names usda:35201 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:6936",
+      "detail": "the source names usda:35205 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7075",
+      "detail": "the source names usda:14652 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7104",
+      "detail": "the source names usda:21489 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7196",
+      "detail": "the source names usda:18035 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7197",
+      "detail": "the source names usda:18035 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7198",
+      "detail": "the source names usda:18035 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7199",
+      "detail": "the source names usda:18035 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7200",
+      "detail": "the source names usda:18035 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7204",
+      "detail": "the source names usda:03997 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7281",
+      "detail": "the source names usda:43343 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7410",
+      "detail": "the source names usda:03166 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7411",
+      "detail": "the source names usda:03171 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7412",
+      "detail": "the source names usda:43408 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7416",
+      "detail": "the source names usda:03002 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7443",
+      "detail": "the source names usda:172100 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7481",
+      "detail": "the source names usda:03245 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7484",
+      "detail": "the source names usda:03164 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7486",
+      "detail": "the source names usda:03142 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7489",
+      "detail": "the source names usda:03130 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7490",
+      "detail": "the source names usda:03132 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7491",
+      "detail": "the source names usda:03139 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7494",
+      "detail": "the source names usda:03128 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7497",
+      "detail": "the source names usda:03235 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7499",
+      "detail": "the source names usda:03012 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7500",
+      "detail": "the source names usda:03010 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7501",
+      "detail": "the source names usda:03007 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7503",
+      "detail": "the source names usda:03015 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7504",
+      "detail": "the source names usda:03005 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7505",
+      "detail": "the source names usda:03055 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7507",
+      "detail": "the source names usda:03073 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7509",
+      "detail": "the source names usda:03076 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7514",
+      "detail": "the source names usda:03085 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7515",
+      "detail": "the source names usda:03296 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7517",
+      "detail": "the source names usda:03077 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7520",
+      "detail": "the source names usda:03119 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7521",
+      "detail": "the source names usda:03091 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7522",
+      "detail": "the source names usda:03286 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7524",
+      "detail": "the source names usda:03121 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7525",
+      "detail": "the source names usda:03104 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7526",
+      "detail": "the source names usda:03108 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "source-conflict",
+      "id": "cnf:7529",
+      "nutrient": "cholesterol",
+      "detail": "the source marks this value as an assumed zero, but the amount it published is not zero"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7776",
+      "detail": "the source names usda:19066 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7820",
+      "detail": "the source names usda:9544 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7821",
+      "detail": "the source names usda:9546 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7822",
+      "detail": "the source names usda:9552 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7823",
+      "detail": "the source names usda:9553 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7824",
+      "detail": "the source names usda:9542 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7825",
+      "detail": "the source names usda:9543 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7826",
+      "detail": "the source names usda:9554 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7827",
+      "detail": "the source names usda:1249 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7828",
+      "detail": "the source names usda:1065 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7829",
+      "detail": "the source names usda:1323 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7933",
+      "detail": "the source names usda:58146323 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7934",
+      "detail": "the source names usda:27113100 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7939",
+      "detail": "the source names usda:28143080 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7940",
+      "detail": "the source names usda:28143170 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7941",
+      "detail": "the source names usda:28143080 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7942",
+      "detail": "the source names usda:58130140 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7943",
+      "detail": "the source names usda:58130140 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7944",
+      "detail": "the source names usda:58146643 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7949",
+      "detail": "the source names usda:58146383 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7950",
+      "detail": "the source names usda:58146393 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7954",
+      "detail": "the source names usda:71305080 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7958",
+      "detail": "the source names usda:28160310 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7959",
+      "detail": "the source names usda:28141010 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7963",
+      "detail": "the source names usda:58146323 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7964",
+      "detail": "the source names usda:58146403 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7965",
+      "detail": "the source names usda:28141250 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7966",
+      "detail": "the source names usda:28141250 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7967",
+      "detail": "the source names usda:27241010 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7968",
+      "detail": "the source names usda:28110310 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7969",
+      "detail": "the source names usda:28110310 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7971",
+      "detail": "the source names usda:172106 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:7972",
+      "detail": "the source names usda:172106 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:8011",
+      "detail": "the source names usda:3000 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:954",
+      "detail": "the source names usda:06055 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:969",
+      "detail": "the source names usda:06077 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:970",
+      "detail": "the source names usda:06078 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:976",
+      "detail": "the source names usda:06086 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:980",
+      "detail": "the source names usda:06090 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:981",
+      "detail": "the source names usda:06092 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:982",
+      "detail": "the source names usda:06093 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:983",
+      "detail": "the source names usda:06095 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:984",
+      "detail": "the source names usda:06096 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:985",
+      "detail": "the source names usda:06098 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:986",
+      "detail": "the source names usda:06099 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:987",
+      "detail": "the source names usda:06100 as the matching record, and this catalogue does not have it"
+    },
+    {
+      "kind": "unresolved-cross-reference",
+      "id": "cnf:994",
+      "detail": "the source names usda:06109 as the matching record, and this catalogue does not have it"
+    }
+  ]
+}
