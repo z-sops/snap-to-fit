@@ -1421,4 +1421,10 @@ export const fr: Record<string, string> = {
   "Dumbbell and barbell weights are a separate choice from the units you read your body weight in. Loads are never entered in stone, so a number always means one thing.": "Les charges de haltères et de barre se choisissent séparément des unités dans lesquelles tu lis ton poids. Les charges ne sont jamais saisies en stones, donc un nombre signifie toujours une seule chose.",
   "Use this for a package label or a restaurant menu that lists calories. Leave a field empty if the label does not say it, so it is not counted as zero.": "Utilise-le pour une étiquette ou une carte de restaurant qui indique les calories. Laisse un champ vide si l’étiquette ne le dit pas, pour qu’il ne soit pas compté comme zéro.",
   "Some nutrients were not reported by every food, so those totals are lower bounds rather than confirmed values.": "Certains nutriments n’ont pas été indiqués par tous les aliments : ces totaux sont donc des minimums et non des valeurs confirmées.",
+  // M1 integration correction: unknown and partly known nutrition values.
+  "not available": "non disponible",
+  "at least": "au moins",
+  "calories not reported": "calories non renseignées",
+  "Some foods did not report every value, so those numbers are lower bounds and may be higher.": "Certains aliments n’ont pas indiqué toutes les valeurs : ces chiffres sont donc des minimums et peuvent être plus élevés.",
+  "Some days did not report every value, so those averages are lower bounds and may be higher.": "Certains jours n’ont pas indiqué toutes les valeurs : ces moyennes sont donc des minimums et peuvent être plus élevées.",
 };
