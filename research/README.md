@@ -20,9 +20,13 @@ honestly before they are allowed near a user's nutrition.
 | File | What it is |
 |---|---|
 | `normalize.ts` | The value-state model, the CNF 2026 source-code → quality map, the CNF and CoFID normalisers, and the app-key → CNF-tag mapping. |
-| `reference-values.ts` | The food-labelling reference values for the three markets, as a specification. Every table is marked `approved: false` and nothing in it is enabled. |
 | `measure-cnf-2026.mjs` | The measurement script that produces the figures quoted in the documentation and the generated summary fixture. Needs the official archive to be present; it is not run by the test suite. |
 | `fixtures/` | The research inputs. Four small reference tables reproduced from the Health Canada CNF 2026 release under the Open Government Licence – Canada, one **generated** summary of the official release, plus **synthetic** examples for the CNF amount rows and the CoFID sentinels. See `fixtures/README.md` for the provenance and the checksums. |
+
+The **labelling reference values** moved out of this directory in M2-1: they are
+now production code in `src/core/reference-values.ts`, because the app
+resolves a market's percentage from them. Their `approved` flags are still
+false and the regional percentages are still disabled.
 
 ## The rule the code encodes
 
@@ -69,13 +73,27 @@ estimate, and is not a measurement; an `N` is not known, and is not a zero.
   value ever becomes a number, no value that is not a number is ever
   displayable, no published amount is ever silently replaced, and a flagged
   value is never treated as settled.
-- `tests/m2-reference-values.test.ts` — 12 deterministic tests. They compare
+- `tests/m2-reference-values.test.ts` — 13 deterministic tests. They compare
   the United States table against the app's own `nutrientInfo` key by key, so
   switching the app onto these tables cannot change a number for a United
   States user, and they assert the added-sugars substitution is impossible,
-  that Canada keeps 3400 mg potassium, that the United Kingdom keeps 5 µg
-  vitamin D, that salt is never offered for sodium, and that no market
-  borrows another's value.
+  that Canada's saturated-fat percentage is unavailable because the Canadian
+  denominator measures a different quantity, that the United States saturated-fat
+  denominator is for saturated fat, that Canada keeps 3400 mg potassium, that
+  the United Kingdom keeps 5 µg vitamin D, that salt is never offered for
+  sodium, that folic acid is never offered for dietary folate equivalents, and
+  that no market borrows another's value.
+- `tests/m2-regional-reference.test.ts` — 11 deterministic tests. They cover
+  the resolver: the market follows the country the user chose, a country with
+  no table has no market, an older profile with no country keeps the
+  behaviour it has today, only the incumbent market is enabled, an unapproved
+  market never borrows a United States percentage, the United States output is
+  identical to what the app shows today, and the completeness contract is
+  respected.
+- `tests/m2-food-reference.ui.test.tsx` — 5 screen tests. A United States user
+  still sees the same percentages; a Canadian, a British and an
+  unsupported-country user see none, and are told why; an older profile with
+  no country keeps them.
 
 ## What this directory does not do
 
