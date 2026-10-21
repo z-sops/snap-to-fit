@@ -35,6 +35,8 @@ before(async () => {
         ALLOW_DEV_PAIRING: "1",
         DATABASE_PATH: ":memory:",
         GEMINI_API_KEY: "test-only-provider-key",
+        // The negative cases make many requests on purpose.
+        SNAP_RATE_LIMIT_PER_MINUTE: "1000",
       },
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -128,6 +130,18 @@ test("a request without totals sends none", async () => {
   assert.equal("todayTotals" in context, false);
 });
 
+test("an older client without the consent flag is refused and sends nothing", async () => {
+  const before = requests.length;
+  const response = await post({
+    question: "How am I doing against my targets today?",
+    profile,
+    totals: { calories: 1800, protein: 120, carbs: 200, fat: 60 },
+  });
+  assert.equal(response.status, 400);
+  // Nothing reached the provider, so no profile or conversation left the service.
+  assert.equal(requests.length, before, "a request without confirmed consent must not reach the provider");
+});
+
 test("a withdrawn consent is refused and nothing reaches the provider", async () => {
   const before = requests.length;
   const response = await post({
@@ -140,16 +154,52 @@ test("a withdrawn consent is refused and nothing reaches the provider", async ()
   assert.equal(requests.length, before, "a refused request must not reach the provider");
 });
 
-test("an older client without the consent flag still works and sends no totals", async () => {
-  const response = await post({
-    question: "How am I doing against my targets today?",
-    profile,
-    totals: { calories: 1800, protein: 120, carbs: 200, fat: 60 },
+test("consent must be the boolean true, not a lookalike", async () => {
+  for (const aiConsent of ["true", "yes", 1, {}, [], null]) {
+    const before = requests.length;
+    const response = await post({
+      question: "How am I doing against my targets today?",
+      aiConsent,
+      profile,
+      totals: { calories: 1800 },
+    });
+    assert.equal(response.status, 400, `consent ${JSON.stringify(aiConsent)} must be refused`);
+    assert.equal(requests.length, before, `consent ${JSON.stringify(aiConsent)} reached the provider`);
+  }
+});
+
+test("a local safety answer is still given without consent, and never reaches the provider", async () => {
+  const before = requests.length;
+  const emergency = await post({ question: "Chest pain while running" });
+  assert.equal(emergency.status, 200);
+  assert.match((await emergency.json()).text, /emergency/);
+  const medication = await post({ question: "Should I stop my Mounjaro injection?" });
+  assert.equal(medication.status, 200);
+  assert.match((await medication.json()).text, /prescriber/);
+  // These answers are produced by the service itself.
+  assert.equal(requests.length, before);
+});
+
+test("an unauthenticated request never reaches the provider", async () => {
+  const before = requests.length;
+  const response = await fetch(`${base}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer wrong" },
+    body: JSON.stringify({ question: "How am I doing?", aiConsent: true, profile }),
   });
-  assert.equal(response.status, 200);
-  const context = lastContext();
-  assert.equal("todayTotals" in context, false);
-  assert.ok(context.targets, "targets are still computed for a legacy request");
+  assert.equal(response.status, 401);
+  assert.equal(requests.length, before);
+});
+
+test("a food photo is not sent to the provider without confirmed consent", async () => {
+  const before = requests.length;
+  const response = await fetch(`${base}/food`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ mimeType: "image/jpeg", image: "dGVzdA==" }),
+  });
+  assert.equal(response.status, 400);
+  assert.equal(requests.length, before, "a photo must not reach the provider without consent");
 });
 
 test("invalid and excessive values are dropped, valid ones survive", async () => {

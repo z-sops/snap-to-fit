@@ -54,3 +54,13 @@ test("the coach states its consent and sends today's totals", async () => {
     totals: expect.objectContaining({ calories: 600, protein: 30, carbs: 70, fat: 20 }),
   }));
 });
+test("without AI consent the coach never calls the service", async () => {
+  await saveState({ ...emptyState, profile: { ...profile, aiConsent: false } }, "guest");
+  render(<StoreProvider><ReadyCoach /></StoreProvider>);
+  fireEvent.change(await screen.findByPlaceholderText("What can I eat for dinner?"),
+    { target: { value: "Suggest dinner" } });
+  fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+  await screen.findByText(/Enable optional AI consent in Settings/);
+  // Nothing about the user was sent anywhere.
+  expect(api).not.toHaveBeenCalled();
+});

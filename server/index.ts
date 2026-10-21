@@ -46,6 +46,8 @@ function cgm(id: string) {
   return client;
 }
 const attempts = new Map<string, { count: number; expires: number }>();
+/** Requests allowed per minute per client. The default is a deliberate protection. */
+const rateLimit = Math.max(1, Number(process.env.SNAP_RATE_LIMIT_PER_MINUTE) || 20);
 function permitted(auth: string) {
   const expected = Buffer.from(`Bearer ${token}`);
   const got = Buffer.from(auth);
@@ -145,6 +147,30 @@ const TOTAL_LIMITS = {
   fat: 2000,
 } as const;
 type DailyTotals = { -readonly [K in keyof typeof TOTAL_LIMITS]: number };
+
+/**
+ * Every call to the AI provider needs explicit consent from the account
+ * holder, and the check happens here, on the server, before anything is sent.
+ *
+ * The client's own flag is not trusted on its own: a request that does not
+ * carry a confirmed `aiConsent: true` never reaches the provider at all, so
+ * no profile, conversation, photograph or daily total leaves the service.
+ * This covers the whole prompt, not just the daily totals: the totals are
+ * reduced to four numbers, but the rest of the prompt still contains the
+ * user's profile and their conversation.
+ *
+ * Local safety answers (emergencies, medication and steroid questions) are
+ * produced by this service itself and never leave it, so they are still
+ * answered when consent has not been given.
+ */
+function requireAIConsent(body: { aiConsent?: unknown }) {
+  if (body.aiConsent === true) return;
+  if (body.aiConsent === false)
+    throw new ServiceError(400, "AI consent is required for the connected coach. Turn it on in Settings.");
+  if (body.aiConsent === undefined)
+    throw new ServiceError(400, "This app version cannot confirm AI consent. Update Snap to Fit to use the AI features.");
+  throw new ServiceError(400, "Invalid AI consent value.");
+}
 
 /**
  * Validate the daily totals a client sends. Only allowlisted, finite,
@@ -268,7 +294,7 @@ export const server = createServer(async (req, res) => {
   const entry = attempts.get(ip) || { count: 0, expires: now + 60000 };
   entry.count++;
   attempts.set(ip, entry);
-  if (entry.count > 20) {
+  if (entry.count > rateLimit) {
     send(429, { error: "Too many requests. Try again in a minute." });
     return;
   }
@@ -401,6 +427,8 @@ export const server = createServer(async (req, res) => {
         !/^[a-zA-Z0-9+/]+={0,2}$/.test(body.image)
       )
         throw new Error("Provide a JPEG food photo.");
+      // A photograph is health data, so it is only sent with confirmed consent.
+      requireAIConsent(body);
       await chargeAI();
       const text = await generate(
         [
@@ -423,9 +451,12 @@ export const server = createServer(async (req, res) => {
       throw new Error("Question must contain 1–2000 characters.");
     const immediate = checkQuestion(body.question);
     if (immediate) {
+      // Answered by this service, never sent to the provider.
       send(200, { text: immediate });
       return;
     }
+    // Nothing reaches the provider without confirmed consent.
+    requireAIConsent(body);
     const { profile, targets } = serverTargets(body.profile || {});
     const history = Array.isArray(body.history)
       ? body.history.slice(-8).map((m: { role: string; text: string }) => ({
@@ -450,15 +481,11 @@ export const server = createServer(async (req, res) => {
       pt: "Brazilian Portuguese. Write the whole answer in natural, simple Brazilian Portuguese.",
     };
     const language: "en" | "es" | "fr" | "de" | "pt" = ["es", "fr", "de", "pt"].includes(body.language) ? body.language : "en";
-    // The coach only sends anything to the provider with explicit AI consent.
-    // A client that says no is refused; a client that says nothing (an older
-    // app version) is served exactly as before and sends no daily totals.
-    if (body.aiConsent === false)
-      throw new ServiceError(400, "AI consent is required for the connected coach. Turn it on in Settings.");
-    // Today's logged totals are only useful with a target to compare them to.
-    // A restricted profile has no targets, so it gets no totals either.
-    const todayTotals =
-      body.aiConsent === true && targets ? validatedTotals(body.totals) : undefined;
+    // Consent was already confirmed above, so this is the only path to the
+    // provider. Today's logged totals are only useful with a target to
+    // compare them to: a restricted profile has no targets, so it gets no
+    // totals either.
+    const todayTotals = targets ? validatedTotals(body.totals) : undefined;
     await chargeAI();
     const text = await generate(
       [

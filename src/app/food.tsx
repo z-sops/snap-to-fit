@@ -92,7 +92,12 @@ export default function FoodScreen() {
           });
           return;
         }
-        const result = await api<PhotoResult>("/food", { image: img.data, mimeType: img.mimeType });
+        // The server only sends a photograph to the provider with confirmed consent.
+        const result = await api<PhotoResult>("/food", {
+          image: img.data,
+          mimeType: img.mimeType,
+          aiConsent: p.aiConsent,
+        });
         validateMeal({ ...result, source: "photo" });
         setPhoto({ uri: img.uri, thumb: img.thumb, estimate: true, note: result.uncertainty, fat: result.cookingFat });
         setFood(photoFood(result));

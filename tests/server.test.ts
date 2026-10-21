@@ -70,8 +70,31 @@ test("invalid profile rejected before upstream call", async () => {
   });
   assert.equal(r.status, 400);
 });
+test("no provider call happens without confirmed AI consent", async () => {
+  // A modern client has to say it may use AI.
+  const refused = await post("/chat", { question: "My protein target", aiConsent: false });
+  assert.equal(refused.status, 400);
+  // An older client that says nothing is refused too.
+  const legacy = await post("/chat", { question: "My protein target" });
+  assert.equal(legacy.status, 400);
+  // A food photo is health data and needs the same consent.
+  const photo = await post("/food", { mimeType: "image/jpeg", image: "dGVzdA==" });
+  assert.equal(photo.status, 400);
+  // With consent, the request gets as far as the provider check.
+  const allowed = await post("/chat", {
+    question: "My protein target",
+    aiConsent: true,
+    profile: {
+      age: 30, sex: "female", height: 165, weight: 70, targetWeight: 70,
+      goal: "maintain", activity: 1.2, experience: "beginner", days: 3,
+      conditions: [], insulin: false, medicines: "", allergies: "", diet: "",
+      injuries: "", country: "US",
+    },
+  });
+  assert.equal(allowed.status, 503);
+});
 test("missing AI provider returns error instead of fabricated answer", async () => {
-  const r = await post("/food", { mimeType: "image/jpeg", image: "dGVzdA==" });
+  const r = await post("/food", { mimeType: "image/jpeg", image: "dGVzdA==", aiConsent: true });
   assert.equal(r.status, 503);
   assert.match((await r.json()).error, /configured/);
 });
