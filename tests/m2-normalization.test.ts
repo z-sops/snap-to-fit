@@ -8,6 +8,7 @@ import {
   CNF_NUTRIENT_SOURCE_QUALITY,
   CNF_TAGS_BY_APP_KEY,
   isDisplayableNumber,
+  isSettled,
   isUsableValue,
   normalizeCnfValue,
   normalizeCofidValue,
@@ -87,7 +88,7 @@ test("the published CNF nutrient code table matches the quality map", () => {
   for (const r of rows.slice(1)) {
     const code = r[codeIndex];
     assert.ok(
-      CNF_NUTRIENT_SOURCE_QUALITY[code],
+      code === "12" || CNF_NUTRIENT_SOURCE_QUALITY[code],
       `CNF nutrient source code ${code} has no quality mapping`,
     );
   }
@@ -115,6 +116,45 @@ test("an assumed zero is a documented zero, not a missing value", () => {
   assert.ok(isUsableValue(value), "a documented zero is a real number");
 });
 
+test("an assumed zero paired with a non-zero amount is a conflict, not a zero", () => {
+  // The source code says "assumed zero" but the published amount is not zero.
+  // The amount must survive, and the row must be flagged rather than silently
+  // rewritten or treated as verified data.
+  const conflict = cnfRows.find((r) => r.food_code === "207" && r.nutrient_code === "204")!;
+  assert.equal(conflict.nutrient_source_code, "12");
+  assert.equal(Number(conflict.nutrient_amount), 0.02);
+  const value = normalizeCnfValue(conflict);
+  assert.equal(value.value, 0.02, "the published amount must be preserved");
+  assert.notEqual(value.value, 0, "the amount must not be replaced with zero");
+  assert.equal(value.state, "estimated", "a conflict must not claim a verified quality");
+  assert.equal(value.needsReview, true);
+  assert.match(value.reviewReason!, /assumed zero/);
+  assert.ok(!isSettled(value), "a conflicted value is not settled");
+  // It is still a number the user can see, flagged for review.
+  assert.ok(isDisplayableNumber(value));
+});
+
+test("an assumed zero with a large non-zero amount is also a conflict", () => {
+  const conflict = cnfRows.find((r) => r.food_code === "208" && r.nutrient_code === "204")!;
+  assert.equal(conflict.nutrient_source_code, "12");
+  assert.equal(Number(conflict.nutrient_amount), 7.71);
+  const value = normalizeCnfValue(conflict);
+  assert.equal(value.value, 7.71);
+  assert.equal(value.needsReview, true);
+  assert.equal(value.state, "estimated");
+});
+
+test("a blank amount is never a zero", () => {
+  // Number("") is 0, and reading it that way would invent a measurement.
+  const blank = cnfRows.find((r) => r.food_code === "209" && r.nutrient_code === "204")!;
+  assert.equal(blank.nutrient_amount, "");
+  const value = normalizeCnfValue(blank);
+  assert.equal(value.state, "unknown");
+  assert.equal(value.value, undefined);
+  assert.ok(!isUsableValue(value));
+  assert.ok(!isDisplayableNumber(value));
+});
+
 test("a laboratory value keeps its observations and its source", () => {
   const analysed = cnfRows.find((r) => r.food_code === "203" && r.nutrient_code === "203")!;
   const value = normalizeCnfValue(analysed, { "3": "Nutrient analyzed in a Canadian government lab" });
@@ -133,6 +173,37 @@ test("imputed, estimated and calculated values are told apart", () => {
   assert.equal(normalizeCnfValue(calculated).state, "calculated");
   const estimated = cnfRows.find((r) => r.food_code === "206" && r.nutrient_code === "307")!;
   assert.equal(normalizeCnfValue(estimated).state, "estimated");
+});
+
+test("a value carried over from USDA is not claimed to be laboratory analysed", () => {
+  // Code 0 says only that the value is unchanged from USDA. The CNF does not
+  // state the quality of the value it carries over.
+  const inherited = cnfRows.find((r) => r.food_code === "204" && r.nutrient_code === "208")!;
+  assert.equal(inherited.nutrient_source_code, "0");
+  const value = normalizeCnfValue(inherited);
+  assert.equal(value.state, "inherited");
+  assert.notEqual(value.state, "analysed");
+  assert.equal(value.value, 210);
+});
+
+test("an international database value is not claimed to be laboratory analysed", () => {
+  const international = cnfRows.find((r) => r.food_code === "210" && r.nutrient_code === "203")!;
+  assert.equal(international.nutrient_source_code, "81");
+  const value = normalizeCnfValue(international);
+  assert.equal(value.state, "inherited");
+  assert.notEqual(value.state, "analysed");
+  // No positive observation count, so nothing here establishes analysis.
+  assert.ok(!(value.observations && value.observations > 0));
+});
+
+test("an unknown source code is flagged for review, not treated as verified", () => {
+  const unknown = cnfRows.find((r) => r.food_code === "211" && r.nutrient_code === "203")!;
+  assert.equal(unknown.nutrient_source_code, "999");
+  const value = normalizeCnfValue(unknown);
+  assert.equal(value.value, 4.5, "the amount is kept");
+  assert.equal(value.needsReview, true);
+  assert.match(value.reviewReason!, /not in the published/);
+  assert.ok(!isSettled(value));
 });
 
 test("an absent row is the only thing that means unknown", () => {
@@ -163,6 +234,7 @@ test("an unrecognised source code keeps the value but does not claim quality", (
   assert.equal(value.state, "estimated");
   assert.equal(value.value, 5);
   assert.equal(value.sourceCode, "999");
+  assert.equal(value.needsReview, true);
 });
 
 test("the CoFID sentinels are read the way the user guide documents them", () => {
@@ -192,6 +264,11 @@ test("the CoFID sentinels are read the way the user guide documents them", () =>
   const zero = normalizeCofidValue(at("9003", "Sodium (mg)"));
   assert.equal(zero.state, "documented-zero");
   assert.equal(zero.value, 0);
+  // A value with a footnote must be read with its footnote.
+  const footnoted = normalizeCofidValue(at("9006", "Energy (kcal)"));
+  assert.equal(footnoted.value, 98.2);
+  assert.equal(footnoted.needsReview, true);
+  assert.ok(!isSettled(footnoted));
 });
 
 test("no CNF fixture row turns an unknown into a number", () => {
@@ -206,5 +283,14 @@ test("a value is never displayed when its state says it is not a number", () => 
     const value = normalizeCnfValue(row);
     if (value.state === "trace" || value.state === "unknown")
       assert.ok(!isDisplayableNumber(value), JSON.stringify(row));
+  }
+});
+
+test("no fixture row silently replaces a published amount with zero", () => {
+  for (const row of cnfRows) {
+    const published = Number(row.nutrient_amount);
+    if (!Number.isFinite(published) || published === 0) continue;
+    const value = normalizeCnfValue(row);
+    assert.equal(value.value, published, JSON.stringify(row));
   }
 });

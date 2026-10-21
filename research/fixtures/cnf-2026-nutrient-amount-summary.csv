@@ -1,0 +1,22 @@
+nutrient_source_code,description,rows,value_zero,value_nonzero,value_empty,obs_positive,obs_zero,obs_empty
+0,"No change from USDA",313311,77194,236117,0,96830,211651,4830
+1,"Nutrient levels changed to meet the canadian regulations",1447,974,473,0,37,773,637
+2,"Nutrient calculated from data other than USDA",9696,3064,6632,0,62,3349,6285
+3,"Nutrient analyzed in a Canadian government lab",76332,31606,44726,0,75896,169,267
+4,"Nutrient calculated from USDA data",14897,1440,13457,0,97,9805,4995
+5,"Nutrient imputed from a similar USDA food",11869,4926,6943,0,1037,4569,6263
+6,"Nutrient from canadian industry. Documentation incomplete.",2396,349,2047,0,84,2159,153
+7,"Nutrient analyzed in Canadian product (non-government lab). Documentation complete.",10016,1895,8121,0,9156,29,831
+8,"Nutrient value of food created for the Nutrition Canada Survey",474,106,368,0,0,473,1
+9,"Nutrient from the label declaration",821,381,440,0,113,122,586
+10,"Nutrient derived from scientific literature",4174,498,3676,0,446,36,3692
+12,"Nutrient value is an assumed zero",65887,65805,82,0,270,16059,49558
+14,"Provisional data",3798,70,3728,0,12,951,2835
+15,"Nutrient value imputed from data other than USDA",2122,959,1163,0,162,81,1879
+16,"Calculated field",1297,66,1231,0,0,367,930
+17,"Calculated from analytical Canadian data",33184,7746,25438,0,10916,2989,19279
+50,"Calculated from literature for surveys only",1230,452,778,0,1195,9,26
+51,"Calculated using a recipe",12386,2112,10274,0,15,2718,9653
+81,"International database",14,0,14,0,0,0,14
+82,"Danish Food Composition Databank (revision 5.0)   Danish Institute for Food and Veterinary Research (revision 5)",33,12,21,0,4,7,22
+83,"Fineli.  Finnish food composition database.  National Public Health Institute.",25,7,18,0,0,3,22

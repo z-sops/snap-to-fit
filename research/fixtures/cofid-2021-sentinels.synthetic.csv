@@ -14,3 +14,6 @@ food_code,nutrient_name,value
 9005,Energy (kcal),0
 9005,Protein (g),0
 9005,Sodium (mg),0
+9006,Energy (kcal),98.2 [1]
+9006,Protein (g),3.4
+9006,Sodium (mg),12
