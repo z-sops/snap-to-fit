@@ -1,5 +1,5 @@
 import { localDay, mealSlotOf, type Meal, type MealSlotName } from "./model";
-import { nutrientKeys, type NutrientKey } from "./foods";
+import { macroKeys, nutrientKeys, type NutrientKey } from "./foods";
 
 export function mealsOn(meals: Meal[], date = new Date()) {
   const day = localDay(date);
@@ -14,21 +14,47 @@ export function bySlot(meals: Meal[]): Record<MealSlotName, Meal[]> {
 
 export const sumCalories = (meals: Meal[]) => Math.round(meals.reduce((a, m) => a + m.calories, 0));
 
-/** Day totals for every nutrient; micronutrients only count meals that carry them. */
-export function nutrientTotals(meals: Meal[]): { totals: Partial<Record<NutrientKey, number>>; coverage: number } {
+const macroSet = new Set<string>(macroKeys);
+
+export interface NutrientTotals {
+  /** The summed value of every nutrient that could be known. */
+  totals: Partial<Record<NutrientKey, number>>;
+  /** Nutrients no meal in the list provided, so the day total is not a number. */
+  unknown: NutrientKey[];
+  /** Nutrients only some meals provided, so the day total is a lower bound. */
+  partial: NutrientKey[];
+  coverage: number;
+}
+
+/**
+ * Day totals for every nutrient.
+ *
+ * A nutrient that no meal provided is unknown, not zero. A nutrient that only
+ * some meals provided is a lower bound. A meal saved before this metadata
+ * existed carries none, so its numbers are all treated as known and the
+ * totals are exactly what they always were.
+ */
+export function nutrientTotals(meals: Meal[]): NutrientTotals {
   const totals: Partial<Record<NutrientKey, number>> = {};
+  const unknown: NutrientKey[] = [];
+  const partial: NutrientKey[] = [];
   let withMicros = 0;
   for (const m of meals) {
-    totals.calories = (totals.calories || 0) + m.calories;
-    totals.protein = (totals.protein || 0) + m.protein;
-    totals.carbs = (totals.carbs || 0) + m.carbs;
-    totals.fat = (totals.fat || 0) + m.fat;
-    totals.fibre = (totals.fibre || 0) + m.fibre;
+    for (const k of macroKeys) totals[k] = (totals[k] || 0) + m[k];
     if (m.micros && Object.keys(m.micros).length) withMicros++;
     for (const k of nutrientKeys)
-      if (!["calories", "protein", "carbs", "fat", "fibre"].includes(k) && m.micros?.[k] !== undefined)
+      if (!macroSet.has(k) && m.micros?.[k] !== undefined)
         totals[k] = (totals[k] || 0) + m.micros[k];
   }
+  if (meals.length)
+    for (const k of nutrientKeys) {
+      const missing = meals.filter((m) => m.unknownNutrients?.includes(k));
+      if (!missing.length) continue;
+      if (missing.length === meals.length) {
+        unknown.push(k);
+        delete totals[k];
+      } else partial.push(k);
+    }
   for (const k of Object.keys(totals) as NutrientKey[]) totals[k] = Math.round(totals[k]! * 10) / 10;
-  return { totals, coverage: meals.length ? withMicros / meals.length : 0 };
+  return { totals, unknown, partial, coverage: meals.length ? withMicros / meals.length : 0 };
 }

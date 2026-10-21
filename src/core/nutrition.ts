@@ -1,4 +1,5 @@
 import { doctorNotice } from "./safety";
+import { nutrientKeys, type NutrientKey } from "./foods";
 import {
   type Profile,
   type Targets,
@@ -89,4 +90,12 @@ export function validateMeal(m: Omit<Meal, "id" | "at">) {
       m[k] > (k === "calories" ? 5000 : 500)
     )
       throw new Error(`Invalid ${k}.`);
+  // The nutrients the source did not know must be named from the known list.
+  if (
+    m.unknownNutrients !== undefined &&
+    (!Array.isArray(m.unknownNutrients) ||
+      m.unknownNutrients.length > 30 ||
+      m.unknownNutrients.some((k) => !nutrientKeys.includes(k as NutrientKey)))
+  )
+    throw new Error("Invalid nutrient completeness metadata.");
 }

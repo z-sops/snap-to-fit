@@ -89,6 +89,23 @@ test("quick add saves typed label values and the entry can be removed", async ()
   await waitFor(async () => expect((await loadState()).meals.length).toBe(0));
 });
 
+test("a quick add with blank fields leaves those nutrients unknown, not zero", async () => {
+  await renderFood();
+  fireEvent.click(screen.getByRole("button", { name: "Quick add calories" }));
+  fireEvent.change(await screen.findByLabelText("Meal name"), { target: { value: "Black coffee" } });
+  fireEvent.change(screen.getByLabelText("Calories (kcal)"), { target: { value: "5" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save meal" }));
+  await screen.findByText("Black coffee");
+  const meal = (await loadState()).meals[0];
+  // The fields the user left blank were never known, not measured as zero.
+  expect(meal.unknownNutrients).toEqual(expect.arrayContaining(["protein", "carbs", "fat", "fibre"]));
+  expect(meal.unknownNutrients).not.toContain("calories");
+  // A nutrient no food reported shows as unavailable, not as a confirmed zero.
+  fireEvent.click(screen.getByRole("button", { name: "Show vitamins and minerals" }));
+  expect((await screen.findAllByText("Not available")).length).toBeGreaterThan(0);
+  expect(screen.queryByText("0 mg")).toBeNull();
+});
+
 test("camera opens without AI consent, but the photo is never sent for analysis", async () => {
   await renderFood();
   fireEvent.click(screen.getByRole("button", { name: "Take a snap" }));

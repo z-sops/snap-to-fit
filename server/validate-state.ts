@@ -3,6 +3,7 @@ import { validateCarePlan, buildMealPlan } from "../src/core/meal-planning";
 import { effectiveProfile } from "../src/core/progress";
 import { backupState } from "../src/core/backup-state";
 import { validateProfile, type State } from "../src/core/model";
+import { nutrientKeys, type NutrientKey } from "../src/core/foods";
 import { ServiceError } from "./database";
 export function validatedBackup(value: unknown): State {
   if (!value || typeof value !== "object")
@@ -29,6 +30,19 @@ export function validatedBackup(value: unknown): State {
     s.meals.some(
       (m) =>
         !Number.isFinite(m.calories) || m.calories < 0 || m.calories > 5000,
+    )
+  )
+    throw new ServiceError(400, "Invalid meal records.");
+  // The nutrients a meal did not know must be named from the known list.
+  if (
+    s.meals.some(
+      (m) =>
+        m.unknownNutrients !== undefined &&
+        (!Array.isArray(m.unknownNutrients) ||
+          m.unknownNutrients.length > 30 ||
+          m.unknownNutrients.some(
+            (k) => !nutrientKeys.includes(k as NutrientKey),
+          )),
     )
   )
     throw new ServiceError(400, "Invalid meal records.");

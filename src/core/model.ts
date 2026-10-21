@@ -100,6 +100,12 @@ export interface Meal {
   addedFat?: "none" | "tsp" | "tbsp" | "lots";
   /** Micronutrients for the logged amount (keys from core/foods nutrientKeys). */
   micros?: Record<string, number>;
+  /**
+   * Nutrients the source did not know for this entry, so an unknown value is
+   * never read as a measured zero. Absent on older records, where every
+   * stored number is treated as known.
+   */
+  unknownNutrients?: string[];
   photoUri?: string;
 }
 export type MealSlotName = "breakfast" | "lunch" | "dinner" | "snack";
@@ -244,6 +250,14 @@ export const newProfile: Profile = {
 export function localDay(at: string | Date = new Date()) {
   const d = new Date(at);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/**
+ * True when a meal's value for a nutrient was not known, rather than measured
+ * as zero. A meal saved before this metadata existed has no unknown values.
+ */
+export function nutrientUnknown(meal: { unknownNutrients?: string[] } | undefined, key: string) {
+  return !!meal?.unknownNutrients?.includes(key);
 }
 export function uid() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;

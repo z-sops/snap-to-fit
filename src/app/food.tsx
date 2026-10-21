@@ -33,7 +33,7 @@ export default function FoodScreen() {
   const protein = proteinGuidance(p);
   const today = mealsOn(state.meals);
   const sections = bySlot(today);
-  const { totals } = nutrientTotals(today);
+  const { totals, unknown, partial } = nutrientTotals(today);
   const [flow, setFlow] = useState<Flow>(null);
   const [slot, setSlot] = useState<MealSlotName>(defaultSlot());
   const [food, setFood] = useState<Food | null>(null);
@@ -148,6 +148,9 @@ export default function FoodScreen() {
         {targets.restricted && protein ? (
           <Text style={s.sumNote}>Protein range {protein.low}–{protein.high} g/day to protect muscle — confirm with your doctor. Calorie targets stay with your care team.</Text>
         ) : null}
+        {unknown.length || partial.length ? (
+          <Text style={s.sumNote}>{tr("Some nutrients were not reported by every food, so those totals are lower bounds rather than confirmed values.")}</Text>
+        ) : null}
       </Surface>
 
       <View style={s.actions}>
@@ -241,7 +244,7 @@ export default function FoodScreen() {
             <View key={k} style={s.microRow}>
               <Text style={s.microName}>{tr(info.label)}</Text>
               <View style={{ flex: 1 }}>{info.dv ? <Bar value={v || 0} total={info.dv} color={info.limit && (v || 0) > info.dv ? palette.bad : info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
-              <Text style={s.microValue}>{v === undefined ? "—" : `${v} ${info.unit}`}</Text>
+              <Text style={s.microValue}>{unknown.includes(k) ? tr("Not available") : v === undefined ? "—" : `${v} ${info.unit}`}</Text>
             </View>
           );
         }) : <Text style={s.empty}>{tr("Today’s fiber, sodium, potassium, iron, vitamins and more vs. FDA Daily Values. Foods from search and barcode carry full nutrients; quick adds don’t.")}</Text>}
@@ -298,11 +301,13 @@ function QuickAdd({ visible, slot, onClose, onAdd, photoUri }: { visible: boolea
           name: name.trim() || "Quick add", source: "quick", slot: where, photoUri,
           calories: numeric(values.calories, 0, 5000, "Calories"), protein: numeric(values.protein || "0", 0, 500, "Protein"),
           carbs: numeric(values.carbs || "0", 0, 500, "Carbs"), fat: numeric(values.fat || "0", 0, 500, "Fat"), fibre: numeric(values.fibre || "0", 0, 500, "Fiber"),
+          // A field the user left blank was never known, not measured as zero.
+          unknownNutrients: fields.filter(([k]) => !values[k].trim()).map(([k]) => k),
         };
         onAdd(meal);
         setName(""); setValues({ calories: "", protein: "", carbs: "", fat: "", fibre: "" });
       })} />}>
-      <Text style={s.body}>{tr("Use this for a package label or a restaurant menu that lists calories.")}</Text>
+      <Text style={s.body}>{tr("Use this for a package label or a restaurant menu that lists calories. Leave a field empty if the label does not say it, so it is not counted as zero.")}</Text>
       <TextInput value={name} onChangeText={setName} placeholder={tr("What did you eat?")} placeholderTextColor={palette.muted} accessibilityLabel={tr("Meal name")} style={s.input} />
       {fields.map(([k, label]) => (
         <TextInput key={k} value={values[k]} onChangeText={(v) => setValues((x) => ({ ...x, [k]: v }))} placeholder={tr(label)}

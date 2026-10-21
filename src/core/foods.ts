@@ -13,6 +13,8 @@ export const nutrientKeys = [
 ] as const;
 export type NutrientKey = (typeof nutrientKeys)[number];
 export type Nutrients = Record<NutrientKey, number>;
+/** The five numbers every food entry carries. */
+export const macroKeys = ["calories", "protein", "carbs", "fat", "fibre"] as const;
 export const nutrientInfo: Record<NutrientKey, { label: string; unit: string; dv?: number; limit?: boolean }> = {
   calories: { label: "Calories", unit: "kcal" },
   protein: { label: "Protein", unit: "g", dv: 50 },

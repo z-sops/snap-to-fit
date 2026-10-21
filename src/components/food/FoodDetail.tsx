@@ -5,11 +5,14 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Sheet, Surface, Pill, StatTile, Stepper, Chip, PrimaryButton, palette, Bar } from "../design";
 import {
-  addedFat, calorieRange, nutrientInfo, nutrientKeys, scale, withAddedFat,
+  addedFat, nutrientInfo, nutrientKeys, scale, withAddedFat,
   type AddedFat, type Food, type NutrientKey,
 } from "../../core/foods";
+import { mealFromFood, type NewMeal } from "../../core/meals";
 import { openFoodFactsCredit, sourceDescriptions } from "../../core/food-sources";
-import { mealSlotNames, type Meal, type MealSlotName } from "../../core/model";
+import { mealSlotNames, type MealSlotName } from "../../core/model";
+
+export type { NewMeal } from "../../core/meals";
 
 const sourceBadge: Record<string, { label: string; icon: string; color: string; bg: string }> = {
   usda: { label: sourceDescriptions.usda.label, icon: "shield-checkmark", color: palette.good, bg: palette.goodSoft },
@@ -18,25 +21,6 @@ const sourceBadge: Record<string, { label: string; icon: string; color: string; 
   photo: { label: sourceDescriptions.photo.label, icon: "sparkles", color: "#6D28D9", bg: soft("#F3EDFF") },
 };
 const micros: NutrientKey[] = nutrientKeys.filter((k) => !["calories", "protein", "carbs", "fat"].includes(k));
-
-export type NewMeal = Omit<Meal, "id" | "at">;
-
-/** Builds the meal entry for an amount of a food, with range and hidden fat. */
-export function mealFromFood(food: Food, grams: number, servings: number, servingLabel: string, fat: AddedFat, slot: MealSlotName, photo?: boolean): NewMeal {
-  const n = withAddedFat(scale(food, grams), fat);
-  const r = (x?: number) => Math.round((x || 0) * 10) / 10;
-  const microValues: Record<string, number> = {};
-  for (const k of micros) if (n[k] !== undefined) microValues[k] = r(n[k]);
-  const calories = Math.round(n.calories || 0);
-  const fatUncertainty = fat === "none" ? 0 : 0.05;
-  return {
-    name: food.name,
-    source: photo ? "photo" : food.source === "barcode" ? "barcode" : "database",
-    calories, protein: r(n.protein), carbs: r(n.carbs), fat: r(n.fat), fibre: r(n.fibre),
-    slot, foodId: photo ? undefined : food.id, grams: Math.round(grams), servings, servingLabel,
-    range: calorieRange(calories, food.uncertainty + fatUncertainty), addedFat: fat, micros: microValues,
-  };
-}
 
 export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUri, photoThumb, photo, note, review, initialFat, initialQty }: {
   food: Food | null; visible: boolean; onClose: () => void; onAdd: (meal: NewMeal) => void;
