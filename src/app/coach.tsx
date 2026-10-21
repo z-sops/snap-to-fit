@@ -41,6 +41,8 @@ export default function Coach() {
           const result = await api<{ text: string }>("/chat", {
             question,
             language: lang,
+            // The server only sends context when the user has agreed to AI.
+            aiConsent: p.aiConsent,
             history: state.messages.slice(-8),
             profile: {
               age: p.age,

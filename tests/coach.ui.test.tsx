@@ -39,3 +39,18 @@ test("consented meal questions pass structured allergies and dietary preferences
       allergyFoods: ["peanut"], familiarFoods: "Beans" }),
   }));
 });
+test("the coach states its consent and sends today's totals", async () => {
+  const today = new Date().toISOString();
+  await saveState({ ...emptyState, profile: { ...profile, aiConsent: true }, meals: [
+    { id: "m1", at: today, name: "Lunch", calories: 600, protein: 30, carbs: 70, fat: 20, fibre: 8, source: "quick" },
+  ] }, "guest");
+  render(<StoreProvider><ReadyCoach /></StoreProvider>);
+  fireEvent.change(await screen.findByPlaceholderText("What can I eat for dinner?"),
+    { target: { value: "How am I doing today?" } });
+  fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+  await screen.findByText("General education.");
+  expect(api).toHaveBeenCalledWith("/chat", expect.objectContaining({
+    aiConsent: true,
+    totals: expect.objectContaining({ calories: 600, protein: 30, carbs: 70, fat: 20 }),
+  }));
+});

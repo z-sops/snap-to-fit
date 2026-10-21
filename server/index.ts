@@ -90,8 +90,7 @@ function serverTargets(profile: Partial<Profile>) {
   // Ignore caller-supplied target numbers and whitelist profile fields.
   const p: Profile = {
     ...newProfile,
-    name: "User",
-    consent: true,
+    name: "User",    consent: true,
     age: Number(profile.age),
     sex: profile.sex === "male" ? "male" : "female",
     height: Number(profile.height),
@@ -133,6 +132,35 @@ function serverTargets(profile: Partial<Profile>) {
   validateProfile(p);
   const targets = nutritionTargets(p);
   return { profile: p, targets: targets.restricted ? null : targets };
+}
+
+/**
+ * The only numbers the coach may receive about the user's day: calories in
+ * kcal, macros in grams. Anything else a client sends is dropped.
+ */
+const TOTAL_LIMITS = {
+  calories: 20000,
+  protein: 2000,
+  carbs: 2000,
+  fat: 2000,
+} as const;
+type DailyTotals = { -readonly [K in keyof typeof TOTAL_LIMITS]: number };
+
+/**
+ * Validate the daily totals a client sends. Only allowlisted, finite,
+ * in-range numbers survive; missing, negative, non-numeric and excessive
+ * values are left out rather than passed on.
+ */
+export function validatedTotals(raw: unknown): Partial<DailyTotals> | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const out: Partial<DailyTotals> = {};
+  for (const key of Object.keys(TOTAL_LIMITS) as (keyof DailyTotals)[]) {
+    const value = (raw as Record<string, unknown>)[key];
+    if (typeof value !== "number" || !Number.isFinite(value)) continue;
+    if (value < 0 || value > TOTAL_LIMITS[key]) continue;
+    out[key] = Math.round(value * 10) / 10;
+  }
+  return Object.keys(out).length ? out : undefined;
 }
 export const server = createServer(async (req, res) => {
   const cors = process.env.WEB_ORIGIN;
@@ -422,6 +450,15 @@ export const server = createServer(async (req, res) => {
       pt: "Brazilian Portuguese. Write the whole answer in natural, simple Brazilian Portuguese.",
     };
     const language: "en" | "es" | "fr" | "de" | "pt" = ["es", "fr", "de", "pt"].includes(body.language) ? body.language : "en";
+    // The coach only sends anything to the provider with explicit AI consent.
+    // A client that says no is refused; a client that says nothing (an older
+    // app version) is served exactly as before and sends no daily totals.
+    if (body.aiConsent === false)
+      throw new ServiceError(400, "AI consent is required for the connected coach. Turn it on in Settings.");
+    // Today's logged totals are only useful with a target to compare them to.
+    // A restricted profile has no targets, so it gets no totals either.
+    const todayTotals =
+      body.aiConsent === true && targets ? validatedTotals(body.totals) : undefined;
     await chargeAI();
     const text = await generate(
       [
@@ -429,6 +466,7 @@ export const server = createServer(async (req, res) => {
           text: JSON.stringify({
             profile,
             targets,
+            todayTotals,
             history,
             insulinSafety: sanitizeInsulin(body.insulinSafety),
             question: body.question,
