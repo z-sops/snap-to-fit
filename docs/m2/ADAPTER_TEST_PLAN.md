@@ -27,7 +27,7 @@ than hopefully safe.
 
 ## 2. Layer 1 — the normalisation rules **[done]**
 
-`tests/m2-normalization.test.ts` (13 tests) over `research/normalize.ts`:
+`tests/m2-normalization.test.ts` (20 tests) over `research/normalize.ts`:
 
 | Test | Pins |
 |---|---|
@@ -35,15 +35,42 @@ than hopefully safe.
 | the two excluded CNF nutrients are recorded as excluded | `ENERC_KJ` and `VITD_IU` are never mapped |
 | the published CNF code table matches the quality map | every code in `Nutrient_Source.csv` has a quality |
 | a value with no laboratory observations is still a value | `Observations == 0` does **not** mean unknown |
-| an assumed zero is a documented zero | source code 12 keeps its 0 |
-| a laboratory value keeps its observations and source | code 3, observations and `STD_Error` carried through |
+| an assumed zero is a documented zero | source code 12 with an amount of 0 |
+| **an assumed zero paired with a non-zero amount is a conflict** | the published amount survives, the row is flagged, and no verified quality is claimed |
+| **an assumed zero with a large non-zero amount is also a conflict** | the same rule at a different magnitude |
+| **a blank amount is never a zero** | `Number("")` is 0 and must not be read that way |
+| a laboratory value keeps its observations and its source | code 3, observations and `STD_Error` carried through |
 | imputed, estimated and calculated values are told apart | the three states are distinct |
+| **a value carried over from USDA is not claimed to be laboratory analysed** | code 0 is `inherited`, never `analysed` |
+| **an international database value is not claimed to be laboratory analysed** | codes 81/82/83 are `inherited` |
+| **an unknown source code is flagged for review** | the amount is kept, the row is flagged, it is not settled |
 | an absent row is the only thing that means unknown | and it carries no value |
 | a zero that was measured is a documented zero | value 0 with any other code |
 | an unrecognised source code keeps the value but does not claim quality | the code table is the extension point |
-| the CoFID sentinels are read as the user guide documents them | `N`, `Tr`, `( )`, empty, `0` |
+| the CoFID sentinels are read as the user guide documents them | `N`, `Tr`, `( )`, a footnoted value, empty, `0` |
 | no CNF fixture row turns an unknown into a number | no regression of the M1 contract |
 | a value is never displayed when its state says it is not a number | unknown and trace are not numbers |
+| **no fixture row silently replaces a published amount with zero** | the blanket guard against Correction A |
+
+## 2b. Layer 1b — the labelling reference values **[done, read-only]**
+
+`tests/m2-reference-values.test.ts` (12 tests) over
+`research/reference-values.ts`:
+
+| Test | Pins |
+|---|---|
+| **the United States table reproduces the values the app uses today** | key by key against the app's own `nutrientInfo`, including the nutrients the app leaves out |
+| **the added sugars Daily Value is never used for total sugars** | no US value for `sugar`, and the 50 g added-sugars figure is not substituted |
+| Canada uses the adult columns, including the corrected potassium | 3400 mg, and the other Canadian adult values |
+| the United Kingdom uses the adult annex values | vitamin D 5 µg and the rest |
+| **the United Kingdom sets salt, not sodium, and salt is not sodium** | the sodium key has no UK value; the salt figure is recorded separately |
+| **the United Kingdom annex has no cholesterol and no fibre value** | no value, and no borrowing |
+| folate records the basis it is measured on | DFE against folic acid |
+| **a market never borrows another market's value** | the defect this app has today |
+| a missing reference value produces no percentage | undefined, not a number |
+| the missing values for each market are known | the gaps are explicit |
+| no table is marked approved before review | `approved: false` on every table |
+| every value carries a unit and a scope | the shape is complete |
 
 ## 3. Layer 2 — the source adapters (M2-2)
 
@@ -136,8 +163,9 @@ Each adapter is tested against a small fixture, with the same shape.
 | `research/fixtures/cnf-2026-food-source.csv` | real, 18 rows | OGL-Canada | **[done]** |
 | `research/fixtures/cnf-2026-nutrient-name.csv` | real, 173 rows | OGL-Canada | **[done]** |
 | `research/fixtures/cnf-2026-food-group.csv` | real, 23 rows | OGL-Canada | **[done]** |
-| `research/fixtures/cnf-2026-nutrient-amount.synthetic.csv` | synthetic, 15 rows | project | **[done]** |
-| `research/fixtures/cofid-2021-sentinels.synthetic.csv` | synthetic, 9 rows | project | **[done]** |
+| `research/fixtures/cnf-2026-nutrient-amount-summary.csv` | **generated** from the official release by `research/measure-cnf-2026.mjs` | OGL-Canada, derived | **[done]** |
+| `research/fixtures/cnf-2026-nutrient-amount.synthetic.csv` | synthetic, 22 rows | project | **[done]** |
+| `research/fixtures/cofid-2021-sentinels.synthetic.csv` | synthetic, 10 rows | project | **[done]** |
 | `tests/fixtures/food-catalogue.sample.json` | synthetic | project | M2-3 |
 | `tests/fixtures/ingredient-aliases.sample.json` | synthetic | project | M2-4 |
 | `tests/fixtures/photo-estimate.sample.json` | synthetic | project | M2-5 |

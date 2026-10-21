@@ -55,7 +55,7 @@ reference values for adults and children aged 4 and over.
 | carbs | 275 g | 275 g | yes |
 | fat | 78 g | 78 g | yes |
 | fibre | 28 g | 28 g | yes |
-| sugar | — | 100 g (total sugars) | app has no DV for sugars |
+| **sugar** | — | **no established Daily Value** | app has no DV for sugars, and neither does the FDA for **total** sugars |
 | satFat | 20 g | 20 g | yes |
 | sodium | 2300 mg | 2300 mg | yes |
 | potassium | 4700 mg | 4700 mg | yes |
@@ -72,6 +72,36 @@ reference values for adults and children aged 4 and over.
 
 **The US column is already correct.** It is retained as the default so no
 existing behaviour changes.
+
+### 3.1 Total sugars versus added sugars — the substitution to avoid
+
+The FDA is explicit
+(<https://www.fda.gov/food/nutrition-facts-label/added-sugars-nutrition-facts-label>,
+read 2026-10-21):
+
+> *"Total Sugars include sugars naturally present in many nutritious foods and
+> beverages… **There is no Daily Value for total sugars because no
+> recommendation has been made for the total amount to eat in a day.**"*
+>
+> *"**The Daily Value for added sugars is 50 grams per day** based on a 2,000
+> calorie daily diet."*
+
+These are **two different nutrients**:
+
+| | Quantity | US Daily Value | App key |
+|---|---|---|---|
+| Total sugars | all sugars, natural and added | **none** | `sugar` (USDA "Sugars", CNF "Sugars, total", CoFID "Sugars") |
+| Added sugars | sugars added in processing | 50 g | **none — the app does not track this** |
+
+**The app's `sugar` key is total sugars.** It must therefore carry **no
+United States Daily Value**, which is what the app does today and what the
+research table does. The 50 g added-sugars figure belongs to a nutrient the
+app does not hold and must never be used for `sugar`.
+
+This is recorded in code as `US_ADDED_SUGARS_DAILY_VALUE`, with a comment, so
+it cannot be picked up by accident, and a regression test asserts that
+`referenceValueFor("US", "sugar")` and `percentDailyValue("US", "sugar", 30)`
+are both undefined.
 
 ## 4. Canada — Nutrition Labelling Table of Daily Values (2022)
 
@@ -129,13 +159,17 @@ the only one in force now** (checked 2026-10-21).
 | App key | US (current) | Canada (adults) | Difference |
 |---|---|---|---|
 | fat | 78 g | 75 g | 3 g |
-| sugar | none | 100 g | new |
+| sugar | none (no US total-sugars DV) | 100 g (total sugars) | new in Canada |
 | **potassium** | **4700 mg** | **3400 mg** | **1300 mg** |
 | everything else the app shows | — | — | unchanged |
 
 **Potassium is the one real correction** — the app would otherwise tell a
 Canadian that 3400 mg of potassium is 79 % of the daily value when it is in
 fact 100 %.
+
+Canada's sugars value is for **total sugars**, the same quantity the app
+tracks, so it is a direct counterpart to the United Kingdom's 90 g and is not
+affected by the added-sugars distinction.
 
 ### 4.4 Canadian open items
 
@@ -200,7 +234,7 @@ beverages; 15 % per portion where the package contains a single portion.
 |---|---|---|---|
 | fat | 78 g | 70 g | 8 g |
 | carbs | 275 g | 260 g | 15 g |
-| sugar | none | 90 g | new |
+| sugar | none (no US total-sugars DV) | 90 g (total sugars) | new in the UK |
 | satFat | 20 g | 20 g | — |
 | **vitaminD** | **20 µg** | **5 µg** | **4×** |
 | **calcium** | **1300 mg** | **800 mg** | 500 mg |
@@ -213,6 +247,8 @@ beverages; 15 % per portion where the package contains a single portion.
 | **zinc** | **11 mg** | **10 mg** | 1 mg |
 | sodium | 2300 mg | not an NRV in Annex XIII (salt 6 g is) | see below |
 | potassium | 4700 mg | 2000 mg | 2700 mg |
+| fibre | 28 g | not in Annex XIII | no value |
+| cholesterol | 300 mg | not in Annex XIII | no value |
 
 **Three of these are not simple substitutions.**
 
@@ -222,11 +258,20 @@ beverages; 15 % per portion where the package contains a single portion.
 2. **Sodium.** Annex XIII does not set a sodium NRV; it sets **salt, 6 g**
    (which is approximately 2400 mg sodium). The app's sodium key needs a
    decision: either the UK table carries sodium as a derived figure with the
-   conversion stated, or the UK sodium row shows no reference value.
+   conversion stated, or the UK sodium row shows no reference value. **The
+   research table takes the second route: `GB_REFERENCE_VALUES` has no sodium
+   entry, and the salt reference intake is recorded separately as
+   `GB_SALT_REFERENCE_INTAKE` so it can never be offered for sodium.**
 3. **Age scope.** Annex XIII as read is **adults**. Children's labelling values
    are not in this annex, and the app's audience is 18+. The specification
    therefore adopts the adult column and says so; a children's table would be
    a separate exercise.
+
+Two more gaps are deliberate and are not filled in from anywhere else:
+**fibre and cholesterol are not in Annex XIII**, so the United Kingdom has no
+reference value for either. The United Kingdom's Nutrient Reference Intakes
+and Dietary Reference Values are individual dietary requirements, not
+labelling values, and are not substituted here.
 
 ### 5.4 United Kingdom open items
 
@@ -305,5 +350,22 @@ M2-1 may not start until:
    values may be reproduced in the app;
 2. clinical has confirmed the age scope and that the labelling values may be
    shown as a labelling percentage in a consumer app;
-3. the table above is approved, with the three non-substitutions (folate basis,
-   salt/sodium, age scope) resolved or explicitly left as "no value shown".
+3. the table above is approved, with the non-substitutions (folate basis,
+   salt/sodium, age scope, and the absent fibre and cholesterol values)
+   resolved or explicitly left as "no value shown".
+
+## 9. The specification as code
+
+The tables above are expressed in `research/reference-values.ts` and pinned by
+`tests/m2-reference-values.test.ts` (12 deterministic tests). That module is
+**research only**: it is not imported by `src/` or `server/`, and every table
+carries `approved: false` until the review above happens.
+
+The tests include the guarantee that matters most for the shipping app:
+**the United States table is compared against the app's own `nutrientInfo`
+table, key by key, and must match it exactly** — so switching the app onto
+these tables cannot change a single number for a United States user. The same
+file also asserts the added-sugars substitution is impossible, that Canada
+keeps its 3400 mg potassium, that the United Kingdom keeps its 5 µg vitamin D,
+that salt is never offered for sodium, and that no market borrows another's
+value.
