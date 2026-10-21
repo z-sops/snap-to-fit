@@ -1,49 +1,44 @@
 import fs from "node:fs";
 import path from "node:path";
 import { popular, recipes } from "../src/core/foods";
-import type { AliasEntry, AliasRegistry } from "../src/core/ingredient-aliases";
+import type { AliasRegistry } from "../src/core/ingredient-aliases";
 
 /**
  * Builds the ingredient alias registry.
  *
- * The registry is **derived from what the app actually uses**, so that it
- * cannot fall behind the recipe library: every USDA number that a popular
- * food or a recipe names is in the registry, with exactly that number.
+ * The registry is **derived from two hand-reviewed sources**: the pinned
+ * baseline in `src/data/ingredient-alias-baseline.json`, and the recipe
+ * library the app actually uses. It is never derived from the registry
+ * itself, because a registry that regenerates itself cannot notice when it
+ * has been changed.
  *
- * The canonical key is a slug of the ingredient's name: the friendly name the
- * app shows when the food has one, and the catalogue's own name when it does
- * not. The rule is fixed, so the same inputs always produce the same file,
- * and a golden test pins it.
+ * **A canonical key is a stable identifier.** It comes from the baseline,
+ * which pins the assignment of key to identifier, so a change to a display
+ * name never renames a key. The generator only derives a key for an
+ * identifier the baseline does not know, and then it refuses to write
+ * anything: a new ingredient needs a reviewed entry in the baseline first.
  *
- * This script writes a file and nothing else. It never touches the shipped
+ * The generator writes a file and nothing else. It never touches the shipped
  * catalogue, and it never edits the recipe library.
  *
  *   npm run aliases:build
  */
 const root = process.cwd();
 
-/**
- * Identifiers that were reviewed and are **not** approved for use.
- *
- * These are Canadian records whose own source contradicts itself, so their
- * nutrient values cannot be treated as equivalent to anything. The list is
- * here, and not in the generated file, because it is a decision rather than
- * derived data.
- */
-const NOT_APPROVED: AliasRegistry["not_approved"] = [
-  {
-    id: "cnf:5224",
-    reason:
-      "The source marks this food's energy value as an assumed zero and publishes a non-zero amount beside it. The record contradicts itself, so nutritional equivalence is not approved.",
-  },
-  {
-    id: "cnf:7529",
-    reason:
-      "The source marks this food's cholesterol value as an assumed zero and publishes a non-zero amount beside it. The record contradicts itself, so nutritional equivalence is not approved.",
-  },
-];
+/** The baseline, as it is reviewed. */
+export interface AliasBaseline {
+  version: number;
+  default_market: string;
+  /** The date the default market's mappings were reviewed. */
+  reviewed_on: string;
+  note?: string;
+  /** The pinned assignment of key to identifier. */
+  ingredients: { key: string; ids: Record<string, string>; markets?: Record<string, { id: string; reviewed: string }> }[];
+  /** Identifiers that were reviewed and are not approved for use. */
+  not_approved: { id: string; reason: string }[];
+}
 
-/** The slug rule. It is fixed, and a golden test pins the result. */
+/** The slug rule. It is fixed, and a test pins the result. */
 export function canonicalSlug(name: string): string {
   return name
     .replace(/\([^)]*\)/g, " ")
@@ -55,6 +50,21 @@ export function canonicalSlug(name: string): string {
     .replace(/ +/g, "-");
 }
 
+/** The baseline file. */
+export function baselinePath(): string {
+  return path.join(root, "src", "data", "ingredient-alias-baseline.json");
+}
+
+/** The registry file. */
+export function registryPath(): string {
+  return path.join(root, "src", "data", "ingredient-aliases.json");
+}
+
+/** The baseline, read from the reviewed file. */
+export function readBaseline(): AliasBaseline {
+  return JSON.parse(fs.readFileSync(baselinePath(), "utf8")) as AliasBaseline;
+}
+
 /** The catalogue's own names, by id. */
 function catalogueNames(): Map<number, string> {
   const file = path.join(root, "src", "data", "usda-foods.json");
@@ -62,65 +72,110 @@ function catalogueNames(): Map<number, string> {
   return new Map(data.foods.map((row) => [row[0], row[1]]));
 }
 
-/**
- * Build the registry from the app's current references.
- *
- * It throws rather than writing a registry that is incomplete, duplicated or
- * ambiguous: a registry that is wrong in any of those ways is worse than no
- * registry at all.
- */
-export function buildRegistry(): AliasRegistry {
+/** The identifiers the app refers to, and the name it shows for each. */
+export function referencedIngredients(): Map<string, { name: string; popular: boolean }> {
   const names = catalogueNames();
   const friendly = new Map(popular.map((entry) => [entry.id, entry.name]));
-
   const referenced = new Set<number>();
   for (const entry of popular) referenced.add(entry.id);
   for (const recipe of recipes) for (const [id] of recipe.parts) referenced.add(id);
 
-  const bySlug = new Map<string, number[]>();
+  const out = new Map<string, { name: string; popular: boolean }>();
   for (const id of [...referenced].sort((a, b) => a - b)) {
     const name = friendly.get(id) ?? names.get(id);
     if (!name) throw new Error(`the catalogue has no food ${id}, and the app refers to it`);
-    const slug = canonicalSlug(name);
-    const owners = bySlug.get(slug) ?? [];
-    owners.push(id);
-    bySlug.set(slug, owners);
+    out.set(`usda:${id}`, { name, popular: friendly.has(id) });
   }
-  for (const [slug, owners] of bySlug)
-    if (owners.length > 1)
-      throw new Error(`the name of ${owners.join(", ")} gives the same key ${slug}; give them different keys`);
+  return out;
+}
 
-  const notApproved = new Set(NOT_APPROVED.map((entry) => entry.id));
-  const ingredients: AliasEntry[] = [];
-  for (const id of [...referenced].sort((a, b) => a - b)) {
-    const name = friendly.get(id) ?? names.get(id)!;
-    const source = `usda:${id}`;
-    if (notApproved.has(source)) throw new Error(`${source} is not approved and must not be mapped`);
-    ingredients.push({
-      key: `ingredient:${canonicalSlug(name)}`,
-      name,
-      ids: { US: source },
-    });
+/**
+ * Build the registry from the baseline and the app.
+ *
+ * It throws rather than writing a registry that is incomplete, duplicated,
+ * ambiguous or destructive. A registry that is wrong in any of those ways is
+ * worse than no registry at all.
+ */
+export function buildRegistry(baseline: AliasBaseline = readBaseline()): AliasRegistry {
+  const referenced = referencedIngredients();
+
+  // The baseline is the authority for the keys, so they are checked for
+  // duplication and for a conflict before anything is written.
+  const keys = new Map<string, string>();
+  const byKey = new Map<string, { key: string; ids: Record<string, string>; markets?: Record<string, { id: string; reviewed: string }> }>();
+  for (const entry of baseline.ingredients ?? []) {
+    if (!entry?.key?.startsWith("ingredient:"))
+      throw new Error(`the baseline has an entry with no canonical key: ${JSON.stringify(entry)}`);
+    if (keys.has(entry.key)) throw new Error(`the baseline has the key ${entry.key} twice`);
+    keys.set(entry.key, entry.key);
+    byKey.set(entry.key, entry);
+  }
+  const owners = new Map<string, string>();
+  for (const entry of baseline.ingredients ?? [])
+    for (const id of Object.values(entry.ids ?? {})) {
+      const owner = owners.get(id);
+      if (owner) throw new Error(`the baseline gives ${id} to both ${owner} and ${entry.key}`);
+      owners.set(id, entry.key);
+    }
+
+  // An identifier that the app no longer refers to is a removal, and a
+  // removal has to be a decision rather than a side effect.
+  for (const entry of baseline.ingredients ?? [])
+    for (const id of Object.values(entry.ids ?? {}))
+      if (!referenced.has(id))
+        throw new Error(
+          `${id} is in the baseline but the app no longer refers to it; remove it from the baseline explicitly, with a migration note`,
+        );
+
+  // An identifier the app now refers to, and the baseline does not know, is
+  // an addition, and an addition has to be reviewed too.
+  const missing: string[] = [];
+  for (const [id, info] of referenced) {
+    if (!owners.has(id)) missing.push(`${id} (${info.name}, which would be ingredient:${canonicalSlug(info.name)})`);
+  }
+  if (missing.length)
+    throw new Error(
+      `the baseline has no entry for ${missing.join(", ")}; add it to the baseline, with its canonical key, before the registry is built`,
+    );
+
+  const notApproved = new Set((baseline.not_approved ?? []).map((entry) => entry.id));
+  const ingredients: AliasRegistry["ingredients"] = [];
+  for (const entry of baseline.ingredients ?? []) {
+    const id = Object.values(entry.ids ?? {})[0];
+    const info = referenced.get(id);
+    if (!info) continue; // checked above
+    for (const mapped of Object.values(entry.ids ?? {}))
+      if (notApproved.has(mapped))
+        throw new Error(`${mapped} is not approved and must not be mapped`);
+
+    const ids: Record<string, string> = { ...entry.ids };
+    const reviewed: Record<string, string> = {};
+    for (const [market, mapped] of Object.entries(entry.ids ?? {})) reviewed[market] = baseline.reviewed_on;
+    for (const [market, mapping] of Object.entries(entry.markets ?? {})) {
+      if (!mapping?.id) throw new Error(`the ${market} mapping of ${entry.key} has no identifier`);
+      if (notApproved.has(mapping.id))
+        throw new Error(`${mapping.id} is not approved and must not be mapped`);
+      if (!mapping.reviewed)
+        throw new Error(`the ${market} mapping of ${entry.key} has no review date, so it is not reviewed`);
+      ids[market] = mapping.id;
+      reviewed[market] = mapping.reviewed;
+    }
+    ingredients.push({ key: entry.key, name: info.name, ids, reviewed });
   }
   ingredients.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 
   return {
     version: 1,
-    default_market: "US",
+    default_market: baseline.default_market,
     generated_by: "scripts/build-ingredient-aliases.ts",
     ingredients,
-    not_approved: NOT_APPROVED,
+    not_approved: baseline.not_approved ?? [],
   };
 }
 
 /** The registry as it is written, in a stable shape. */
 export function serialise(registry: AliasRegistry): string {
   return JSON.stringify(registry, null, 2) + "\n";
-}
-
-/** The file the registry is written to. */
-export function registryPath(): string {
-  return path.join(root, "src", "data", "ingredient-aliases.json");
 }
 
 function main() {

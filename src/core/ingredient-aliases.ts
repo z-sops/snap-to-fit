@@ -38,6 +38,14 @@ export interface AliasEntry {
    */
   ids: Record<string, string>;
   /**
+   * The date each mapping was reviewed, by market.
+   *
+   * **A mapping without a review date is not a mapping.** It is an arbitrary
+   * string, and the resolution refuses it. This is what separates a reviewed
+   * mapping from a string that was typed into a registry by hand.
+   */
+  reviewed?: Record<string, string>;
+  /**
    * An optional alias of another key. The alias resolves to whatever that key
    * resolves to. A chain that loops is a validation error, not a lookup that
    * runs for ever.
@@ -128,12 +136,15 @@ export interface CompositionResolution {
   market: Market;
   /** The markets any fallback came from, labelled explicitly. */
   fallbacks: { key: string; id: string; source_market: Market; source: IdentifierSource }[];
+  /** Why the composition is not a complete recipe, when it is not. */
+  reason?: string;
 }
 
 /** A problem found in a registry. */
 export interface RegistryProblem {
   kind:
     | "missing-id"
+    | "unreviewed-mapping"
     | "duplicate-key"
     | "duplicate-id"
     | "unknown-alias"
@@ -157,11 +168,17 @@ export function aliasRegistry(): AliasRegistry {
   return cached;
 }
 
-/** The source an identifier belongs to, from its namespace. */
+/**
+ * The source an identifier belongs to, from its namespace.
+ *
+ * The namespace has to be one the app knows, and the identifier has to be
+ * complete: `usda:` with nothing after it is not an identifier, and a
+ * namespace the app does not use is not a namespace.
+ */
 export function sourceOf(id: string): IdentifierSource | null {
-  if (id.startsWith("usda:")) return "usda";
-  if (id.startsWith("cnf:")) return "cnf";
-  return null;
+  const match = /^(usda|cnf):([A-Za-z0-9]+)$/.exec(id ?? "");
+  if (!match) return null;
+  return match[1] as IdentifierSource;
 }
 
 /**
@@ -205,6 +222,14 @@ export function validateRegistry(registry: AliasRegistry): RegistryProblem[] {
           kind: "not-approved",
           key: entry?.key,
           detail: `the ${market} identifier ${id} was reviewed and is not approved for use`,
+        });
+      // A mapping that has not been reviewed is an arbitrary string, and the
+      // resolution refuses it. It is a problem in the registry too.
+      if (!entry?.reviewed?.[market])
+        problems.push({
+          kind: "unreviewed-mapping",
+          key: entry?.key,
+          detail: `the ${market} mapping has no review date, so it is not a reviewed mapping`,
         });
       // One identifier may not serve two different ingredients in one market.
       const claim = `${market}:${id}`;
@@ -251,28 +276,20 @@ export function validateRegistry(registry: AliasRegistry): RegistryProblem[] {
 }
 
 /**
- * Follow an alias chain to the entry that holds the identifiers.
- *
- * The chain is walked at most once per key, so a loop cannot run for ever
- * even if the registry was never validated.
- */
-function followAlias(entry: AliasEntry, byKey: Map<string, AliasEntry>): { entry: AliasEntry; chain: string[] } {
-  const chain = [entry.key];
-  let current = entry;
-  const seen = new Set<string>([entry.key]);
-  while (current.alias_of) {
-    if (seen.has(current.alias_of)) break;
-    seen.add(current.alias_of);
-    const next = byKey.get(current.alias_of);
-    if (!next) break;
-    chain.push(next.key);
-    current = next;
-  }
-  return { entry: current, chain };
-}
-
-/**
  * Resolve one ingredient in one market.
+ *
+ * **The resolution is fail-closed.** It does not rely on the caller having
+ * run the validation: every check the validation makes is made here too, and
+ * a registry that has not been validated still cannot produce an identifier
+ * that the rules forbid.
+ *
+ *   - a mapping that has not been reviewed is not used;
+ *   - an identifier in a namespace the app does not know is not used;
+ *   - an identifier that was reviewed and refused is not used;
+ *   - an alias chain that loops, or that points at nothing, resolves to
+ *     nothing;
+ *   - a Canadian record's cross-reference is never proof of equivalence: the
+ *     resolution only ever uses an identifier the registry maps explicitly.
  *
  * A market with no approved mapping falls back to the default market, and
  * the result says so: `cross_market` is true and `source_market` names the
@@ -281,25 +298,56 @@ function followAlias(entry: AliasEntry, byKey: Map<string, AliasEntry>): { entry
  * food.
  */
 export function resolveIngredient(key: string, market: Market, registry = aliasRegistry()): ResolutionResult {
-  const byKey = new Map(registry.ingredients.map((entry) => [entry.key, entry]));
-  const entry = byKey.get(key);
-  if (!entry)
-    return {
-      outcome: "unavailable",
-      key,
-      market,
-      cross_market: false,
-      attempted: [],
-      reason: `there is no ingredient with the key ${key}`,
-    };
+  const failed = (reason: string, attempted: string[] = []): ResolutionResult => ({
+    outcome: "unavailable",
+    key,
+    market,
+    cross_market: false,
+    attempted,
+    reason,
+  });
 
-  const { entry: target, chain } = followAlias(entry, byKey);
+  if (!registry || !Array.isArray(registry.ingredients))
+    return failed("the registry is malformed, so nothing can be resolved");
+
+  const byKey = new Map<string, AliasEntry>();
+  for (const entry of registry.ingredients) {
+    if (!entry || typeof entry.key !== "string") continue;
+    if (!byKey.has(entry.key)) byKey.set(entry.key, entry);
+  }
+
+  const entry = byKey.get(key);
+  if (!entry) return failed(`there is no ingredient with the key ${key}`);
+
+  // Follow the alias chain, refusing to follow it for ever.
   const attempted: string[] = [];
-  const via = chain.length > 1 ? chain : undefined;
+  const via: string[] = [entry.key];
+  const seen = new Set<string>([entry.key]);
+  let target = entry;
+  while (target.alias_of) {
+    if (seen.has(target.alias_of))
+      return failed(`the alias chain from ${key} loops back to ${target.alias_of}`, attempted);
+    seen.add(target.alias_of);
+    const next = byKey.get(target.alias_of);
+    if (!next) return failed(`the alias points at ${target.alias_of}, which is not in the registry`, attempted);
+    via.push(next.key);
+    target = next;
+  }
+
+  const notApproved = new Set((registry.not_approved ?? []).map((entry) => entry.id));
+  const check = (id: string, reviewDate: string | undefined): string | null => {
+    if (!id) return "the mapping has no identifier";
+    if (!reviewDate) return "the mapping has not been reviewed, so it is not used";
+    if (!sourceOf(id)) return `the identifier ${id} is not in a namespace the app knows`;
+    if (notApproved.has(id)) return `the identifier ${id} was reviewed and is not approved for use`;
+    return null;
+  };
 
   const direct = target.ids?.[market];
-  if (direct) {
+  if (direct !== undefined) {
     attempted.push(direct);
+    const problem = check(direct, target.reviewed?.[market]);
+    if (problem) return failed(problem, attempted);
     return {
       outcome: "resolved",
       key,
@@ -309,13 +357,15 @@ export function resolveIngredient(key: string, market: Market, registry = aliasR
       source_market: market,
       cross_market: false,
       attempted,
-      via,
+      via: via.length > 1 ? via : undefined,
     };
   }
 
   const fallback = target.ids?.[registry.default_market];
-  if (fallback) {
+  if (fallback !== undefined) {
     attempted.push(fallback);
+    const problem = check(fallback, target.reviewed?.[registry.default_market]);
+    if (problem) return failed(problem, attempted);
     return {
       outcome: "fallback",
       key,
@@ -325,19 +375,15 @@ export function resolveIngredient(key: string, market: Market, registry = aliasR
       source_market: registry.default_market,
       cross_market: true,
       attempted,
-      via,
+      via: via.length > 1 ? via : undefined,
       reason: `there is no approved ${market} equivalent; the ${registry.default_market} one was used`,
     };
   }
 
-  return {
-    outcome: "unavailable",
-    key,
-    market,
-    cross_market: false,
+  return failed(
+    `the ingredient is in the registry but has no identifier in ${market} or in ${registry.default_market}`,
     attempted,
-    reason: `the ingredient is in the registry but has no identifier in ${market} or in ${registry.default_market}`,
-  };
+  );
 }
 
 /**
@@ -348,6 +394,17 @@ export function resolveIngredient(key: string, market: Market, registry = aliasR
  * composition comes back incomplete, with the missing parts named, so the
  * caller can say the recipe is incomplete instead of serving a different
  * food under the same name.
+ *
+ * The outcome says exactly what happened:
+ *
+ *   resolved    every ingredient resolved in the market that was asked for.
+ *   fallback    every ingredient resolved, but at least one of them came
+ *               from another market, and the result says which.
+ *   incomplete  some ingredients resolved and one or more did not.
+ *   unavailable none of the required ingredients resolved.
+ *
+ * A composition with no ingredients at all is **not** a complete recipe, so
+ * it comes back unavailable rather than resolved.
  */
 export function resolveComposition(
   parts: { key: string; grams: number }[],
@@ -358,11 +415,27 @@ export function resolveComposition(
   const missing: CompositionResolution["missing"] = [];
   const fallbacks: CompositionResolution["fallbacks"] = [];
 
+  if (!parts.length)
+    return {
+      outcome: "unavailable",
+      parts: [],
+      missing: [],
+      complete: false,
+      market,
+      fallbacks: [],
+      reason: "the composition has no ingredients, so it is not a recipe",
+    };
+
+  let direct = 0;
   for (const part of parts) {
     const result = resolveIngredient(part.key, market, registry);
     resolved.push({ key: part.key, id: result.id, grams: part.grams, result });
-    if (result.outcome === "resolved" || result.outcome === "fallback") {
-      if (result.outcome === "fallback" && result.id && result.source_market && result.source)
+    if (result.outcome === "resolved") {
+      direct += 1;
+      continue;
+    }
+    if (result.outcome === "fallback") {
+      if (result.id && result.source_market && result.source)
         fallbacks.push({
           key: part.key,
           id: result.id,
@@ -374,12 +447,27 @@ export function resolveComposition(
     missing.push({ key: part.key, attempted: result.attempted, reason: result.reason });
   }
 
+  const outcome: ResolutionOutcome =
+    missing.length === parts.length
+      ? "unavailable"
+      : missing.length
+        ? "incomplete"
+        : fallbacks.length
+          ? "fallback"
+          : "resolved";
+
   return {
-    outcome: missing.length ? "incomplete" : "resolved",
+    outcome,
     parts: resolved,
     missing,
-    complete: missing.length === 0,
+    complete: missing.length === 0 && direct + fallbacks.length === parts.length,
     market,
     fallbacks,
+    reason:
+      outcome === "unavailable" && !missing.length
+        ? "none of the ingredients could be resolved"
+        : outcome === "incomplete"
+          ? `${missing.length} of ${parts.length} ingredients could not be resolved`
+          : undefined,
   };
 }

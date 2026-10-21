@@ -103,6 +103,18 @@ carry on". It is:
   invented as zero;
 - the United States recipe behaviour and results are unchanged.
 
+The composition outcomes are exact, and the runtime has to honour them:
+
+| Outcome | When | What the screen owes the user |
+|---|---|---|
+| `resolved` | every ingredient resolved directly in the market that was asked for | the recipe, complete |
+| `fallback` | every ingredient resolved, but at least one came from another market | the recipe, with the market each fallback came from |
+| `incomplete` | some ingredients resolved and one or more did not | the recipe, marked incomplete, with the missing ingredient named |
+| `unavailable` | none of the required ingredients resolved | the recipe, marked unavailable |
+
+A composition with no ingredients at all is not a complete recipe, and must
+not be presented as one.
+
 A missing ingredient must not turn chicken curry into a materially different
 food while the app keeps claiming complete nutrition. The screen says which
 ingredient is missing, and the numbers are not presented as the dish.
@@ -187,6 +199,8 @@ something else.
 | G3.6 | cold start and memory are inside a stated budget **on a physical device** |
 | G3.7 | the app works with the network off, and with the Canadian asset absent |
 | G3.8 | an unresolved ingredient makes the recipe incomplete, and the screen says so |
+| G3.9 | the resolution is fail-closed: a refused identifier, an unreviewed mapping, a broken alias chain and a malformed registry all resolve to nothing |
+| G3.10 | a canonical key never changes because a name changed, and a catalogue refresh cannot silently rename an ingredient |
 
 ## 10. Exact dependency and licensing blockers
 
