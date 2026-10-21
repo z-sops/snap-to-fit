@@ -7,14 +7,20 @@ import { Sheet, PrimaryButton, Pill, Stepper, palette } from "./design";
 import { say, quiet } from "../services/voice";
 import { haptic } from "../services/feedback";
 import { uid, type WorkoutLog } from "../core/model";
+import { lbToKg, weightDisplayFor } from "../core/units";
+import type { Region, WeightDisplay } from "../core/locale";
 
 export interface PlayerItem { id: string; name: string; image?: string; sets: number; reps: number; cues?: string[]; seconds?: number }
 
-export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, onFinish, units }: {
-  visible: boolean; title: string; items: PlayerItem[]; voice: boolean; onVoice: (v: boolean) => void;
-  onClose: () => void; onFinish: (logs: WorkoutLog[]) => void; units: "imperial" | "metric";
+export function WorkoutPlayer({ visible, title, items, voice, region, onVoice, onClose, onFinish, units, weightDisplay }: {
+  visible: boolean; title: string; items: PlayerItem[]; voice: boolean; region: Region; onVoice: (v: boolean) => void;
+  onClose: () => void; onFinish: (logs: WorkoutLog[]) => void; units: "imperial" | "metric"; weightDisplay?: WeightDisplay;
 }) {
   const tr = useT();
+  // The entered weight follows the same unit the rest of the app shows.
+  const display = weightDisplayFor({ units, weightDisplay });
+  const weightUnit = display === "kg" ? "kg" : display === "st" ? "st + lb" : "lb";
+  const weightInLb = display !== "kg";
   const [index, setIndex] = useState(0);
   const [set, setSet] = useState(1);
   const [rest, setRest] = useState(0);
@@ -33,33 +39,33 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
     const key = `${item.id}-${index}`;
     if (announced.current === key) return;
     announced.current = key;
-    say(index === 0 ? "Let's go. {name}. {sets} sets of {reps}." : "Next. {name}. {sets} sets of {reps}.", voice, { name: item.name, sets: item.sets, reps: item.reps });
-  }, [visible, item, index, voice]);
+    say(index === 0 ? "Let's go. {name}. {sets} sets of {reps}." : "Next. {name}. {sets} sets of {reps}.", voice, { name: item.name, sets: item.sets, reps: item.reps }, region);
+  }, [visible, item, index, voice, region]);
 
   // Rest countdown with spoken cues at 10 seconds and at the end.
   useEffect(() => {
     if (rest <= 0) return;
     const timer = setTimeout(() => {
       const next = rest - 1;
-      if (next === 10) say("10 seconds.", voice);
-      if (next === 0) { say("Set {set}. Go.", voice, { set }); haptic("warning"); }
+      if (next === 10) say("10 seconds.", voice, undefined, region);
+      if (next === 0) { say("Set {set}. Go.", voice, { set }, region); haptic("warning"); }
       setRest(next);
     }, 1000);
     return () => clearTimeout(timer);
-  }, [rest, voice, set]);
+  }, [rest, voice, set, region]);
 
   useEffect(() => () => quiet(), []);
 
   const completeSet = () => {
     if (!item) return;
     haptic("success");
-    const kg = Number(weight) > 0 ? (units === "imperial" ? Number(weight) / 2.2046 : Number(weight)) : 0;
+    const kg = Number(weight) > 0 ? (weightInLb ? lbToKg(Number(weight)) : Number(weight)) : 0;
     const prev = done[item.id];
     setDone({ ...done, [item.id]: { sets: (prev?.sets || 0) + 1, reps, weight: Math.round(kg * 10) / 10 } });
     if (set < item.sets) {
       setSet(set + 1);
       setRest(restLength);
-      say("Nice. Rest {sec} seconds.", voice, { sec: restLength });
+      say("Nice. Rest {sec} seconds.", voice, { sec: restLength }, region);
     } else nextExercise();
   };
   const nextExercise = () => {
@@ -69,7 +75,7 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
     setRest(0);
     setWeight("");
     if (n < items.length) setReps(items[n].reps);
-    else say("Workout complete. Great job!", voice);
+    else say("Workout complete. Great job!", voice, undefined, region);
   };
   const finish = () => {
     const minutes = Math.max(1, Math.round((new Date().getTime() - started) / 60000));
@@ -85,13 +91,13 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
   return (
     <Sheet visible={visible} title={title} onClose={() => { quiet(); onClose(); }}
       footer={finished ? <PrimaryButton title="Save workout" icon="checkmark-done" onPress={finish} />
-        : rest > 0 ? <PrimaryButton title="Skip rest" icon="play-skip-forward" onPress={() => { setRest(0); say("Set {set}. Go.", voice, { set }); }} />
+        : rest > 0 ? <PrimaryButton title="Skip rest" icon="play-skip-forward" onPress={() => { setRest(0); say("Set {set}. Go.", voice, { set }, region); }} />
         : <PrimaryButton title={tr("Done · set {set} of {v1}", { set, v1: item?.sets })} icon="checkmark-circle" onPress={completeSet} />}>
       <View style={s.topRow}>
         <Pill label={finished ? tr("Finished") : `Exercise ${index + 1} of ${items.length}`} />
-        <Pressable accessibilityRole="switch" aria-checked={voice} accessibilityLabel={tr("Voice coach")} onPress={() => onVoice(!voice)} style={s.voice}>
+        <Pressable accessibilityRole="switch" aria-checked={voice} accessibilityLabel={tr("Spoken workout cues")} onPress={() => onVoice(!voice)} style={s.voice}>
           <Ionicons name={voice ? "volume-high" : "volume-mute"} size={18} color={voice ? palette.brand : palette.muted} />
-          <Text style={[s.voiceText, !voice && { color: palette.muted }]}>Voice coach {voice ? "on" : "off"}</Text>
+          <Text style={[s.voiceText, !voice && { color: palette.muted }]}>{tr("Spoken cues")} {voice ? tr("on") : tr("off")}</Text>
         </Pressable>
       </View>
       <View style={s.progress}>{items.map((it, i) => <View key={it.id + i} style={[s.seg, i < index && { backgroundColor: palette.brand }, i === index && { backgroundColor: palette.carbs }]} />)}</View>
@@ -118,7 +124,7 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
                 <View style={s.stat}><Text style={s.statLabel}>{tr("Set")}</Text><Text style={s.statNum}>{set}/{item.sets}</Text></View>
                 <View style={s.stat}><Text style={s.statLabel}>{tr("Reps")}</Text><Stepper label="reps" value={reps} onChange={setReps} step={1} min={1} max={100} /></View>
               </View>
-              <TextInput value={weight} onChangeText={setWeight} keyboardType="decimal-pad" placeholder={tr("Weight ({v0}) — leave empty for bodyweight", { v0: units === "imperial" ? "lb" : "kg" })}
+              <TextInput value={weight} onChangeText={setWeight} keyboardType="decimal-pad" placeholder={tr("Weight ({v0}) — leave empty for bodyweight", { v0: weightUnit })}
                 placeholderTextColor={palette.muted} accessibilityLabel={tr("Weight used")} style={s.input} />
               {(item.cues || []).slice(0, 3).map((c) => <Text key={c} style={s.cue}>• {tr(c)}</Text>)}
             </>
@@ -133,6 +139,7 @@ export function WorkoutPlayer({ visible, title, items, voice, onVoice, onClose, 
             ))}
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={tr("Skip this exercise")} onPress={nextExercise}><Text style={s.skip}>{tr("Skip this exercise")}</Text></Pressable>
+          <Text style={s.small}>{tr("Spoken cues are read aloud by your phone. This is one-way audio only — the app never listens to you or records your voice.")}</Text>
           <Text style={s.small}>{tr("Stop if you feel sharp pain, chest pain, dizziness or unusual shortness of breath.")}</Text>
         </>
       ) : null}

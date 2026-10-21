@@ -92,7 +92,7 @@ export const labelWarnings = [
   "Lump or swelling in your neck, hoarseness, trouble swallowing or shortness of breath (thyroid).",
   "Severe stomach pain that won’t go away, with or without vomiting (pancreas).",
   "Pain in your upper right stomach, fever, yellow skin or eyes, or clay-colored stools (gallbladder).",
-  "Swelling of your face, lips, tongue or throat, trouble breathing, or a severe rash — call 911.",
+  "Swelling of your face, lips, tongue or throat, trouble breathing, or a severe rash — call your local emergency number (911 in the US and Canada, 999 in the UK).",
   "Vision changes, if you have diabetes.",
   "A racing heartbeat at rest.",
   "Low blood sugar signs if you also take insulin or a sulfonylurea: shakiness, sweating, confusion.",

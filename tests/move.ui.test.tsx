@@ -26,7 +26,7 @@ test("guided workout speaks cues, counts sets with rest, and saves the session",
   await waitFor(() => expect(Speech.speak).toHaveBeenCalledWith(expect.stringMatching(/^Let's go\./), expect.anything()));
   fireEvent.click(screen.getByRole("button", { name: /^Done · set 1 of 2/ }));
   expect(await screen.findByLabelText("Rest 60 seconds")).toBeTruthy();
-  expect(Speech.speak).toHaveBeenCalledWith("Nice. Rest 60 seconds.", expect.anything());
+  await waitFor(() => expect(Speech.speak).toHaveBeenCalledWith("Nice. Rest 60 seconds.", expect.anything()));
   fireEvent.click(screen.getByRole("button", { name: "Skip rest" }));
   fireEvent.click(screen.getByRole("button", { name: /^Done · set 2 of 2/ }));
   for (let i = 0; i < 4; i++) fireEvent.click(screen.getByRole("button", { name: "Skip this exercise" }));
@@ -38,9 +38,9 @@ test("guided workout speaks cues, counts sets with rest, and saves the session",
   expect(localDay(w.at)).toBe(localDay());
 });
 
-test("voice coach can be switched off and is remembered", async () => {
+test("spoken cues can be switched off and are remembered", async () => {
   render(<StoreProvider><Ready /></StoreProvider>);
-  fireEvent.click(await screen.findByRole("button", { name: "🔊 Voice coach on" }));
+  fireEvent.click(await screen.findByRole("button", { name: "🔊 Spoken cues on" }));
   await waitFor(async () => expect((await loadState()).voiceCues).toBe(false));
 });
 

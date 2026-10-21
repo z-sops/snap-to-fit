@@ -318,7 +318,7 @@ export const articles: Article[] = [
       { heading: "Get emergency care if", body: "Your urine turns dark or tea-coloured, you have severe muscle pain or swelling far beyond normal soreness, you cannot move a limb because of weakness, you have not urinated for hours, or you feel confused or feverish." },
       { heading: "Lower your risk", body: "Start easy, build up over weeks, drink fluids, avoid extreme sessions in heat, and avoid alcohol and drugs around hard training." },
     ],
-    caution: "Call 911 or go to the nearest emergency room for the signs above.",
+    caution: "Call your local emergency number (911 in the US and Canada, 999 in the UK) or go to the nearest emergency room for the signs above.",
     sources: [S.rhabdo],
   },
 
@@ -405,7 +405,7 @@ export const articles: Article[] = [
       { heading: "Cardio", body: "Walking, stationary cycling and swimming are good choices. Start gently and build up over weeks toward about 150 minutes a week, at a pace where you can still talk." },
       { heading: "Strength", body: "Light to moderate strength training with bands, body weight or light machines on 2 or more days a week is usually part of the plan once your team clears it. Use more reps with lighter weight, breathe out on effort and avoid straining or breath-holding. Ask when you may lift heavier, and about any short-term limits after the procedure." },
       { heading: "Medicines change how exercise feels", body: "Some heart medicines lower your heart rate, so heart-rate targets on a watch may not apply — your rehab team can give you the right effort level. Blood thinners make bruising and bleeding easier, so ask about contact sports." },
-      { heading: "Stop and get help", body: "Chest pain, pressure or tightness, pain spreading to the arm, jaw or back, unusual shortness of breath, dizziness, fainting or a racing or irregular heartbeat: stop and call 911." },
+      { heading: "Stop and get help", body: "Chest pain, pressure or tightness, pain spreading to the arm, jaw or back, unusual shortness of breath, dizziness, fainting or a racing or irregular heartbeat: stop and call your local emergency number (911 in the US and Canada, 999 in the UK)." },
     ],
     caution: "Do not use stimulant pre-workouts, fat burners or energy drinks without asking your cardiologist.",
     sources: [S.ahaRehab, S.pciExercise],

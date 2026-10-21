@@ -11,6 +11,8 @@ import { MusicControls } from "../components/MusicControls";
 import { useStore } from "../services/store";
 import { haptic } from "../services/feedback";
 import { weeklySchedule, isRestricted } from "../core/schedule";
+import { formatDayMonth, regionFor } from "../core/locale";
+import { weightDisplayFor } from "../core/units";
 import { topicsFor } from "../core/learn";
 import { exerciseById, planImage } from "../core/exercise-library";
 import { streak } from "../core/streaks";
@@ -38,6 +40,8 @@ export default function Move() {
   const restricted = isRestricted(p);
   const voice = state.voiceCues !== false;
   const units = p.units || "imperial";
+  // The spoken voice follows the user's market, not the phone language.
+  const region = regionFor(p.country);
   const doneDays = week.filter((d) => d.completed).length;
   const planned = week.filter((d) => !d.rest).length;
   const weekMinutes = state.workouts.filter((w) => week.some((d) => d.date === localDay(w.at))).reduce((a, w) => a + w.minutes, 0);
@@ -135,13 +139,13 @@ export default function Move() {
         <View style={s.libIcon}><Ionicons name="library" size={26} color="#fff" /></View>
         <View style={{ flex: 1 }}>
           <Text style={s.libTitle}>{tr("Exercise library")}</Text>
-          <Text style={s.libText}>{tr("870+ exercises by muscle and equipment, with form steps. Filtered for your health details.")}</Text>
+          <Text style={s.libText}>{tr("870+ exercises by muscle and equipment, with form steps. The movement images are reference illustrations, not reviewed clinical video. Filtered for your health details.")}</Text>
         </View>
         <Ionicons name="chevron-forward" size={22} color="#fff" />
       </Pressable>
 
       <View style={s.chipsRow}>
-        <Chip label={voice ? "🔊 Voice coach on" : "🔇 Voice coach off"} selected={voice} onPress={() => act(() => update((x) => ({ ...x, voiceCues: !voice })))} />
+        <Chip label={voice ? tr("🔊 Spoken cues on") : tr("🔇 Spoken cues off")} selected={voice} onPress={() => act(() => update((x) => ({ ...x, voiceCues: !voice })))} />
         <Chip label="➕ Log activity" onPress={() => setLogOpen(true)} />
         <Chip label="🎵 Workout music" onPress={() => router.push("/music")} />
       </View>
@@ -177,7 +181,7 @@ export default function Move() {
           <View style={[s.exImg, s.exIcon]}><Ionicons name="barbell" size={18} color={palette.brand} /></View>
           <View style={{ flex: 1 }}>
             <Text style={s.exName}>{w.name}</Text>
-            <Text style={s.exMeta}>{w.sets ? `${w.sets} × ${w.reps}${w.weight ? ` · ${units === "imperial" ? Math.round(w.weight * 2.2046) + " lb" : w.weight + " kg"}` : ""} · ` : ""}{w.minutes} min · {new Date(w.at).toLocaleDateString(tr("en-US"), { month: "short", day: "numeric" })}</Text>
+            <Text style={s.exMeta}>{w.sets ? `${w.sets} × ${w.reps}${w.weight ? ` · ${units === "imperial" ? Math.round(w.weight * 2.2046) + " lb" : w.weight + " kg"}` : ""} · ` : ""}{w.minutes} min · {formatDayMonth(w.at, region)}</Text>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${w.name}`} onPress={() => act(() => update((x) => ({ ...x, workouts: x.workouts.filter((y) => y.id !== w.id) })))} hitSlop={8}>
             <Ionicons name="trash-outline" size={18} color={palette.muted} />
@@ -187,7 +191,7 @@ export default function Move() {
 
       {pending ? <InsulinCheck state={state} onCancel={() => setPending(null)} onStart={() => { setPlayer(pending); setPending(null); }} /> : null}
       {player ? (
-      <WorkoutPlayer visible title={player.title} items={player.items} voice={voice} units={units}
+      <WorkoutPlayer visible title={player.title} items={player.items} voice={voice} region={region} units={units} weightDisplay={weightDisplayFor(p)}
           onVoice={(v) => act(() => update((x) => ({ ...x, voiceCues: v })))} onClose={() => setPlayer(null)} onFinish={save} />
       ) : null}
       <LogActivity visible={logOpen} onClose={() => setLogOpen(false)} onSave={(entry) => act(async () => {

@@ -57,7 +57,7 @@ export default function Today() {
   const more: Tile[] = [
     { href: "/meal-plan", title: "Meal plan", detail: "Your week of meals", icon: "calendar", tint: soft("#FFF1E6") },
     { href: "/journey", title: "Journey", detail: "Weight and photos", icon: "trending-up", tint: soft("#EEF2FF") },
-    { href: "/health", title: "Health & watch", detail: "Steps, weight, readings", icon: "pulse", tint: soft("#FDEBEC") },
+    { href: "/health", title: "Health & watch", detail: "Read-only steps, weight, heart rate", icon: "pulse", tint: soft("#FDEBEC") },
     { href: "/metabolic", title: "Tracker", detail: "Meal and routine times", icon: "time", tint: soft("#EAF7EF") },
     { href: "/gyms", title: "Gyms", detail: "Find one nearby", icon: "location", tint: soft("#FFF8DD") },
     { href: "/music", title: "Music", detail: "Your workout songs", icon: "musical-notes", tint: soft("#F0F4F8") },
