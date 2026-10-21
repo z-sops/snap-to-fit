@@ -115,6 +115,55 @@ guidance, adaptive TDEE, glucose handling and insulin notices are untouched.
 
 **Depends on:** a source with a `permitted` verdict.
 
+**Status: complete in this milestone.** Delivered:
+
+- `pipeline/` — the offline build pipeline. It lives outside `src/`, it is
+  never imported by the application, and no production file is written by it.
+- `pipeline/manifest/sources.json` — the reviewed source manifest: the pinned
+  United States artefact and the pinned Canadian archive, each with its
+  licence, its commercial-use verdict, its checksum, and the sources that are
+  excluded, with the reason.
+- `pipeline/adapters/` — one normaliser per published format. The United
+  States normaliser reproduces the shipped catalogue value for value; the
+  Canadian normaliser applies `docs/m2/CNF_2026_NORMALIZATION.md`.
+- `pipeline/build/` — the merge step, the integrity lint, and the measurement
+  of the three candidate architectures.
+- `pipeline/fixtures/` — a checked-in slice of the Canadian release and the
+  golden output it must produce.
+- `tests/m2-pipeline.test.ts` — the deterministic regression tests.
+- `pipeline/reports/` — the measured build report and the measured
+  architecture comparison, for the United States and Canada.
+- `docs/m2/INGREDIENT_ALIAS_MIGRATION.md` — the contract M2-4 must satisfy
+  before any catalogue refresh.
+- `docs/m2/CNF_USDA_CROSS_REFERENCE.md` — what a Canadian record is and is
+  not, relative to a United States record.
+
+**Explicitly not done in M2-2:** nothing is ingested into the application, no
+shipped catalogue is replaced, no food identifier changes, no recipe changes,
+no market is enabled, and nothing is merged or deployed.
+
+**Two corrections in this round.**
+
+1. **The serving weights were a hundred times too large.** The M2-0
+   specification said that a Canadian measure becomes `100 x conversion
+   factor`, which is the 2015 rule. The 2026 release publishes the weight of
+   the measure itself, and the multiplication by a hundred has already been
+   applied to it, so applying it again made every serving a hundred times
+   too large. The correction is in `docs/m2/CNF_2026_NORMALIZATION.md` §8,
+   with the publisher's own words and its own worked examples, and the
+   pipeline now uses the published weight unchanged.
+2. **A build now checks its sources before it parses them.** `data:build`
+   verifies the shipped artefact, the publisher archive and every file inside
+   it against the manifest, and stops before publishing anything if one of
+   them does not match, is missing, or is not permitted. The checked-in
+   fixture, whose bytes are deliberately not the published bytes, runs in an
+   explicit `fixture` mode and says so in its own output.
+
+**The benchmark is a Node.js measurement, not a device measurement.** It
+covers start-up cost, memory and lookup cost, on a desktop machine. Detail
+loading, search behaviour, cache use and on-device performance are outside
+what was measured, and the architecture is not chosen here.
+
 **Contents**
 
 - `scripts/build-foods/` split into a per-source normaliser plus a merge step.
@@ -125,6 +174,16 @@ guidance, adaptive TDEE, glucose handling and insulin notices are untouched.
 - A builder version, so a change to a normaliser is visible in the manifest.
 - The CNF normaliser, which reads the 2026 relational CSVs and applies
   `docs/m2/CNF_2026_NORMALIZATION.md` exactly.
+
+**Deviations from the plan above, and why.** The pipeline is `pipeline/`
+rather than `scripts/build-foods/`, and the manifest is
+`pipeline/manifest/sources.json` rather than `data/manifest.json`. The
+directory is the only part of the plan that matters for safety — that the
+builder sits outside `src/` and is never imported by the app — and a single
+self-contained directory makes that obvious to a reviewer, and keeps the
+downloaded cache and the built catalogue next to the code that produces them.
+The script names are the ones the plan specifies, and `data:verify` is wired
+into CI as G2.1 requires.
 
 **Gates**
 

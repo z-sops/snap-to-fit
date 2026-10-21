@@ -46,3 +46,7 @@ dist-native/
 build-check/
 
 server/data/
+
+# the offline build pipeline: downloaded sources and built catalogues
+pipeline/.cache/
+pipeline/out/

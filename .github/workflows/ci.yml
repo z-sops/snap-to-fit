@@ -17,6 +17,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - name: Verify the pinned source manifest
+        run: npm run data:verify
       - run: npm test
       - run: npm run test:ui
       - name: Export Android, iOS and web bundles

@@ -70,6 +70,10 @@
     "lint": "expo lint",
     "test": "node --import tsx --test tests/*.test.ts",
     "movement": "node scripts/build-movement.mjs",
+    "data:verify": "node --import tsx pipeline/cli.ts verify",
+    "data:fetch": "node --import tsx pipeline/cli.ts fetch",
+    "data:build": "node --import tsx pipeline/cli.ts build",
+    "data:bench": "node --import tsx pipeline/cli.ts bench",
     "server": "node --import tsx --env-file=server/.env server/index.ts",
     "export:web": "expo export --platform web",
     "test:ui": "vitest run"
