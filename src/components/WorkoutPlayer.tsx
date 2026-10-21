@@ -7,20 +7,19 @@ import { Sheet, PrimaryButton, Pill, Stepper, palette } from "./design";
 import { say, quiet } from "../services/voice";
 import { haptic } from "../services/feedback";
 import { uid, type WorkoutLog } from "../core/model";
-import { lbToKg, weightDisplayFor } from "../core/units";
-import type { Region, WeightDisplay } from "../core/locale";
+import { loadToKg, type LoadUnit } from "../core/units";
+import type { Region } from "../core/locale";
 
 export interface PlayerItem { id: string; name: string; image?: string; sets: number; reps: number; cues?: string[]; seconds?: number }
 
-export function WorkoutPlayer({ visible, title, items, voice, region, onVoice, onClose, onFinish, units, weightDisplay }: {
+export function WorkoutPlayer({ visible, title, items, voice, region, onVoice, onClose, onFinish, loadUnit }: {
   visible: boolean; title: string; items: PlayerItem[]; voice: boolean; region: Region; onVoice: (v: boolean) => void;
-  onClose: () => void; onFinish: (logs: WorkoutLog[]) => void; units: "imperial" | "metric"; weightDisplay?: WeightDisplay;
+  onClose: () => void; onFinish: (logs: WorkoutLog[]) => void; loadUnit: LoadUnit;
 }) {
   const tr = useT();
-  // The entered weight follows the same unit the rest of the app shows.
-  const display = weightDisplayFor({ units, weightDisplay });
-  const weightUnit = display === "kg" ? "kg" : display === "st" ? "st + lb" : "lb";
-  const weightInLb = display !== "kg";
+  // The load is entered in one plain unit. It is never a body-weight display
+  // value, so a stone preference cannot change what a number here means.
+  const weightUnit = loadUnit;
   const [index, setIndex] = useState(0);
   const [set, setSet] = useState(1);
   const [rest, setRest] = useState(0);
@@ -59,7 +58,7 @@ export function WorkoutPlayer({ visible, title, items, voice, region, onVoice, o
   const completeSet = () => {
     if (!item) return;
     haptic("success");
-    const kg = Number(weight) > 0 ? (weightInLb ? lbToKg(Number(weight)) : Number(weight)) : 0;
+    const kg = Number(weight) > 0 ? loadToKg(Number(weight), loadUnit) : 0;
     const prev = done[item.id];
     setDone({ ...done, [item.id]: { sets: (prev?.sets || 0) + 1, reps, weight: Math.round(kg * 10) / 10 } });
     if (set < item.sets) {

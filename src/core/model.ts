@@ -28,6 +28,12 @@ export interface Profile {
    * Display only — the stored weight stays in kilograms.
    */
   weightDisplay?: "kg" | "lb" | "st";
+  /**
+   * The unit exercise loads are entered in, chosen separately from the
+   * body-weight display. Stone is never used for a load. Stored loads are
+   * always in kilograms.
+   */
+  loadUnits?: "imperial" | "metric";
   /** Profile picture: an emoji avatar on a colour, or a local photo. */
   avatar?: { emoji?: string; color?: string; photoUri?: string };
   /** GLP-1 medication named by the user from their prescription (record only). */
@@ -335,6 +341,8 @@ export function validateProfile(p: Profile) {
     throw new Error("Invalid unit preference.");
   if (p.weightDisplay !== undefined && !["kg", "lb", "st"].includes(p.weightDisplay))
     throw new Error("Invalid weight display preference.");
+  if (p.loadUnits !== undefined && !["imperial", "metric"].includes(p.loadUnits))
+    throw new Error("Invalid exercise load unit preference.");
   if (p.glp1 !== undefined && (typeof p.glp1 !== "string" || p.glp1.length > 80))
     throw new Error("Invalid medication entry.");
   if (!p.name.trim()) throw new Error("Please enter your name.");

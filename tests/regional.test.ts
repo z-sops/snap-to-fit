@@ -1,12 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  emergencyInstruction,
+  emergencyNumber,
+  emergencyService,
   formatDate,
+  formatDateTime,
+  formatDayMonth,
   formatNumber,
   formatTime,
   regionFor,
   regionalLocale,
-  emergencyNumber,
   speechLocales,
   weightDisplayOptions,
 } from "../src/core/locale";
@@ -17,6 +21,8 @@ import {
   kgToStone,
   kgToWeightValue,
   lbToStone,
+  loadToKg,
+  loadUnitFor,
   presentationFor,
   stoneParts,
   stoneToKg,
@@ -107,7 +113,7 @@ test("stone and pounds convert to and from kilograms without losing the value", 
 });
 
 test("repeated conversion cycles settle instead of drifting", () => {
-  // kg → displayed pounds → kg. The second cycle must return the same value as
+  // kg â†’ displayed pounds â†’ kg. The second cycle must return the same value as
   // the first, and the drift from the original stays inside half a pound.
   const original = 72.5;
   const first = weightToKg(kgToWeightValue(original, "imperial"), "imperial");
@@ -231,4 +237,24 @@ test("a meal is counted on the day the user actually ate it", () => {
     const totalsFor8 = todayTotals(meals, new Date("2026-03-08T12:00:00Z"));
     assert.equal(totalsFor8.calories, 600);
   });
+});
+
+test("exercise loads use their own unit, never a stone display", () => {
+  // A British user who reads their body weight in stone still enters loads
+  // in plain pounds, so a number in the load field means one thing only.
+  const british = { country: "GB", units: "metric" as const, weightDisplay: "st" as const };
+  assert.equal(loadUnitFor(british), "lb");
+  assert.equal(loadUnitFor({ country: "US", units: "imperial" as const }), "lb");
+  assert.equal(loadUnitFor({ country: "CA", units: "metric" as const }), "kg");
+  // An explicit choice wins over everything else.
+  assert.equal(loadUnitFor({ ...british, loadUnits: "metric" as const }), "kg");
+  assert.equal(loadUnitFor({ country: "US", units: "imperial" as const, loadUnits: "metric" as const }), "kg");
+  // A stone preference never produces a stone load.
+  for (const display of ["kg", "lb", "st"] as const)
+    assert.notEqual(loadUnitFor({ units: "metric", weightDisplay: display }), "st");
+  // A load is stored in kilograms whatever unit it was entered in.
+  assert.equal(loadToKg(100, "lb"), 45.4);
+  assert.equal(loadToKg(100, "kg"), 100);
+  // 100 pounds is nowhere near 100 stone.
+  assert.ok(loadToKg(100, "lb") < 50);
 });

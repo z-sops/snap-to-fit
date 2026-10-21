@@ -75,6 +75,36 @@ export function weightUnitLabel(display: WeightDisplay) {
   return display === "kg" ? "kg" : display === "lb" ? "lb" : "st";
 }
 
+/**
+ * The unit a dumbbell or barbell load is entered in.
+ *
+ * Exercise loads are a separate choice from the body-weight display. A user
+ * who reads their weight in stone still enters loads in plain pounds, never
+ * in a compound stone-and-pound value, so a load can never be misread.
+ */
+export type LoadUnit = "kg" | "lb";
+
+/**
+ * The load unit for a profile. An explicit loadUnits choice wins. Otherwise
+ * the body-weight display decides, and a stone display means pounds, because
+ * stone is written in pounds.
+ */
+export function loadUnitFor(profile: {
+  country?: string;
+  units?: Units;
+  weightDisplay?: WeightDisplay;
+  loadUnits?: Units;
+}): LoadUnit {
+  if (profile.loadUnits === "imperial") return "lb";
+  if (profile.loadUnits === "metric") return "kg";
+  return weightDisplayFor(profile) === "kg" ? "kg" : "lb";
+}
+
+/** A load entered in the given unit, stored in kilograms. */
+export function loadToKg(value: number, unit: LoadUnit) {
+  return unit === "kg" ? value : lbToKg(value);
+}
+
 /** Everything the UI needs to present a profile for its market, in one place. */
 export interface Presentation {
   region: Region;

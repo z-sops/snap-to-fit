@@ -1,5 +1,5 @@
 import { CountryPicker } from "../components/CountryPicker";
-import { formatHeight, formatWeight, presentationFor, weightDisplayFor, type Units } from "../core/units";
+import { formatHeight, formatWeight, loadUnitFor, presentationFor, weightDisplayFor, type LoadUnit, type Units } from "../core/units";
 import { weightDisplayOptions, type WeightDisplay } from "../core/locale";
 import React, { useState } from "react";
 import { Platform, Alert, Share } from "react-native";
@@ -31,6 +31,7 @@ export default function Settings() {
   const presentation = presentationFor(p);
   const units: Units = p.units || "metric";
   const weightDisplay = weightDisplayFor(p);
+  const loadUnit = loadUnitFor(p);
   const weightChoices = weightDisplayOptions(presentation.region).map((d) => ({
     value: d,
     label: d === "kg" ? "Kilograms (kg)" : d === "lb" ? "Pounds (lb)" : "Stone and pounds (st)",
@@ -78,6 +79,16 @@ export default function Settings() {
         />
         <H>{tr("Show weight in")}</H>
         <Chips values={weightChoices} selected={weightDisplay} onChange={(v) => setProfile({ weightDisplay: v as WeightDisplay })} />
+        <H>{tr("Enter exercise loads in")}</H>
+        <P>{tr("Dumbbell and barbell weights are a separate choice from the units you read your body weight in. Loads are never entered in stone, so a number always means one thing.")}</P>
+        <Chips
+          values={[
+            { value: "kg" as LoadUnit, label: "Kilograms (kg)" },
+            { value: "lb" as LoadUnit, label: "Pounds (lb)" },
+          ]}
+          selected={loadUnit}
+          onChange={(v) => setProfile({ loadUnits: v === "lb" ? "imperial" : "metric" })}
+        />
         <P>{tr("Dates look like {date}, times like {time} and numbers like {number}.", { date: presentation.dateFormat, time: presentation.timeFormat, number: presentation.numberFormat })}</P>
         <P>{tr("The emergency number for your region is {number}.", { number: presentation.emergencyService })}</P>
       </Card>
