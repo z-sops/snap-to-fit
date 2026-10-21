@@ -1,9 +1,9 @@
 import React from "react";
 import { test, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, waitFor } from "@testing-library/react";
 import * as Speech from "expo-speech";
 import { say, quiet, localesFor, refreshVoices } from "../src/services/voice";
-import { useT } from "../src/i18n";
+import { useT, activeLanguage } from "../src/i18n";
 import { StoreProvider, useStore } from "../src/services/store";
 import { saveState, saveSession } from "../src/services/storage";
 import { emptyState, newProfile } from "../src/core/model";
@@ -95,7 +95,8 @@ test("the app language and the market are separate choices", async () => {
     "guest",
   );
   render(<StoreProvider><Ready /></StoreProvider>);
-  await screen.findByText("ready");
+  // The active language is applied in an effect, so wait for it before speaking.
+  await waitFor(() => expect(activeLanguage()).toBe("es"));
   // Spanish UI in a UK market: the Spanish voice is used, not the UK one.
   say("Set {set}. Go.", true, { set: 2 }, "GB");
   await vi.waitFor(() => expect(Speech.speak).toHaveBeenCalledTimes(1));
