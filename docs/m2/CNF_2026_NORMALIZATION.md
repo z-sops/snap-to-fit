@@ -121,19 +121,29 @@ Across the whole release:
 | Non-zero values with no positive observation count | **219,204** |
 
 So a rule that discarded every value without a laboratory observation count
-would have deleted **149,873 legitimate zeros and 219,204 legitimate
-non-zero values** in this release alone. That is the number the earlier draft
-of this document got wrong by a factor of a thousand; the correct figure for
-the non-zero population is **219,204**, not 174.
+would have deleted **149,873 legitimate zeros and 219,204 legitimate non-zero
+values** in this release alone.
 
-**174** was the count of *code 12* rows that are non-zero **and** have no
-positive observation count — a subset of the 82 code-12 conflicts, not a
-separate population. The two numbers were conflated. The correct statement is:
+**The source-code 12 conflicts, broken down exactly:**
 
-- code 12 has **65,887** rows: **65,805** with a value of zero, **82** with a
-  non-zero value, and none with a blank value;
-- of those 82 conflicts, **80** have no positive observation count and **2**
-  do.
+| Code 12 (assumed zero) | Rows |
+|---|---|
+| total | **65,887** |
+| value = 0 | **65,805** |
+| value ≠ 0 — the conflicts | **82** |
+| of the 82, with a positive observation count | **2** |
+| of the 82, without a positive observation count | **80** |
+| value blank | 0 |
+
+These are the figures `research/measure-cnf-2026.mjs` prints, and they agree
+with the committed `research/fixtures/cnf-2026-nutrient-amount-summary.csv`.
+
+> **Erratum.** An earlier draft of this document claimed that "174" rows were
+> a subset of the 82 conflicts. **That claim is wrong and is withdrawn.** No
+> population of 174 rows exists in this release, and the 82 conflicts break
+> down as 80 without a positive observation count and 2 with one. The earlier
+> figure was a mis-derivation and should not be carried into any downstream
+> document or review.
 
 ## 5. Nutrient-source code → value state
 

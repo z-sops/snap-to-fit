@@ -148,6 +148,10 @@ console.log("value-zero=" + code12.filter((v) => v.vs === "value-zero").length);
 console.log("value-nonzero=" + code12NonZero.length);
 console.log("value-empty=" + code12.filter((v) => v.vs === "value-empty").length);
 console.log("non-zero rows with observations>0=" + code12NonZero.filter((v) => v.os === "obs-positive").length);
+console.log(
+  "non-zero rows without positive observations=" +
+    code12NonZero.filter((v) => v.os !== "obs-positive").length,
+);
 console.log("distinct non-zero amounts (first 20):");
 console.log(
   [...new Set(code12NonZero.map((v) => v.amount))]
