@@ -1439,4 +1439,10 @@ export const pt: Record<string, string> = {
   "The product database took too long to answer. Search by name instead.": "O banco de dados de produtos demorou demais para responder. Busque pelo nome.",
   "The product database is busy. Try again or search by name.": "O banco de dados de produtos está ocupado. Tente de novo ou busque pelo nome.",
   "Camera access is switched off for this app. Turn it on in your phone settings, or type the number below.": "O acesso à câmera está desativado para este app. Ative-o nos ajustes do celular ou digite o número abaixo.",
+  // M1 corrections: exercise load units, consent, nutrient completeness, emergency wording.
+  "Ask about meals, macros, workouts or habits. I don’t diagnose, change medicines or handle emergencies — in an emergency {emergency}.": "Pergunte sobre refeições, macros, treinos ou hábitos. Eu não diagnostico, não altero medicamentos e não resolvo emergências — em uma emergência, {emergency}.",
+  "Enter exercise loads in": "Insira as cargas de treino em",
+  "Dumbbell and barbell weights are a separate choice from the units you read your body weight in. Loads are never entered in stone, so a number always means one thing.": "As cargas de halteres e barra são uma escolha separada das unidades em que você lê o seu peso. As cargas nunca são inseridas em stone, então um número sempre significa uma coisa só.",
+  "Use this for a package label or a restaurant menu that lists calories. Leave a field empty if the label does not say it, so it is not counted as zero.": "Use para um rótulo de produto ou um cardápio que informe as calorias. Deixe um campo em branco se o rótulo não disser, para que não seja contado como zero.",
+  "Some nutrients were not reported by every food, so those totals are lower bounds rather than confirmed values.": "Alguns nutrientes não foram informados por todos os alimentos, então essas somas são limites inferiores e não valores confirmados.",
 };

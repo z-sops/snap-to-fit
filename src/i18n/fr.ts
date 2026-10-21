@@ -1415,4 +1415,10 @@ export const fr: Record<string, string> = {
   "The product database took too long to answer. Search by name instead.": "La base de données de produits a mis trop de temps à répondre. Cherche par nom.",
   "The product database is busy. Try again or search by name.": "La base de données de produits est occupée. Réessaie ou cherche par nom.",
   "Camera access is switched off for this app. Turn it on in your phone settings, or type the number below.": "L’accès à l’appareil photo est désactivé pour cette application. Active-le dans les réglages de ton téléphone, ou saisis le numéro ci-dessous.",
+  // M1 corrections: exercise load units, consent, nutrient completeness, emergency wording.
+  "Ask about meals, macros, workouts or habits. I don’t diagnose, change medicines or handle emergencies — in an emergency {emergency}.": "Pose des questions sur les repas, les macros, les entraînements ou les habitudes. Je ne pose pas de diagnostic, je ne modifie pas les médicaments et je ne gère pas les urgences : en cas d’urgence, {emergency}.",
+  "Enter exercise loads in": "Saisis les charges d’entraînement en",
+  "Dumbbell and barbell weights are a separate choice from the units you read your body weight in. Loads are never entered in stone, so a number always means one thing.": "Les charges de haltères et de barre se choisissent séparément des unités dans lesquelles tu lis ton poids. Les charges ne sont jamais saisies en stones, donc un nombre signifie toujours une seule chose.",
+  "Use this for a package label or a restaurant menu that lists calories. Leave a field empty if the label does not say it, so it is not counted as zero.": "Utilise-le pour une étiquette ou une carte de restaurant qui indique les calories. Laisse un champ vide si l’étiquette ne le dit pas, pour qu’il ne soit pas compté comme zéro.",
+  "Some nutrients were not reported by every food, so those totals are lower bounds rather than confirmed values.": "Certains nutriments n’ont pas été indiqués par tous les aliments : ces totaux sont donc des minimums et non des valeurs confirmées.",
 };
