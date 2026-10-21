@@ -23,6 +23,11 @@ export type Condition =
 export interface Profile {
   /** Display/input units; values are always stored in kg and cm. */
   units?: "imperial" | "metric";
+  /**
+   * How the weight itself is written: kilograms, pounds, or UK stone and pounds.
+   * Display only — the stored weight stays in kilograms.
+   */
+  weightDisplay?: "kg" | "lb" | "st";
   /** Profile picture: an emoji avatar on a colour, or a local photo. */
   avatar?: { emoji?: string; color?: string; photoUri?: string };
   /** GLP-1 medication named by the user from their prescription (record only). */
@@ -328,6 +333,8 @@ export function validateProfile(p: Profile) {
     throw new Error("Invalid familiar-food preferences.");
   if (p.units !== undefined && !["imperial", "metric"].includes(p.units))
     throw new Error("Invalid unit preference.");
+  if (p.weightDisplay !== undefined && !["kg", "lb", "st"].includes(p.weightDisplay))
+    throw new Error("Invalid weight display preference.");
   if (p.glp1 !== undefined && (typeof p.glp1 !== "string" || p.glp1.length > 80))
     throw new Error("Invalid medication entry.");
   if (!p.name.trim()) throw new Error("Please enter your name.");
