@@ -1,19 +1,21 @@
 // M2-0 research: how a food-composition value is described before it is
 // allowed anywhere near the app.
 //
-// This module is a SPECIFICATION, expressed as code so it can be tested. It is
-// not imported by `src/` or `server/` and cannot reach a device build.
+// This module is a SPECIFICATION, expressed as code so it can be tested. It
+// is not imported by `src/` or `server/` and cannot reach a device build.
 //
 // The central rule it encodes: a value's QUALITY, its PROVENANCE and its
 // MISSINGNESS are three different things and must never be collapsed into one.
 //
 //   - quality     -> "analysed" | "calculated" | "imputed" | "estimated"
-//                    | "trace" | "unknown" | "documented-zero"
+//                    | "inherited" | "trace" | "unknown" | "documented-zero"
 //   - provenance  -> the source's own code and description for that value
 //   - missingness -> whether the source reported a value at all
 //
 // A value with no analytical observations is NOT missing. A calculated or
 // assumed value is a real value with a weaker evidence base, and it is kept.
+
+import { nutrientKeys, type NutrientKey } from "../src/core/foods";
 
 /** How a value was arrived at. */
 export type NutrientValueState =
@@ -297,13 +299,8 @@ export function normalizeCofidValue(raw: string): NutrientValue {
  * ------------------------------------------------------------------ */
 
 /** The 19 nutrient keys the app stores, in `src/core/foods.ts` order. */
-export const APP_NUTRIENT_KEYS = [
-  "calories", "protein", "carbs", "fat", "fibre", "sugar", "satFat",
-  "sodium", "potassium", "calcium", "iron", "magnesium", "zinc", "vitaminC",
-  "vitaminD", "vitaminB12", "folate", "vitaminA", "cholesterol",
-] as const;
-
-export type AppNutrientKey = (typeof APP_NUTRIENT_KEYS)[number];
+export const APP_NUTRIENT_KEYS = nutrientKeys;
+export type AppNutrientKey = NutrientKey;
 
 /**
  * The CNF 2026 nutrient codes behind each app key, by INFOODS tagname.

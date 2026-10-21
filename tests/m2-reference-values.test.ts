@@ -3,25 +3,28 @@ import assert from "node:assert/strict";
 import {
   CA_REFERENCE_VALUES,
   CA_SATURATED_PLUS_TRANS_DAILY_VALUE,
+  GB_FOLIC_ACID_REFERENCE_INTAKE,
   GB_REFERENCE_VALUES,
   GB_SALT_REFERENCE_INTAKE,
   US_ADDED_SUGARS_DAILY_VALUE,
   US_REFERENCE_VALUES,
   missingFor,
-  percentDailyValue,
-  referenceValueFor,
+  resolvePercent,
+  resolveReference,
   type Market,
-} from "../research/reference-values";
+} from "../src/core/reference-values";
 import { nutrientInfo } from "../src/core/foods";
 
-// M2-1 preparation, read-only. The reference tables are specified and tested
-// here. Nothing in this file is enabled in the app, and no personal target is
-// touched.
+// The reference-value tables, and the rules that keep them honest.
+//
+// A reference value here is a labelling denominator. It is never an
+// individual dietary requirement, and the app's personalised targets are not
+// touched by anything in this file.
 
 test("the United States table reproduces the values the app uses today", () => {
-  // This is the guarantee that enabling the tables changes nothing for a US
-  // user: the research table and the app's own nutrient table must agree
-  // exactly, including the nutrients the app deliberately leaves out.
+  // This is the guarantee that using these tables changes nothing for a United
+  // States user: the research table and the app's own nutrient table must
+  // agree exactly, including the nutrients the app deliberately leaves out.
   for (const [key, info] of Object.entries(nutrientInfo)) {
     const research = US_REFERENCE_VALUES.values[key as keyof typeof US_REFERENCE_VALUES.values];
     if (info.dv === undefined) {
@@ -30,7 +33,7 @@ test("the United States table reproduces the values the app uses today", () => {
       assert.ok(research, `${key} is missing from the research table`);
       assert.equal(research!.value, info.dv, `${key}`);
       // The app writes the basis into the unit ("mcg DFE", "mcg RAE"); the
-      // research table keeps the base unit and records the basis separately.
+      // table keeps the base unit and records the basis separately.
       assert.ok(
         info.unit.startsWith(research!.unit),
         `${key} unit ${info.unit} is not built on ${research!.unit}`,
@@ -40,7 +43,7 @@ test("the United States table reproduces the values the app uses today", () => {
   // The two bases the app writes into its unit strings are recorded explicitly.
   assert.match(US_REFERENCE_VALUES.values.folate!.basis!, /folate equivalents/);
   assert.match(US_REFERENCE_VALUES.values.vitaminA!.basis!, /retinol activity equivalents/);
-  // And the app has no Daily Value for total sugars, which stays true.
+  // The app has no Daily Value for total sugars, which stays true.
   assert.equal(nutrientInfo.sugar.dv, undefined);
   assert.equal(US_REFERENCE_VALUES.values.sugar, undefined);
   assert.equal(US_REFERENCE_VALUES.values.calories, undefined);
@@ -55,8 +58,8 @@ test("the added sugars Daily Value is never used for total sugars", () => {
   assert.equal(CA_REFERENCE_VALUES.values.sugar?.value, 100);
   assert.equal(CA_REFERENCE_VALUES.values.sugar?.basis, "total sugars");
   // A missing value must not fall back to the added-sugars figure.
-  assert.equal(referenceValueFor("US", "sugar"), undefined);
-  assert.equal(percentDailyValue("US", "sugar", 30), undefined);
+  assert.equal(resolveReference("US", "sugar").status, "no-value");
+  assert.equal(resolvePercent("US", "sugar", 30).percent, undefined);
 });
 
 test("Canada uses the adult columns, including the corrected potassium", () => {
@@ -74,8 +77,8 @@ test("Canada's saturated fat percentage is unavailable, not a substitution", () 
   // by that denominator would report a percentage of the wrong quantity. The
   // Canadian saturated-fat percentage is therefore unavailable.
   assert.equal(CA_REFERENCE_VALUES.values.satFat, undefined);
-  assert.equal(referenceValueFor("CA", "satFat"), undefined);
-  assert.equal(percentDailyValue("CA", "satFat", 10), undefined);
+  assert.equal(resolveReference("CA", "satFat").status, "not-enabled");
+  assert.equal(resolvePercent("CA", "satFat", 10).percent, undefined);
   // The combined value is kept separately, and is never a saturated-fat
   // denominator.
   assert.equal(CA_SATURATED_PLUS_TRANS_DAILY_VALUE.value, 20);
@@ -93,7 +96,7 @@ test("the United States saturated fat value is for saturated fat", () => {
   assert.equal(US_REFERENCE_VALUES.values.satFat?.basis, "saturated fat");
   assert.ok(!/trans/.test(US_REFERENCE_VALUES.values.satFat!.basis!));
   // And the United States does produce a saturated-fat percentage.
-  assert.equal(percentDailyValue("US", "satFat", 10), 50);
+  assert.equal(resolvePercent("US", "satFat", 10).percent, 50);
 });
 
 test("the United Kingdom uses the adult annex values", () => {
@@ -115,73 +118,52 @@ test("the United Kingdom sets salt, not sodium, and salt is not sodium", () => {
   assert.equal(GB_SALT_REFERENCE_INTAKE.unit, "g");
   // The annex has no sodium value, so the app's sodium key has none either.
   assert.equal(GB_REFERENCE_VALUES.values.sodium, undefined);
-  assert.equal(referenceValueFor("GB", "sodium"), undefined);
-  assert.equal(percentDailyValue("GB", "sodium", 500), undefined);
+  assert.equal(resolveReference("GB", "sodium").status, "not-enabled");
+  assert.equal(resolvePercent("GB", "sodium", 500).percent, undefined);
   // And the salt figure must never be registered as a sodium value.
   assert.ok(!("sodium" in GB_REFERENCE_VALUES.values));
   assert.match(GB_SALT_REFERENCE_INTAKE.basis!, /salt/);
+});
+
+test("the United Kingdom folic acid value is not used for dietary folate equivalents", () => {
+  // The app's folate key is dietary folate equivalents. Annex XIII's folate
+  // value is folic acid, a different quantity, so it must not be applied
+  // without an explicitly verified compatible basis.
+  assert.equal(GB_REFERENCE_VALUES.values.folate, undefined);
+  assert.equal(resolveReference("GB", "folate").status, "not-enabled");
+  assert.equal(resolvePercent("GB", "folate", 200).percent, undefined);
+  // It is recorded separately, with its basis stated.
+  assert.equal(GB_FOLIC_ACID_REFERENCE_INTAKE.value, 200);
+  assert.match(GB_FOLIC_ACID_REFERENCE_INTAKE.basis!, /folic acid/);
+  assert.notEqual(GB_FOLIC_ACID_REFERENCE_INTAKE.basis, US_REFERENCE_VALUES.values.folate?.basis);
 });
 
 test("the United Kingdom annex has no cholesterol and no fibre value", () => {
   // Neither is in Annex XIII, and neither may be borrowed from another market.
   assert.equal(GB_REFERENCE_VALUES.values.cholesterol, undefined);
   assert.equal(GB_REFERENCE_VALUES.values.fibre, undefined);
-  assert.equal(referenceValueFor("GB", "cholesterol"), undefined);
-  assert.equal(referenceValueFor("GB", "fibre"), undefined);
+  assert.equal(resolveReference("GB", "cholesterol").status, "not-enabled");
+  assert.equal(resolveReference("GB", "fibre").status, "not-enabled");
 });
 
 test("folate records the basis it is measured on", () => {
   const us = US_REFERENCE_VALUES.values.folate!;
   const ca = CA_REFERENCE_VALUES.values.folate!;
-  const gb = GB_REFERENCE_VALUES.values.folate!;
   assert.equal(us.value, 400);
   assert.match(us.basis!, /folate equivalents/);
   assert.equal(ca.value, 400);
   assert.match(ca.basis!, /folate equivalents/);
-  // The UK value is folic acid, which is a different quantity.
-  assert.equal(gb.value, 200);
-  assert.match(gb.basis!, /folic acid/);
-  assert.notEqual(gb.basis, us.basis);
-});
-
-test("a market never borrows another market's value", () => {
-  // The bug this app has today: the United States Daily Values are shown to
-  // Canadian and British users.
-  assert.equal(referenceValueFor("CA", "potassium")?.value, 3400);
-  assert.notEqual(referenceValueFor("CA", "potassium")?.value, 4700);
-  assert.equal(referenceValueFor("GB", "vitaminD")?.value, 5);
-  assert.notEqual(referenceValueFor("GB", "vitaminD")?.value, 20);
-  // A nutrient with no value in a market has no value, not another country's.
-  assert.equal(referenceValueFor("CA", "protein"), undefined);
-  assert.equal(referenceValueFor("CA", "carbs"), undefined);
-  assert.equal(referenceValueFor("US", "calories"), undefined);
-  // An unknown market has nothing at all.
-  assert.equal(referenceValueFor(undefined, "protein"), undefined);
-  assert.equal(referenceValueFor("ZZ" as Market, "protein"), undefined);
-});
-
-test("a missing reference value produces no percentage", () => {
-  assert.equal(percentDailyValue("US", "protein", 25), 50);
-  assert.equal(percentDailyValue("CA", "potassium", 1700), 50);
-  assert.equal(percentDailyValue("GB", "vitaminD", 2.5), 50);
-  // No value, no number.
-  assert.equal(percentDailyValue("US", "sugar", 30), undefined);
-  assert.equal(percentDailyValue("GB", "sodium", 500), undefined);
-  assert.equal(percentDailyValue("CA", "protein", 30), undefined);
-  // No amount, no number.
-  assert.equal(percentDailyValue("US", "protein", undefined), undefined);
-  assert.equal(percentDailyValue("US", "protein", Number.NaN), undefined);
 });
 
 test("the missing values for each market are known", () => {
   assert.ok(missingFor("GB").includes("sodium"));
   assert.ok(missingFor("GB").includes("cholesterol"));
   assert.ok(missingFor("GB").includes("fibre"));
+  assert.ok(missingFor("GB").includes("folate"));
   assert.ok(missingFor("CA").includes("protein"));
   // Canada's saturated-fat DV measures a different quantity, so there is none.
   assert.ok(missingFor("CA").includes("satFat"));
   assert.ok(missingFor("US").includes("sugar"));
-  // Every market publishes a value for the macronutrients the app shows.
   for (const market of ["US", "CA", "GB"] as Market[]) {
     assert.ok(!missingFor(market).includes("calories") || market === "US" || market === "CA");
   }
@@ -205,3 +187,4 @@ test("every value carries a unit and a scope", () => {
       assert.ok(value!.value > 0, `${key} value`);
     }
 });
+

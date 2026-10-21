@@ -1,15 +1,15 @@
 # M2-1 readiness — regional labelling reference values
 
-**Status: preparation only. M2-1 production implementation is NOT authorised
-and has NOT been started.** This document is the plan and the readiness
-assessment for the owner's decision.
+**Status: the engineering implementation is complete on the M2-1 branch and
+is DISABLED. Production activation, legal and clinical sign-off, merging and
+deployment are not authorised.**
 
 **Authorisation state**
 
 | | |
 |---|---|
-| M2-0 | accepted, engineering level, at `36bb330` |
-| M2-1 | **not authorised** — preparation only |
+| M2-0 | accepted, engineering level, at `ac637d5` |
+| M2-1 | **engineering implementation complete on `feat/m2-regional-reference-values`, disabled.** Production activation not authorised. |
 | M2-2 (ingestion) | not authorised |
 | M2-3 (source-aware runtime) | not authorised |
 | Merging, deploying, releasing | not authorised |
@@ -54,32 +54,80 @@ regulator's denominators, not the food database. The UK *food data* is
 licence-blocked; the UK *labelling values* are published in retained
 legislation and are a separate question. M2-1 does not need the CoFID data.
 
-## 3. The M2-1 design, as it would be implemented
+## 3. The M2-1 design, as implemented on the branch
 
-For review only. Nothing below is built.
+The implementation is on `feat/m2-regional-reference-values`, built on the
+accepted M2-0 commit. It is **not activated**: the regional percentages stay
+disabled until the review below is done.
 
-1. **A per-market denominator in the app.** `nutrientInfo` gains an optional
-   `referenceValues` lookup, or the tables move into a small
-   `src/core/reference-values.ts` that resolves a market from the profile's
-   country through the existing `regionFor` helper.
-2. **A single entry point.** `percentDailyValue(market, key, amount)` returns a
-   number or `undefined`. There is no second path and no cross-market
-   fallback: a market with no value returns `undefined`, and the screen shows
-   "no regional reference value" rather than a number from another country.
-3. **The market comes from the profile's country**, exactly as M1's regional
-   formatting does, with a manual country choice winning over any inference.
-4. **The existing United States behaviour is the default**, so the change is
-   additive: a United States user sees exactly what they see now.
-5. **The wording changes from a fixed "vs. FDA Daily Values"** to the
-   market's own instrument, and a percentage that cannot be computed is
-   shown as unavailable with the reason.
+1. **A per-market denominator.** `src/core/reference-values.ts` holds the
+   three tables, the approval gate and the resolver. The market comes from the
+   profile's country through the existing M1 `regionFor` mapping, so a manual
+   country choice always wins.
+2. **A single entry point.** `resolvePercent(market, key, amount, state)`
+   returns a percentage, or nothing. There is no second path and no
+   cross-market fallback: a market that is not enabled resolves to
+   "not-enabled", and a market that publishes no value for a nutrient resolves
+   to "no-value". Neither ever resolves to another country's number.
+3. **The incumbent is untouched.** The United States is the only enabled
+   market, so a United States user sees exactly what they see today, and a
+   test compares the resolver's output with the app's existing calculation key
+   by key.
+4. **A profile with no country** predates the country setting and keeps the
+   incumbent United States denominator, which is what it sees today.
+5. **The wording follows the market.** The "vs. FDA Daily Values" line is
+   kept for the United States, and a market without its own values is told
+   so, with no percentage shown.
+
+### United States display compatibility
+
+The United States screens are compared against the accepted M2-0 baseline.
+
+| Screen | Before M2-1 | Now |
+|---|---|---|
+| Food screen, daily vitamins and minerals | amount and progress bar, **no percentage text** | **the same** — amount and progress bar, no percentage text |
+| Food screen, daily vitamins and minerals, a partly known value | `200 mg` | `200+ mg` — the plus is required by the lower-bound correction |
+| Food detail sheet, micronutrients | amount and percentage | **the same** — amount and percentage, with the same rounding |
+| Food screen, macro bars | amount, with a `+` on a lower bound | **the same** |
+
+The daily summary is **not** given percentage text, because it never had any.
+M2-1 had added percentages there; that was an unrequested presentation change
+and it has been removed, so the United States daily summary reads as it did
+before. The only difference in the United States is the `+` on a partly known
+value, which the lower-bound correction requires, and which the Home screen
+has used since M1.
+
+A screen test pins this: the United States daily rows carry no percentage,
+and the food detail sheet still does.
+
+### What is implemented but disabled
+
+| Feature | State |
+|---|---|
+| The United States percentages | Enabled. Identical to today, except the `+` on a partly known value. |
+| The Canadian percentages | **Implemented and disabled.** The table is present and tested, but `ENABLED_MARKETS` does not include Canada. |
+| The United Kingdom percentages | **Implemented and disabled**, for the same reason. |
+| Any regional percentage for a market with no table | Shows an unavailable state, never a foreign number. |
+| The nutrient completeness contract | Unchanged and respected: an unknown value produces no percentage, and a partly known one is shown as a lower bound and its percentage is rounded **down** so the figure is a true minimum. |
+
+### What is not implemented and not authorised
+
+- No regional labelling percentage is switched on.
+- No personalised target is changed.
+- No food composition dataset is ingested.
+- No food catalogue, recipe library, barcode scanner, AI Coach or meal-planning
+  behaviour is rebuilt.
 
 ## 4. The acceptance gates M2-1 would have to pass
 
 - G1.1 legal has confirmed the instrument and the reproduction right per
   market, and clinical has confirmed the age scope and the wording.
-- G1.2 the tables are approved (`approved: true`) one market at a time. A
-  market that is not approved keeps the current United States behaviour.
+- G1.2 the tables are approved one market at a time. **A market that is not
+  approved shows an unavailable state. It does not keep the United States
+  numbers**, because those are the wrong denominator for a Canadian or British
+  user. The United States is the incumbent: its values are what the app has
+  always shown, so using its own table changes nothing and needs no new
+  clearance.
 - G1.3 **no number changes for a United States user.** The existing
   key-by-key comparison against `nutrientInfo` is the test, and it runs
   unchanged.

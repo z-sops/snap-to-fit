@@ -284,7 +284,8 @@ beverages; 15 % per portion where the package contains a single portion.
 
 1. **Folate.** The US value is *400 µg dietary folate equivalents (DFE)*; the
    UK value is *200 µg folic acid*. They are **different quantities** and are
-   not interchangeable. Showing one under the other's label would be wrong.
+   not interchangeable. Showing one under the other's label would be wrong,
+   so the United Kingdom folate percentage is unavailable.
 2. **Sodium.** Annex XIII does not set a sodium NRV; it sets **salt, 6 g**
    (which is approximately 2400 mg sodium). The app's sodium key needs a
    decision: either the UK table carries sodium as a derived figure with the
@@ -314,6 +315,12 @@ labelling values, and are not substituted here.
 ### 5.4 United Kingdom open items
 
 - **Salt versus sodium**, as above.
+- **Folate.** Annex XIII sets *folic acid* (200 µg). The app's `folate` key is
+  **dietary folate equivalents**, a different quantity. The folic acid value
+  must not be applied to the app's folate values without an explicitly
+  verified compatible basis, so the **United Kingdom folate percentage is
+  unavailable**, and the value is recorded separately as
+  `GB_FOLIC_ACID_REFERENCE_INTAKE` with its basis stated.
 - **Rounding rules for %NRV declarations.** The Annex does not set them; they
   are in the labelling guidance. Must be confirmed before the app renders a
   %NRV.
@@ -371,6 +378,14 @@ Rules:
 5. **No value is derived by arithmetic without the derivation being written
    down.** Salt→sodium is the only likely case, and it is called out above as
    an open decision.
+6. **A lower bound is never presented as an exact figure.** A partly known
+   amount is written `200+ mg`, and its percentage is rounded **down** and
+   marked with a `+`, so the number shown is a true minimum. A fully known
+   amount keeps the ordinary rounding, so a United States user sees exactly
+   what they saw before.
+7. **The United States daily summary keeps its presentation.** It shows
+   amounts and reference bars, with no percentage text, because it never had
+   any. The food detail sheet, which did show a percentage, still does.
 
 ## 7. What is explicitly out of scope
 
@@ -394,18 +409,25 @@ M2-1 may not start until:
 
 ## 9. The specification as code
 
-The tables above are expressed in `research/reference-values.ts` and pinned by
-`tests/m2-reference-values.test.ts` (12 deterministic tests). That module is
-**research only**: it is not imported by `src/` or `server/`, and every table
-carries `approved: false` until the review above happens.
+The tables above are expressed in `src/core/reference-values.ts` and pinned by
+`tests/m2-reference-values.test.ts` and `tests/m2-regional-reference.test.ts`.
+That module is the **only** place a percentage can come from.
+
+**The `approved` flag on every table is still false**, and an agent is not the
+authority that can set it. The gate that actually decides what the app shows
+is `ENABLED_MARKETS`, which currently lists the United States alone — the
+incumbent, whose values are what the app has always shown. Canada and the
+United Kingdom are implemented and **disabled**: they resolve to an
+unavailable state and never borrow a United States number.
 
 The tests include the guarantee that matters most for the shipping app:
 **the United States table is compared against the app's own `nutrientInfo`
 table, key by key, and must match it exactly** — so switching the app onto
 these tables cannot change a single number for a United States user. The same
-file also asserts that the added-sugars substitution is impossible, that
-Canada's saturated-fat percentage is unavailable because the Canadian
-denominator measures a different quantity, that the United States saturated-fat
-denominator is for saturated fat, that Canada keeps its 3400 mg potassium, that
-the United Kingdom keeps its 5 µg vitamin D, that salt is never offered for
-sodium, and that no market borrows another's value.
+files also assert the added-sugars substitution is impossible, that Canada's
+saturated-fat percentage is unavailable because the Canadian denominator
+measures a different quantity, that the United States saturated-fat
+denominator is for saturated fat, that Canada's potassium is 3400 mg, that the
+United Kingdom's vitamin D is 5 µg, that salt is never offered for sodium,
+that folic acid is never offered for dietary folate equivalents, and that no
+market borrows another's value.

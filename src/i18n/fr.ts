@@ -1421,6 +1421,11 @@ export const fr: Record<string, string> = {
   "Dumbbell and barbell weights are a separate choice from the units you read your body weight in. Loads are never entered in stone, so a number always means one thing.": "Les charges de haltères et de barre se choisissent séparément des unités dans lesquelles tu lis ton poids. Les charges ne sont jamais saisies en stones, donc un nombre signifie toujours une seule chose.",
   "Use this for a package label or a restaurant menu that lists calories. Leave a field empty if the label does not say it, so it is not counted as zero.": "Utilise-le pour une étiquette ou une carte de restaurant qui indique les calories. Laisse un champ vide si l’étiquette ne le dit pas, pour qu’il ne soit pas compté comme zéro.",
   "Some nutrients were not reported by every food, so those totals are lower bounds rather than confirmed values.": "Certains nutriments n’ont pas été indiqués par tous les aliments : ces totaux sont donc des minimums et non des valeurs confirmées.",
+  // M2-1: regional labelling reference values.
+  "Labelling reference values are not available for your market yet, so no percentage is shown.": "Les valeurs de référence pour l’étiquetage ne sont pas encore disponibles sur votre marché : aucun pourcentage n’est affiché.",
+  "A + means some food did not report that value, so the figure is a lower bound and may be higher.": "Un + signifie qu’un aliment n’a pas indiqué cette valeur : le chiffre est donc un minimum et peut être plus élevé.",
+  "Sodium, potassium, calcium, iron, vitamins C, D, B12 and more.": "Sodium, potassium, calcium, fer, vitamines C, D, B12 et plus.",
+  "Today’s fiber, sodium, potassium, iron, vitamins and more. Foods from search and barcode carry full nutrients; quick adds don’t.": "Fibres, sodium, potassium, fer, vitamines et plus aujourd’hui. Les aliments trouvés par recherche ou code-barres incluent tous les nutriments ; les ajouts rapides non.",
   // M1 integration correction: unknown and partly known nutrition values.
   "not available": "non disponible",
   "at least": "au moins",

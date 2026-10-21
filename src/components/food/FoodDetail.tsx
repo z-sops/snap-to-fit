@@ -9,6 +9,12 @@ import {
   type AddedFat, type Food, type NutrientKey,
 } from "../../core/foods";
 import { mealFromFood, type NewMeal } from "../../core/meals";
+import {
+  ENABLED_MARKETS,
+  formatMeasuredAmount,
+  resolvePercent,
+  type Market,
+} from "../../core/reference-values";
 import { openFoodFactsCredit, sourceDescriptions } from "../../core/food-sources";
 import { mealSlotNames, type MealSlotName } from "../../core/model";
 
@@ -22,13 +28,17 @@ const sourceBadge: Record<string, { label: string; icon: string; color: string; 
 };
 const micros: NutrientKey[] = nutrientKeys.filter((k) => !["calories", "protein", "carbs", "fat"].includes(k));
 
-export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUri, photoThumb, photo, note, review, initialFat, initialQty }: {
+export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUri, photoThumb, photo, note, review, initialFat, initialQty, market }: {
   food: Food | null; visible: boolean; onClose: () => void; onAdd: (meal: NewMeal) => void;
   initialSlot: MealSlotName; photoUri?: string; photoThumb?: string; photo?: boolean; note?: string; initialFat?: AddedFat; initialQty?: number;
+  /** The market whose labelling values the percentages come from. */
+  market?: Market;
   /** Diet, allergy or medical concerns that must be acknowledged before adding. */
   review?: (meal: NewMeal) => { messages: string[]; alternative: string } | null;
 }) {
   const tr = useT();
+  // Whether this market may show its own labelling percentages.
+  const marketEnabled = !!market && ENABLED_MARKETS.includes(market);
   const [ack, setAck] = useState(false);
   const [servingIndex, setServingIndex] = useState(0);
   const [qty, setQty] = useState(initialQty || 1);
@@ -165,16 +175,26 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
             const info = nutrientInfo[k];
             // Unavailable stays unavailable; only a real zero shows as zero.
             const v = nutrient(k);
+            // The percentage comes from the market's own labelling value. A
+            // market that has none shows no percentage, and never borrows one.
+            // A partly known value is a lower bound, and so is its percentage.
+            const reference = resolvePercent(market, k, v, v === undefined ? "unknown" : "known");
             return (
               <View key={k} style={s.microRow}>
                 <Text style={s.microName}>{tr(info.label)}</Text>
-                <View style={{ flex: 1 }}>{v !== undefined && info.dv ? <Bar value={v} total={info.dv} color={info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
-                <Text style={s.microValue}>{v === undefined ? tr("Not available") : `${v} ${info.unit}`}{v !== undefined && info.dv ? `  ${Math.round((v / info.dv) * 100)}%` : ""}</Text>
+                <View style={{ flex: 1 }}>{v !== undefined && reference.percent !== undefined && reference.value ? <Bar value={v} total={reference.value.value} color={info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
+                <Text style={s.microValue}>
+                  {v === undefined ? tr("Not available") : formatMeasuredAmount(v, info.unit, reference.lowerBound)}
+                  {v !== undefined && reference.percent !== undefined ? `  ${reference.percent}%${reference.lowerBound ? "+" : ""}` : ""}
+                </Text>
               </View>
             );
           })
         ) : (
-          <Text style={s.note}>{tr("Sodium, potassium, calcium, iron, vitamins C, D, B12 and more, with % Daily Value.")}</Text>
+          <Text style={s.note}>{marketEnabled ? tr("Sodium, potassium, calcium, iron, vitamins C, D, B12 and more, with % Daily Value.") : tr("Sodium, potassium, calcium, iron, vitamins C, D, B12 and more.")}</Text>
+        )}
+        {marketEnabled ? null : (
+          <Text style={s.note}>{tr("Labelling reference values are not available for your market yet, so no percentage is shown.")}</Text>
         )}
       </Surface>
     </Sheet>
