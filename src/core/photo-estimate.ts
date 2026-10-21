@@ -28,7 +28,8 @@ export function photoFood(r: PhotoResult): Food {
     name: r.name,
     detail: allMatched ? "AI found the foods · calories from USDA lab data" : "Estimated from your photo",
     group: "Photo",
-    source: "usda",
+    // An AI photo estimate is its own kind of evidence, not USDA lab data.
+    source: "photo",
     per100,
     servings: [{ label: "Whole meal as photographed", grams: 100 }],
     uncertainty: allMatched ? 0.2 : 0.3,

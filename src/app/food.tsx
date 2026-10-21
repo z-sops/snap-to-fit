@@ -17,6 +17,7 @@ import { effectiveProfile } from "../core/progress";
 import { nutritionTargets, validateMeal } from "../core/nutrition";
 import { bySlot, mealsOn, nutrientTotals, sumCalories } from "../core/food-log";
 import { foodById, nutrientInfo, type Food, type NutrientKey } from "../core/foods";
+import { loggedSourceDescriptions, loggedSourceOf } from "../core/food-sources";
 import type { PlannedMeal } from "../core/planning-types";
 import { uid, numeric, defaultSlot, localDay, mealSlotNames, type Meal, type MealSlotName } from "../core/model";
 import { proteinGuidance } from "../core/targets";
@@ -207,6 +208,7 @@ export default function FoodScreen() {
                   <Text style={s.itemMeta} numberOfLines={1}>
                     {meal.servingLabel ? `${meal.servings && meal.servings !== 1 ? `${meal.servings} × ` : ""}${meal.servingLabel} · ` : ""}P {Math.round(meal.protein)} · C {Math.round(meal.carbs)} · F {Math.round(meal.fat)}
                   </Text>
+                  <Text style={s.itemSource} numberOfLines={1}>{tr(loggedSourceDescriptions[loggedSourceOf(meal)].label)}</Text>
                 </View>
                 <View style={{ alignItems: "flex-end" }}>
                   <Text style={s.itemKcal}>{Math.round(meal.calories)}</Text>
@@ -341,6 +343,7 @@ const s = StyleSheet.create({
   thumbIcon: { backgroundColor: palette.brandSoft, alignItems: "center", justifyContent: "center" },
   itemName: { color: palette.ink, fontSize: 15, fontWeight: "700" },
   itemMeta: { color: palette.muted, fontSize: 12, marginTop: 2 },
+  itemSource: { color: palette.brand, fontSize: 11, fontWeight: "700", marginTop: 2 },
   itemKcal: { color: palette.ink, fontSize: 16, fontWeight: "800" },
   itemRange: { color: palette.muted, fontSize: 11 },
   microRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 3 },

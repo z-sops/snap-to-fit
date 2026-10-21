@@ -1,5 +1,7 @@
 import { dishes, recipeSlots } from "./dishes";
 import type { Allergen, CuisinePreference, MealSlot } from "./planning-types";
+import type { FoodSource } from "./food-sources";
+export type { FoodSource } from "./food-sources";
 // Food database engine: USDA SR28 reference foods (public domain), popular friendly names,
 // recipe-based dishes built from USDA ingredients, serving maths, honest ranges and
 // hidden-fat adjustments. Pure TypeScript so it is covered by node tests.
@@ -11,7 +13,6 @@ export const nutrientKeys = [
 ] as const;
 export type NutrientKey = (typeof nutrientKeys)[number];
 export type Nutrients = Record<NutrientKey, number>;
-
 export const nutrientInfo: Record<NutrientKey, { label: string; unit: string; dv?: number; limit?: boolean }> = {
   calories: { label: "Calories", unit: "kcal" },
   protein: { label: "Protein", unit: "g", dv: 50 },
@@ -34,7 +35,6 @@ export const nutrientInfo: Record<NutrientKey, { label: string; unit: string; dv
   cholesterol: { label: "Cholesterol", unit: "mg", dv: 300, limit: true },
 };
 
-export type FoodSource = "usda" | "recipe" | "barcode";
 export interface Serving { label: string; grams: number }
 export interface Food {
   id: string;

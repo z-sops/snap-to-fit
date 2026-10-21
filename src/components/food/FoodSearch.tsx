@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Sheet, Chip, palette } from "../design";
 import { dishesFor, foodById, scale, searchFoods, type Food } from "../../core/foods";
+import { foodCatalogCredit, openFoodFactsCredit, sourceDescriptions } from "../../core/food-sources";
 import { useOptionalStore } from "../../services/store";
 import type { Meal } from "../../core/model";
 
@@ -24,14 +25,16 @@ export function FoodRow({ food, onPress }: { food: Food; onPress: () => void }) 
   const tr = useT();
   const sv = food.servings[0];
   const kcal = Math.round(scale(food, sv.grams).calories || 0);
+  const source = sourceDescriptions[food.source];
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={tr("{name}, {kcal} calories per {label}", { name: tr(food.name), kcal, label: tr(sv.label) })} onPress={onPress} style={s.row}>
+    <Pressable accessibilityRole="button" accessibilityLabel={tr("{name}, {kcal} calories per {label}. {source}", { name: tr(food.name), kcal, label: tr(sv.label), source: tr(source.label) })} onPress={onPress} style={s.row}>
       <View style={[s.dot, { backgroundColor: food.source === "recipe" ? palette.warnSoft : palette.goodSoft }]}>
         <Ionicons name={food.source === "recipe" ? "restaurant" : "leaf"} size={16} color={food.source === "recipe" ? palette.warn : palette.good} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={s.name} numberOfLines={2}>{tr(food.name)}</Text>
         <Text style={s.meta} numberOfLines={1}>{kcal} kcal · {tr(sv.label)}{food.detail ? ` · ${tr(food.detail)}` : ""}</Text>
+        <Text style={s.source} numberOfLines={1}>{tr(source.label)}</Text>
       </View>
       <Ionicons name="add-circle" size={28} color={palette.brand} />
     </Pressable>
@@ -73,7 +76,9 @@ export function FoodSearch({ visible, onClose, onPick, meals, onBarcode }: {
           {tab === "recent" ? tr("Foods you log will show up here for one-tap logging.") : tr("No match for “{v0}”. Try a simpler word (e.g. “chicken”), scan the barcode, or use Quick add.", { v0: query.trim() })}
         </Text>
       )}
-      <Text style={s.credit}>{tr("Nutrition data: USDA FoodData Central (SR Legacy). Dishes are estimates from typical recipes.")}</Text>
+      <Text style={s.credit}>{tr(foodCatalogCredit)}</Text>
+      <Text style={s.credit}>{tr(openFoodFactsCredit)}</Text>
+      <Text style={s.credit}>{tr("The bundled catalogue is the US USDA reference set. Canadian and UK national food catalogues are not included yet.")}</Text>
     </Sheet>
   );
 }
@@ -87,6 +92,7 @@ const s = StyleSheet.create({
   dot: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   name: { color: palette.ink, fontSize: 15, fontWeight: "700" },
   meta: { color: palette.muted, fontSize: 13, marginTop: 2 },
+  source: { color: palette.brand, fontSize: 11, fontWeight: "700", marginTop: 2 },
   empty: { color: palette.muted, fontSize: 15, lineHeight: 21, textAlign: "center", paddingVertical: 24 },
   credit: { color: palette.muted, fontSize: 11, textAlign: "center", marginTop: 8 },
 });

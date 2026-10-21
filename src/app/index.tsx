@@ -11,11 +11,13 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen, act, soft, isDark } from "../components/ui";
 import { ProgressRing, theme } from "../components/onboarding-ui";
-import { useStore } from "../services/store";
+import { useStore, useOptionalStore } from "../services/store";
 import { effectiveProfile } from "../core/progress";
 import { nutritionTargets, todayTotals } from "../core/nutrition";
 import { weeklySchedule } from "../core/schedule";
 import { localDay, type Meal } from "../core/model";
+import { formatTime, regionFor } from "../core/locale";
+import { loggedSourceOf } from "../core/food-sources";
 import type { AppRoute } from "../components/navigation";
 
 type Tile = { href: AppRoute; title: string; detail: string; icon: keyof typeof Ionicons.glyphMap; tint: string };
@@ -284,11 +286,13 @@ function MacroRing({ label, eaten, target, color }: { label: string; eaten: numb
 
 function MealRow({ meal }: { meal: Meal }) {
   const tr = useT();
-  const time = new Date(meal.at).toLocaleTimeString(tr("en-US"), { hour: "numeric", minute: "2-digit" });
+  const time = formatTime(meal.at, regionFor(useOptionalStore()?.state.profile?.country));
+  const source = loggedSourceOf(meal);
+  const icon = source === "photo" ? "camera" : source === "barcode" ? "barcode" : source === "recipe" ? "restaurant" : source === "manual" ? "flash" : "leaf";
   return (
     <View style={s.mealRow}>
       <View style={[s.tileIcon, { backgroundColor: soft("#FFF1E6") }]}>
-        <Ionicons name={meal.source === "photo" ? "camera" : "restaurant"} size={20} color={theme.ink} />
+        <Ionicons name={icon as never} size={20} color={theme.ink} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={s.mealName} numberOfLines={1}>{tr(meal.name)}</Text>
