@@ -344,8 +344,12 @@ export interface ReferencePercent {
  * The percentage of a market's reference value that an amount represents.
  *
  * A quantity that was never reported has no percentage at all. A quantity that
- * is only partly known is a lower bound, and so is its percentage. A market
- * whose values are not enabled has no percentage either, and never borrows one.
+ * is only partly known is a lower bound, and so is its percentage: the figure
+ * is rounded **down**, so that the number shown is a true minimum rather than
+ * a rounded-up value that the data cannot guarantee. A fully known amount
+ * keeps the ordinary rounding, so a United States user sees exactly what they
+ * saw before. A market whose values are not enabled has no percentage either,
+ * and never borrows one.
  */
 export function resolvePercent(
   market: Market | undefined,
@@ -358,13 +362,29 @@ export function resolvePercent(
     return { lowerBound: false, status: reference.status };
   if (amount === undefined || !Number.isFinite(amount) || state === "unknown")
     return { lowerBound: false, status: reference.status, value: reference.value };
-  const percent = Math.round((amount / reference.value.value) * 100);
+  const exact = (amount / reference.value.value) * 100;
+  const percent = state === "partial" ? Math.floor(exact) : Math.round(exact);
   return {
     percent,
     lowerBound: state === "partial",
     status: "available",
     value: reference.value,
   };
+}
+
+/**
+ * A measured amount, marked when it is only a lower bound.
+ *
+ * The mark goes after the number, so "500+ mg" cannot be read as an exact
+ * figure. This is the same convention the Home screen uses for a partly known
+ * macro.
+ */
+export function formatMeasuredAmount(
+  value: number,
+  unit: string,
+  lowerBound: boolean,
+): string {
+  return `${value}${lowerBound ? "+" : ""} ${unit}`;
 }
 
 /** The nutrients a market publishes no value for, within the app's key set. */

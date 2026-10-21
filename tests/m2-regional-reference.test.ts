@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   CA_REFERENCE_VALUES,
   ENABLED_MARKETS,
+  formatMeasuredAmount,
   GB_REFERENCE_VALUES,
   marketForCountry,
   missingFor,
@@ -120,11 +121,52 @@ test("a value that was never reported produces no percentage", () => {
 
 test("a partly known value is a lower bound, and so is its percentage", () => {
   const partial = resolvePercent("US", "sodium", 500, "partial");
-  assert.equal(partial.percent, Math.round((500 / 2300) * 100));
+  // A lower bound is rounded down, so the number shown is a true minimum.
+  assert.equal(partial.percent, Math.floor((500 / 2300) * 100));
   assert.equal(partial.lowerBound, true);
   const known = resolvePercent("US", "sodium", 500, "known");
   assert.equal(known.percent, Math.round((500 / 2300) * 100));
   assert.equal(known.lowerBound, false);
+});
+
+test("a partly known percentage is rounded down, never up", () => {
+  // The figure shown for a lower bound must be a true minimum. Rounding a
+  // partial percentage up would claim more than the data supports.
+  for (const [amount, exact] of [
+    [494.5, 21.5], // exactly half, which ordinary rounding sends up
+    [505, 21.9565],
+    [1150, 50],
+    [1150.1, 50.0043],
+    [1, 0.0434],
+    [2299.9, 99.9956],
+  ] as const) {
+    const partial = resolvePercent("US", "sodium", amount, "partial");
+    const known = resolvePercent("US", "sodium", amount, "known");
+    assert.equal(partial.lowerBound, true);
+    assert.ok(
+      partial.percent! <= exact,
+      `a lower bound of ${partial.percent}% is above the true ${exact}%`,
+    );
+    assert.equal(partial.percent, Math.floor(exact));
+    // A fully known amount keeps the ordinary rounding, so a United States
+    // user sees exactly what they saw before.
+    assert.equal(known.percent, Math.round(exact));
+    assert.equal(known.lowerBound, false);
+  }
+});
+
+test("a partly known percentage never claims more than the data supports", () => {
+  for (const amount of [0, 1, 11.5, 12, 494.5, 1150, 2300, 5000]) {
+    const exact = (amount / 2300) * 100;
+    const partial = resolvePercent("US", "sodium", amount, "partial");
+    assert.ok(partial.percent! <= exact, `${amount} gave ${partial.percent}%`);
+  }
+});
+
+test("a partly known amount is marked so it cannot be read as exact", () => {
+  assert.equal(formatMeasuredAmount(500, "mg", true), "500+ mg");
+  assert.equal(formatMeasuredAmount(500, "mg", false), "500 mg");
+  assert.equal(formatMeasuredAmount(0, "mg", true), "0+ mg");
 });
 
 test("no reference value is invented for a nutrient that is missing", () => {

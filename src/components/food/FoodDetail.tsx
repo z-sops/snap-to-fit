@@ -11,6 +11,7 @@ import {
 import { mealFromFood, type NewMeal } from "../../core/meals";
 import {
   ENABLED_MARKETS,
+  formatMeasuredAmount,
   resolvePercent,
   type Market,
 } from "../../core/reference-values";
@@ -176,12 +177,16 @@ export function FoodDetail({ food, visible, onClose, onAdd, initialSlot, photoUr
             const v = nutrient(k);
             // The percentage comes from the market's own labelling value. A
             // market that has none shows no percentage, and never borrows one.
+            // A partly known value is a lower bound, and so is its percentage.
             const reference = resolvePercent(market, k, v, v === undefined ? "unknown" : "known");
             return (
               <View key={k} style={s.microRow}>
                 <Text style={s.microName}>{tr(info.label)}</Text>
                 <View style={{ flex: 1 }}>{v !== undefined && reference.percent !== undefined && reference.value ? <Bar value={v} total={reference.value.value} color={info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
-                <Text style={s.microValue}>{v === undefined ? tr("Not available") : `${v} ${info.unit}`}{v !== undefined && reference.percent !== undefined ? `  ${reference.percent}%` : ""}</Text>
+                <Text style={s.microValue}>
+                  {v === undefined ? tr("Not available") : formatMeasuredAmount(v, info.unit, reference.lowerBound)}
+                  {v !== undefined && reference.percent !== undefined ? `  ${reference.percent}%${reference.lowerBound ? "+" : ""}` : ""}
+                </Text>
               </View>
             );
           })

@@ -16,7 +16,7 @@ import { foodReview } from "../core/food-review";
 import { effectiveProfile } from "../core/progress";
 import { nutritionTargets, validateMeal } from "../core/nutrition";
 import { bySlot, mealsOn, nutrientState, nutrientTotals, nutrientValue, sumCalories, type NutrientState } from "../core/food-log";
-import { ENABLED_MARKETS, marketForCountry, resolvePercent } from "../core/reference-values";
+import { ENABLED_MARKETS, formatMeasuredAmount, marketForCountry, resolvePercent } from "../core/reference-values";
 import { foodById, nutrientInfo, type Food, type NutrientKey } from "../core/foods";
 import { loggedSourceDescriptions, loggedSourceOf } from "../core/food-sources";
 import { quickAddMeal } from "../core/meals";
@@ -260,17 +260,22 @@ export default function FoodScreen() {
         {showMicros ? micros.map((k) => {
           const info = nutrientInfo[k];
           const v = totals[k];
-          // The completeness of the day's total decides the marker, and the
-          // market's own labelling value decides the percentage.
+          // The day's total decides the marker, and the market's own labelling
+          // value decides the reference the bar is drawn against.
+          //
+          // The text keeps the presentation it had before M2-1: an unknown
+          // value reads "Not available", a value that is not in the day at all
+          // reads "—", and a known value reads the same as it always did. The
+          // only addition is the plus on a partly known value, so that a lower
+          // bound cannot be read as an exact figure.
           const state = nutrientState(dayTotals, k);
           const reference = resolvePercent(market, k, v, state);
           return (
             <View key={k} style={s.microRow}>
               <Text style={s.microName}>{tr(info.label)}</Text>
-              <View style={{ flex: 1 }}>{reference.percent !== undefined && reference.value ? <Bar value={v || 0} total={reference.value.value} color={info.limit && (v || 0) > reference.value.value ? palette.bad : info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
+              <View style={{ flex: 1 }}>{reference.value ? <Bar value={v || 0} total={reference.value.value} color={info.limit && (v || 0) > reference.value.value ? palette.bad : info.limit ? palette.carbs : palette.fiber} height={6} /> : null}</View>
               <Text style={s.microValue}>
-                {state === "unknown" ? tr("Not available") : v === undefined ? "—" : `${state === "partial" ? "+" : ""}${v} ${info.unit}`}
-                {reference.percent !== undefined ? `  ${reference.percent}%` : ""}
+                {unknown.includes(k) ? tr("Not available") : v === undefined ? "—" : formatMeasuredAmount(v, info.unit, state === "partial")}
               </Text>
             </View>
           );
