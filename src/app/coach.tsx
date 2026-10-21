@@ -10,7 +10,7 @@ import { api } from "../services/api";
 import { nutritionTargets, todayTotals } from "../core/nutrition";
 import { urgentMessage, medicationRequest, restrictedHealthAdvice } from "../core/safety";
 import { uid, type Message } from "../core/model";
-import { emergencyService, regionFor } from "../core/locale";
+import { emergencyInstruction, regionFor } from "../core/locale";
 export default function Coach() {
   const tr = useT();
   const lang = useLang();
@@ -116,7 +116,7 @@ export default function Coach() {
         <View style={c.botAvatar}><Text style={{ fontSize: 26 }}>✨</Text></View>
         <View style={{ flex: 1 }}>
           <Text style={c.heroTitle}>Hi {p.name}, I’m your Snap coach</Text>
-          <Text style={c.heroText}>{tr("Ask about meals, macros, workouts or habits. I don’t diagnose, change medicines or handle emergencies — call {number} for an emergency.", { number: emergencyService(region) })}</Text>
+          <Text style={c.heroText}>{tr("Ask about meals, macros, workouts or habits. I don’t diagnose, change medicines or handle emergencies — in an emergency {emergency}.", { emergency: emergencyInstruction(region) })}</Text>
         </View>
       </View>
       <View style={c.prompts}>

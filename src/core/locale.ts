@@ -50,6 +50,49 @@ function toDate(value: Date | string | number): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+interface DateParts {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  /** A calendar date carries no time and no time zone. */
+  dateOnly: boolean;
+}
+
+const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/**
+ * Read a value as a calendar date or as an instant.
+ *
+ * A "YYYY-MM-DD" string is a calendar date, like the ones localDay() produces.
+ * It is read as written, so it never moves a day because the device is in
+ * another time zone. Every other value is an instant and is read in the
+ * device's own time zone, which is what a recorded time means.
+ */
+function toParts(value: Date | string | number): DateParts | null {
+  if (typeof value === "string") {
+    const m = DATE_ONLY.exec(value.trim());
+    if (m) {
+      const year = Number(m[1]);
+      const month = Number(m[2]);
+      const day = Number(m[3]);
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31)
+        return { year, month, day, hour: 0, minute: 0, dateOnly: true };
+    }
+  }
+  const d = toDate(value);
+  if (!d) return null;
+  return {
+    year: d.getFullYear(),
+    month: d.getMonth() + 1,
+    day: d.getDate(),
+    hour: d.getHours(),
+    minute: d.getMinutes(),
+    dateOnly: false,
+  };
+}
+
 /**
  * Grouped number for the region. All three target markets group with a comma
  * and separate decimals with a dot; the function stays region-aware so a future
@@ -69,38 +112,36 @@ export function formatNumber(value: number, region: Region = "US", decimals?: nu
  * US 10/21/2026 · Canada 2026-10-21 · UK 21/10/2026.
  */
 export function formatDate(value: Date | string | number, region: Region = "US"): string {
-  const d = toDate(value);
-  if (!d) return "";
-  const y = d.getFullYear();
-  const m = d.getMonth() + 1;
-  const day = d.getDate();
+  const p = toParts(value);
+  if (!p) return "";
   switch (region) {
     case "CA":
-      return `${y}-${pad2(m)}-${pad2(day)}`;
+      return `${p.year}-${pad2(p.month)}-${pad2(p.day)}`;
     case "GB":
-      return `${pad2(day)}/${pad2(m)}/${y}`;
+      return `${pad2(p.day)}/${pad2(p.month)}/${p.year}`;
     default:
-      return `${m}/${day}/${y}`;
+      return `${p.month}/${p.day}/${p.year}`;
   }
 }
 
-/** Clock time in the region's own convention: 12-hour for North America, 24-hour for the UK. */
+/**
+ * Clock time in the region's own convention: 12-hour for North America,
+ * 24-hour for the UK. A calendar date has no time, so it produces none.
+ */
 export function formatTime(value: Date | string | number, region: Region = "US"): string {
-  const d = toDate(value);
-  if (!d) return "";
-  const h24 = d.getHours();
-  const m = d.getMinutes();
-  if (region === "GB") return `${pad2(h24)}:${pad2(m)}`;
-  const h = h24 % 12 === 0 ? 12 : h24 % 12;
-  return `${h}:${pad2(m)} ${h24 < 12 ? "AM" : "PM"}`;
+  const p = toParts(value);
+  if (!p || p.dateOnly) return "";
+  if (region === "GB") return `${pad2(p.hour)}:${pad2(p.minute)}`;
+  const h = p.hour % 12 === 0 ? 12 : p.hour % 12;
+  return `${h}:${pad2(p.minute)} ${p.hour < 12 ? "AM" : "PM"}`;
 }
 
 /** Short date without the year: US and Canada "Oct 21", UK "21 Oct". */
 export function formatDayMonth(value: Date | string | number, region: Region = "US"): string {
-  const d = toDate(value);
-  if (!d) return "";
-  const month = MONTHS[d.getMonth()];
-  const day = d.getDate();
+  const p = toParts(value);
+  if (!p) return "";
+  const month = MONTHS[p.month - 1];
+  const day = p.day;
   return region === "GB" ? `${day} ${month}` : `${month} ${day}`;
 }
 
@@ -111,23 +152,49 @@ export function formatDateTime(value: Date | string | number, region: Region = "
   return date && time ? `${date}, ${time}` : date || time;
 }
 
-/** Emergency number for the region. Never used for anything other than emergency wording. */
+/**
+ * Emergency number for the region.
+ *
+ * Only the three supported markets claim a number. Every other country gets
+ * nothing, because 911 is not the local emergency number there and the app
+ * has no way of knowing where the user actually is.
+ */
 export function emergencyNumber(region: Region): string {
-  return region === "GB" ? "999" : "911";
+  switch (region) {
+    case "US":
+    case "CA":
+      return "911";
+    case "GB":
+      return "999";
+    default:
+      return "";
+  }
 }
 
 /** Emergency number with the country, so the wording is unambiguous. */
 export function emergencyService(region: Region): string {
   switch (region) {
-    case "GB":
-      return "999 (UK)";
-    case "CA":
-      return "911 (Canada)";
     case "US":
       return "911 (US)";
+    case "CA":
+      return "911 (Canada)";
+    case "GB":
+      return "999 (UK)";
     default:
-      return "911";
+      return "your local emergency number";
   }
+}
+
+/**
+ * The phrase used in emergency wording.
+ *
+ * The number follows the country the user chose, not where they are right
+ * now, so an unsupported or unknown market is told to use their local number
+ * rather than being given one that may be wrong.
+ */
+export function emergencyInstruction(region: Region): string {
+  const number = emergencyNumber(region);
+  return number ? `call ${number}` : "call your local emergency number";
 }
 
 /**

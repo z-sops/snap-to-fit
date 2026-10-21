@@ -64,3 +64,10 @@ test("without AI consent the coach never calls the service", async () => {
   // Nothing about the user was sent anywhere.
   expect(api).not.toHaveBeenCalled();
 });
+test("an unsupported country is told to use the local emergency number", async () => {
+  await saveState({ ...emptyState, profile: { ...profile, aiConsent: true, country: "DE" } }, "guest");
+  render(<StoreProvider><ReadyCoach /></StoreProvider>);
+  // Germany is not one of the three supported markets, so no number is claimed.
+  expect(await screen.findByText(/call your local emergency number/)).toBeTruthy();
+  expect(screen.queryByText(/call 911/)).toBeNull();
+});
