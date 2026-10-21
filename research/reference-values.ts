@@ -85,7 +85,7 @@ export const US_REFERENCE_VALUES: MarketReferenceValues = {
     carbs: { value: 275, unit: "g", scope: "adults" },
     fat: { value: 78, unit: "g", scope: "adults" },
     fibre: { value: 28, unit: "g", scope: "adults" },
-    satFat: { value: 20, unit: "g", basis: "total saturated fat, including trans fatty acids", scope: "adults" },
+    satFat: { value: 20, unit: "g", basis: "saturated fat", scope: "adults" },
     sodium: { value: 2300, unit: "mg", scope: "adults" },
     potassium: { value: 4700, unit: "mg", scope: "adults" },
     calcium: { value: 1300, unit: "mg", scope: "adults" },
@@ -112,6 +112,15 @@ export const US_REFERENCE_VALUES: MarketReferenceValues = {
  *
  * The app's audience is adults, so the adult columns are used: Part 1 column 3
  * (children 4 and over and adults) and Part 2 column 4 (any other case).
+ *
+ * **There is deliberately no saturated-fat value.** Canada's 20 g labelling
+ * Daily Value is for the *sum of saturated and trans fatty acids*, which is
+ * not the quantity the app holds: `satFat` is saturated fat on its own
+ * (USDA "Fatty acids, saturated, total", CNF `FASAT`, CoFID "Saturates per
+ * 100 g food"). Dividing a saturated-fat-only value by a combined
+ * saturated-plus-trans denominator would report a percentage of the wrong
+ * thing, so the Canadian saturated-fat percentage is shown as unavailable
+ * until a properly matched quantity is supported.
  */
 export const CA_REFERENCE_VALUES: MarketReferenceValues = {
   market: "CA",
@@ -123,7 +132,6 @@ export const CA_REFERENCE_VALUES: MarketReferenceValues = {
   approved: false,
   values: {
     fat: { value: 75, unit: "g", scope: "adults-or-other" },
-    satFat: { value: 20, unit: "g", basis: "sum of saturated and trans fatty acids", scope: "adults-or-other" },
     fibre: { value: 28, unit: "g", scope: "adults-or-other" },
     sugar: { value: 100, unit: "g", basis: "total sugars", scope: "adults-or-other" },
     cholesterol: { value: 300, unit: "mg", scope: "adults-or-other" },
@@ -168,7 +176,7 @@ export const GB_REFERENCE_VALUES: MarketReferenceValues = {
     protein: { value: 50, unit: "g", scope: "adults" },
     carbs: { value: 260, unit: "g", scope: "adults" },
     fat: { value: 70, unit: "g", scope: "adults" },
-    satFat: { value: 20, unit: "g", basis: "saturates", scope: "adults" },
+    satFat: { value: 20, unit: "g", basis: "saturates, as published in Annex XIII Part B", scope: "adults" },
     sugar: { value: 90, unit: "g", basis: "total sugars", scope: "adults" },
     vitaminA: { value: 800, unit: "mcg", scope: "adults" },
     vitaminD: { value: 5, unit: "mcg", scope: "adults" },
@@ -194,6 +202,24 @@ export const GB_SALT_REFERENCE_INTAKE: ReferenceValue = {
   unit: "g",
   basis: "salt, as published in Annex XIII Part B",
   scope: "adults",
+};
+
+/**
+ * Canada's labelling Daily Value for the SUM of saturated and trans fatty
+ * acids.
+ *
+ * It is recorded separately because it is **not** the quantity the app holds:
+ * the app's `satFat` is saturated fat on its own. It must never be used as
+ * the denominator for a saturated-fat-only value, and the Canadian
+ * saturated-fat percentage stays unavailable until a properly matched
+ * quantity is supported.
+ */
+export const CA_SATURATED_PLUS_TRANS_DAILY_VALUE: ReferenceValue = {
+  value: 20,
+  unit: "g",
+  basis:
+    "sum of saturated and trans fatty acids; a different quantity from the app's saturated fat",
+  scope: "adults-or-other",
 };
 
 /**

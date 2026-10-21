@@ -56,7 +56,7 @@ reference values for adults and children aged 4 and over.
 | fat | 78 g | 78 g | yes |
 | fibre | 28 g | 28 g | yes |
 | **sugar** | — | **no established Daily Value** | app has no DV for sugars, and neither does the FDA for **total** sugars |
-| satFat | 20 g | 20 g | yes |
+| satFat | 20 g | 20 g | yes — the FDA's 20 g is for **saturated fat** |
 | sodium | 2300 mg | 2300 mg | yes |
 | potassium | 4700 mg | 4700 mg | yes |
 | calcium | 1300 mg | 1300 mg | yes |
@@ -116,7 +116,7 @@ the only one in force now** (checked 2026-10-21).
 | Item | Food solely for children 1–4 y | Children 4+ y and adults |
 |---|---|---|
 | Fat | 44 g | **75 g** |
-| Sum of saturated fatty acids and trans fatty acids | 10 g | 20 g |
+| Sum of saturated fatty acids and trans fatty acids | 10 g | 20 g — **see §4.3, not usable for the app's `satFat`** |
 | Fibre | 14 g | 28 g |
 | Sugars | 50 g | **100 g** |
 | Cholesterol | 300 mg | 300 mg |
@@ -161,6 +161,7 @@ the only one in force now** (checked 2026-10-21).
 | fat | 78 g | 75 g | 3 g |
 | sugar | none (no US total-sugars DV) | 100 g (total sugars) | new in Canada |
 | **potassium** | **4700 mg** | **3400 mg** | **1300 mg** |
+| satFat | 20 g (saturated fat) | **no value** | see §4.4 |
 | everything else the app shows | — | — | unchanged |
 
 **Potassium is the one real correction** — the app would otherwise tell a
@@ -170,6 +171,35 @@ fact 100 %.
 Canada's sugars value is for **total sugars**, the same quantity the app
 tracks, so it is a direct counterpart to the United Kingdom's 90 g and is not
 affected by the added-sugars distinction.
+
+### 4.4 Canada has no usable saturated-fat value
+
+This is a quantity mismatch, not a value difference.
+
+| | Quantity measured | Value |
+|---|---|---|
+| The app's `satFat` | saturated fat on its own — USDA "Fatty acids, saturated, total", CNF `FASAT`, CoFID "Saturates per 100 g food" | varies per food |
+| Canada's labelling DV | the **sum of saturated and trans fatty acids** | 20 g (adults) |
+| The United States' labelling DV | saturated fat | 20 g (adults) |
+| The United Kingdom's reference intake | saturates, as published in Annex XIII Part B | 20 g (adults) |
+
+Dividing a saturated-fat-only value by a saturated-plus-trans denominator
+would report **a percentage of the wrong quantity**. So:
+
+- **Canada's saturated-fat percentage is unavailable.** The app shows "no
+  regional reference value" for it, and a Canadian is not shown a percentage
+  that does not mean what it says.
+- The Canadian combined value is **recorded separately** as
+  `CA_SATURATED_PLUS_TRANS_DAILY_VALUE`, with its basis stated, so that if a
+  properly matched quantity is ever supported the number is there — and so it
+  cannot be picked up as a saturated-fat denominator by accident.
+- The United States **is** a match: its 20 g is for saturated fat, so the
+  United States saturated-fat percentage is a true percentage. Its basis is
+  recorded as "saturated fat".
+
+A deterministic test pins all of this: `percentDailyValue("CA", "satFat", 10)`
+must be `undefined`, `percentDailyValue("US", "satFat", 10)` must be 50, and
+the two bases must differ.
 
 ### 4.4 Canadian open items
 
@@ -235,7 +265,7 @@ beverages; 15 % per portion where the package contains a single portion.
 | fat | 78 g | 70 g | 8 g |
 | carbs | 275 g | 260 g | 15 g |
 | sugar | none (no US total-sugars DV) | 90 g (total sugars) | new in the UK |
-| satFat | 20 g | 20 g | — |
+| satFat | 20 g (saturated fat) | 20 g (saturates) | same number, different stated basis |
 | **vitaminD** | **20 µg** | **5 µg** | **4×** |
 | **calcium** | **1300 mg** | **800 mg** | 500 mg |
 | **folate** | **400 µg DFE** | **200 µg folic acid** | different basis — see below |
@@ -250,7 +280,7 @@ beverages; 15 % per portion where the package contains a single portion.
 | fibre | 28 g | not in Annex XIII | no value |
 | cholesterol | 300 mg | not in Annex XIII | no value |
 
-**Three of these are not simple substitutions.**
+**Four of these are not simple substitutions.**
 
 1. **Folate.** The US value is *400 µg dietary folate equivalents (DFE)*; the
    UK value is *200 µg folic acid*. They are **different quantities** and are
@@ -266,6 +296,14 @@ beverages; 15 % per portion where the package contains a single portion.
    are not in this annex, and the app's audience is 18+. The specification
    therefore adopts the adult column and says so; a children's table would be
    a separate exercise.
+4. **Saturated fat.** Canada's labelling Daily Value is for the **sum of
+   saturated and trans fatty acids**, which is not the quantity the app holds,
+   so Canada has **no** saturated-fat value and shows no percentage for it.
+   See §4.4. The United States' 20 g **is** for saturated fat, so the United
+   States percentage is true. The United Kingdom's "saturates" is recorded
+   with the annex's own wording; if it is later established that the UK
+   labelling quantity includes trans fatty acids, the United Kingdom would
+   need the same treatment as Canada.
 
 Two more gaps are deliberate and are not filled in from anywhere else:
 **fibre and cholesterol are not in Annex XIII**, so the United Kingdom has no
@@ -365,7 +403,9 @@ The tests include the guarantee that matters most for the shipping app:
 **the United States table is compared against the app's own `nutrientInfo`
 table, key by key, and must match it exactly** — so switching the app onto
 these tables cannot change a single number for a United States user. The same
-file also asserts the added-sugars substitution is impossible, that Canada
-keeps its 3400 mg potassium, that the United Kingdom keeps its 5 µg vitamin D,
-that salt is never offered for sodium, and that no market borrows another's
-value.
+file also asserts that the added-sugars substitution is impossible, that
+Canada's saturated-fat percentage is unavailable because the Canadian
+denominator measures a different quantity, that the United States saturated-fat
+denominator is for saturated fat, that Canada keeps its 3400 mg potassium, that
+the United Kingdom keeps its 5 µg vitamin D, that salt is never offered for
+sodium, and that no market borrows another's value.

@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   CA_REFERENCE_VALUES,
+  CA_SATURATED_PLUS_TRANS_DAILY_VALUE,
   GB_REFERENCE_VALUES,
   GB_SALT_REFERENCE_INTAKE,
   US_ADDED_SUGARS_DAILY_VALUE,
@@ -65,6 +66,34 @@ test("Canada uses the adult columns, including the corrected potassium", () => {
   assert.equal(CA_REFERENCE_VALUES.values.fibre?.value, 28);
   assert.equal(CA_REFERENCE_VALUES.values.sugar?.value, 100);
   assert.equal(CA_REFERENCE_VALUES.values.sodium?.value, 2300);
+});
+
+test("Canada's saturated fat percentage is unavailable, not a substitution", () => {
+  // Canada's 20 g labelling Daily Value is for the SUM of saturated and trans
+  // fatty acids. The app's satFat is saturated fat on its own, so dividing it
+  // by that denominator would report a percentage of the wrong quantity. The
+  // Canadian saturated-fat percentage is therefore unavailable.
+  assert.equal(CA_REFERENCE_VALUES.values.satFat, undefined);
+  assert.equal(referenceValueFor("CA", "satFat"), undefined);
+  assert.equal(percentDailyValue("CA", "satFat", 10), undefined);
+  // The combined value is kept separately, and is never a saturated-fat
+  // denominator.
+  assert.equal(CA_SATURATED_PLUS_TRANS_DAILY_VALUE.value, 20);
+  assert.match(CA_SATURATED_PLUS_TRANS_DAILY_VALUE.basis!, /sum of saturated and trans/);
+  assert.notEqual(
+    CA_SATURATED_PLUS_TRANS_DAILY_VALUE.basis,
+    US_REFERENCE_VALUES.values.satFat?.basis,
+  );
+});
+
+test("the United States saturated fat value is for saturated fat", () => {
+  // The FDA's 20 g Daily Value is for saturated fat, which is the quantity
+  // the app holds.
+  assert.equal(US_REFERENCE_VALUES.values.satFat?.value, 20);
+  assert.equal(US_REFERENCE_VALUES.values.satFat?.basis, "saturated fat");
+  assert.ok(!/trans/.test(US_REFERENCE_VALUES.values.satFat!.basis!));
+  // And the United States does produce a saturated-fat percentage.
+  assert.equal(percentDailyValue("US", "satFat", 10), 50);
 });
 
 test("the United Kingdom uses the adult annex values", () => {
@@ -149,6 +178,8 @@ test("the missing values for each market are known", () => {
   assert.ok(missingFor("GB").includes("cholesterol"));
   assert.ok(missingFor("GB").includes("fibre"));
   assert.ok(missingFor("CA").includes("protein"));
+  // Canada's saturated-fat DV measures a different quantity, so there is none.
+  assert.ok(missingFor("CA").includes("satFat"));
   assert.ok(missingFor("US").includes("sugar"));
   // Every market publishes a value for the macronutrients the app shows.
   for (const market of ["US", "CA", "GB"] as Market[]) {
