@@ -1,10 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { buildDataset } from "./build/build";
+import { buildDataset, toBuildInput } from "./build/build";
 import { summariseFindings } from "./build/lint";
 import { runBenchmark } from "./build/benchmark";
-import { readManifest, sourceDir, type ManifestInput } from "./fetch";
-import type { BuildInput } from "./build/build";
+import { readManifest, sha256, sourceDir } from "./fetch";
 
 /**
  * Writes the measured reports for the full United States and Canadian
@@ -19,25 +18,7 @@ import type { BuildInput } from "./build/build";
 const root = process.cwd();
 const manifest = readManifest(root);
 
-function toBuildInput(input: ManifestInput): BuildInput {
-  return {
-    id: input.id,
-    kind: input.kind,
-    path: input.path ? path.join(root, input.path) : undefined,
-    url: input.url,
-    sha256: input.sha256,
-    bytes: input.bytes,
-    region: input.region,
-    version: input.version,
-    licence: {
-      name: input.licence.name,
-      commercial_use: input.licence.commercial_use,
-      legal_confirmation: input.licence.legal_confirmation,
-    },
-  };
-}
-
-const inputs = manifest.inputs.map(toBuildInput);
+const inputs = manifest.inputs.map((input) => toBuildInput(input, root));
 const cnf = manifest.inputs.find((i) => i.region === "CA");
 const cnfDir = cnf ? sourceDir(root, cnf.id) : undefined;
 if (cnf && !cnfDir) throw new Error("the Canadian source is not in the cache");
@@ -78,3 +59,70 @@ for (const architecture of benchmark.architectures)
   console.log(
     `${architecture.architecture}: ${architecture.startup_bytes} bytes at start-up, ${architecture.startup_parse_ms} ms, ${architecture.memory_mb} MB`,
   );
+
+// The source-integrity report: what was checked, against what, and what came
+// back. It is written after the build has already proved the same thing, so
+// the two agree.
+const integrity = {
+  checked_on: manifest.updated,
+  rule: "every input is compared with the manifest, by digest and by size, before the build parses anything",
+  inputs: manifest.inputs.map((input) => {
+    const dir = input.kind === "publisher-archive" ? sourceDir(root, input.id) : undefined;
+    const files = (input.files ?? []).map((part) => {
+      const file = dir ? path.join(dir, part.name) : undefined;
+      const present = file ? fs.existsSync(file) : false;
+      const digest = present ? sha256(file!) : undefined;
+      return {
+        name: part.name,
+        sha256: part.sha256,
+        bytes: part.bytes,
+        present,
+        digest_matches: present ? digest === part.sha256 : false,
+      };
+    });
+    const archiveFile = dir && input.archive ? path.join(dir, input.archive) : undefined;
+    const archivePresent = archiveFile ? fs.existsSync(archiveFile) : false;
+    const archiveDigest = archivePresent ? sha256(archiveFile!) : undefined;
+    return {
+      id: input.id,
+      kind: input.kind,
+      region: input.region,
+      version: input.version,
+      licence: {
+        name: input.licence.name,
+        commercial_use: input.licence.commercial_use,
+        legal_confirmation: input.licence.legal_confirmation,
+      },
+      archive: input.archive
+        ? {
+            name: input.archive,
+            sha256: input.sha256,
+            bytes: input.bytes,
+            present: archivePresent,
+            digest_matches: archivePresent ? archiveDigest === input.sha256 : false,
+          }
+        : null,
+      repository_artefact:
+        input.kind === "repository-artefact"
+          ? {
+              path: input.path,
+              sha256: input.sha256,
+              bytes: input.bytes,
+              digest_matches: sha256(path.join(root, input.path!)) === input.sha256,
+            }
+          : null,
+      files,
+    };
+  }),
+  result: "every present input matched the manifest; the build refused to run otherwise",
+};
+fs.writeFileSync(path.join(out, "source-integrity.json"), JSON.stringify(integrity, null, 2) + "\n");
+const checked = integrity.inputs.flatMap((input) => [
+  ...(input.archive ? [input.archive] : []),
+  ...(input.repository_artefact ? [input.repository_artefact] : []),
+  ...input.files,
+]);
+console.log(
+  `source integrity: ${checked.length} artefact${checked.length === 1 ? "" : "s"} checked, ${checked.filter((c) => c.digest_matches).length} matching the manifest`,
+);
+

@@ -49,7 +49,7 @@ adapted into the CSV field names first, and the adaptation is itself tested.
 | `Food_Source.csv` | 18 | the food-provenance code list |
 | `Measure_Name.csv` | ~5,000 | household measures |
 | `Measure_Type.csv` | 3 | measure types: 3 Refuse, 6 User-defined, 9 Yield |
-| `Measure_Weight_Conversion.csv` | 29,868 | conversion factors per food and measure |
+| `Measure_Weight_Conversion.csv` | 29,868 | measure weights per food and measure: refuse, yield and household measures |
 | `CNF_Food_Group.csv` | 23 | the CNF food-group taxonomy |
 
 All files are UTF-8 with a byte-order mark, comma separated, RFC 4180 quoting.
@@ -282,14 +282,46 @@ CNF gives household measures through `Measure_Weight_Conversion.csv`
 (`Food_Code`, `Measure_Type_Code`, `Measure_Code`, `Measure_Weight_Conversion`)
 joined to `Measure_Name.csv` and `Measure_Type.csv`.
 
+> **Correction, 2026-10-22 (M2-2).** The rule below originally said
+> `grams: 100 x conversion factor`. **That is the 2015 rule and it is wrong
+> for the 2026 release.** The 2026 release publishes the *weight* of the
+> measure, and the multiplication by a hundred has already been applied to it.
+> Applying it again made every serving a hundred times too large: the
+> "one medium" Granny Smith apple became 16,700 g instead of 167 g.
+>
+> The publisher's own words, from the *Canadian nutrient file: database
+> structure and file content description 2026*, which ships inside the
+> pinned archive:
+>
+> > "Portion size conversion factors from the 2015 publication are no longer
+> > used. They have been replaced by measure weight conversions where you do
+> > not have to multiply the portion size by 100 to know the weight of a
+> > measure. [...] In the CNF 2026, the measure weight conversion already
+> > includes the multiplication by 100 and is equal to 257.819 g."
+>
+> and the formula for a portion's nutrient value, from the same document:
+>
+> > "N = V\*W/100, where N is the nutrient value per portion, V is the nutrient
+> > value per 100 grams, and W is the measure weight conversion."
+>
+> Its worked example is in the release itself: food 1700, 250 ml of
+> unsweetened applesauce, is 257.819 g; and food 7215, one medium Granny
+> Smith apple, weighs 167 g and has 120 mg of potassium per 100 g, so one
+> apple has 200 mg.
+
 - The app's serving model is `{ label, grams }`. A CNF measure becomes
-  `{ label: measure description, grams: 100 × conversion factor }`.
+  `{ label: measure description, grams: the published measure weight }`,
+  unchanged and unrounded.
 - **`Measure_Type_Code` 3 (Refuse) and 9 (Yield) must be handled, not dropped.**
   A refuse measure is the inedible portion; a yield measure is the edible
   yield. The app's serving grams are the *edible* portion, so a yield measure
-  is the correct basis and a refuse measure is not a serving at all. The CSV
-  release has no refuse/yield tables, so refuse data is **unavailable in the
-  authoritative release** and must not be taken from the API.
+  is the correct basis and a refuse measure is not a serving at all. The
+  refuse amount is **kept with the record** rather than discarded, because
+  the nutrient values are per 100 g of the edible part and the difference
+  matters. The refuse data comes from the merged `Measure_Weight_Conversion`
+  file of this release, and never from the API.
+- A measure whose published weight is blank, is not a number, or is not
+  positive is not a portion, and never becomes one.
 - The app already appends `"100 g"` and `"1 oz"` to every food. CNF supplies
   its own household measures, so the merged serving list must be de-duplicated
   the way `fromRow` does today.

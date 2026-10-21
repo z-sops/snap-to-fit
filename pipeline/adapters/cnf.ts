@@ -37,6 +37,43 @@ interface CnfNutrient {
   decimals: string;
 }
 
+/**
+ * The weight of a measure, in grams, from a published conversion.
+ *
+ * The CNF 2026 publishes the weight of the measure itself. The 2015 release
+ * published a conversion *factor* that had to be multiplied by a hundred to
+ * get the same number, and the 2026 release already includes that
+ * multiplication. The publisher says so in the database structure and file
+ * content description:
+ *
+ *   "Portion size conversion factors from the 2015 publication are no longer
+ *   used. They have been replaced by measure weight conversions where you do
+ *   not have to multiply the portion size by 100 to know the weight of a
+ *   measure. [...] In the CNF 2026, the measure weight conversion already
+ *   includes the multiplication by 100 and is equal to 257.819 g."
+ *
+ * and gives the formula for a portion's nutrient value:
+ *
+ *   "N = V*W/100, where N is the nutrient value per portion, V is the nutrient
+ *   value per 100 grams, and W is the measure weight conversion."
+ *
+ * Its own worked example, which is in this release: food 1700, 250 ml of
+ * unsweetened applesauce, is 257.819 g, and food 7215, one medium Granny
+ * Smith apple, is 167 g.
+ *
+ * So the published number is the weight in grams, unchanged, and a conversion
+ * that cannot be read as a weight never becomes a portion.
+ */
+export function measureWeightGrams(published: string | undefined): number | undefined {
+  if (published === undefined) return undefined;
+  const text = published.trim();
+  if (!text) return undefined;
+  const grams = Number(text);
+  // A blank, a non-number, or a weight of nothing is not a portion.
+  if (!Number.isFinite(grams) || grams <= 0) return undefined;
+  return grams;
+}
+
 export function readCnf(input: CnfInput): { foods: PipelineFood[]; findings: Finding[] } {
   const findings: Finding[] = [];
   const dir = input.dir;
@@ -116,21 +153,30 @@ export function readCnf(input: CnfInput): { foods: PipelineFood[]; findings: Fin
     appKeyByNutrientCode.set([...codes].sort()[0], key);
   }
 
-  // The servings for each food.
+  // The servings for each food, and the inedible parts of it.
   const servingsByFood = new Map<string, { label: string; grams: number }[]>();
+  const refuseByFood = new Map<string, { label: string; per100: number }[]>();
   {
     const table = readCsv(path.join(dir, "Measure_Weight_Conversion.csv"));
     for (const row of table.rows) {
       const foodCode = cell(row, table.index, "Food_Code");
       const type = cell(row, table.index, "Measure_Type_Code");
       const measure = cell(row, table.index, "Measure_Code");
-      const factor = cell(row, table.index, "Measure_Weight_Conversion");
-      if (!foodCode || !measure || !factor) continue;
-      // A refuse measure is the inedible portion, not a serving.
-      if (type === "3") continue;
+      const published = cell(row, table.index, "Measure_Weight_Conversion");
+      if (!foodCode || !measure) continue;
+      // The published value is the weight of the measure, in grams.
+      const grams = measureWeightGrams(published);
+      if (grams === undefined) continue;
       const label = measureNames.get(measure) ?? measure;
-      const grams = Math.round(Number(factor) * 1000) / 10;
-      if (!Number.isFinite(grams) || grams <= 0) continue;
+      if (type === "3") {
+        // A refuse measure is the inedible part of the food, not a portion of
+        // it, so it is never a serving. It is kept, because the nutrient
+        // values are per 100 g of the edible part and the difference matters.
+        const list = refuseByFood.get(foodCode) ?? [];
+        if (!list.some((r) => r.label === label)) list.push({ label, per100: grams });
+        refuseByFood.set(foodCode, list);
+        continue;
+      }
       const list = servingsByFood.get(foodCode) ?? [];
       if (!list.some((s) => s.label === label)) list.push({ label, grams });
       servingsByFood.set(foodCode, list);
@@ -271,6 +317,7 @@ export function readCnf(input: CnfInput): { foods: PipelineFood[]; findings: Fin
     }
     const servings = servingsByFood.get(food.code) ?? [];
     if (!servings.some((s) => s.label === "100 g")) servings.push({ label: "100 g", grams: 100 });
+    const refuse = refuseByFood.get(food.code) ?? [];
     const record: PipelineFood = {
       id: key,
       name: food.name,
@@ -286,6 +333,7 @@ export function readCnf(input: CnfInput): { foods: PipelineFood[]; findings: Fin
       },
       nutrients: values?.nutrients ?? {},
     };
+    if (refuse.length) record.refuse = refuse;
     // The CNF points at the USDA number for many of its foods. That is a
     // cross-reference between two datasets, not an identity: the Canadian food
     // keeps its own identifier and its own provenance.

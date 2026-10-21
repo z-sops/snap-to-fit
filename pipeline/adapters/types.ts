@@ -91,6 +91,18 @@ export interface PipelineFood {
   foodProvenance: FoodProvenance;
   /** Per nutrient, how the value was arrived at. */
   nutrients: Record<string, NutrientProvenance>;
+  /**
+   * The inedible parts of the food, as the source publishes them.
+   *
+   * The release expresses the refuse as a share of the food as purchased: for
+   * raw meats the items are raw as purchased, and for cooked meats the refuse
+   * is the inedible material from the cooked state. A value of 11 therefore
+   * means eleven parts per hundred of the food as purchased.
+   *
+   * These are not servings. The nutrient values are per 100 g of the *edible*
+   * part, so a measure of the food and its refuse are two different things.
+   */
+  refuse?: { label: string; per100: number }[];
   /** The source's own identifier for the same food in another dataset, if any. */
   crossReference?: { dataset: string; id: string };
 }
@@ -99,6 +111,12 @@ export interface PipelineFood {
 export interface PipelineDataset {
   /** The schema version, so a consumer knows what it is reading. */
   schema_version: number;
+  /**
+   * How the inputs were checked: `verified` means every input was compared
+   * with the manifest before anything was parsed, `fixture` means the build
+   * ran against the checked-in slice, whose bytes are not the published ones.
+   */
+  verification: "verified" | "fixture";
   /** When the bytes were built, from the manifest, not from the clock. */
   built_from: { source_id: string; sha256: string }[];
   /** The records, in a deterministic order. */

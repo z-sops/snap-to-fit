@@ -1,0 +1,110 @@
+{
+  "checked_on": "2026-10-21",
+  "rule": "every input is compared with the manifest, by digest and by size, before the build parses anything",
+  "inputs": [
+    {
+      "id": "usda-sr28",
+      "kind": "repository-artefact",
+      "region": "US",
+      "version": "SR28 (SR Legacy, April 2018 release)",
+      "licence": {
+        "name": "CC0 1.0 Universal (public domain)",
+        "commercial_use": "permitted",
+        "legal_confirmation": "published-licence"
+      },
+      "archive": null,
+      "repository_artefact": {
+        "path": "src/data/usda-foods.json",
+        "sha256": "f2b1a828ce58ee0731d076938b483c16c194bc276294a99d7263cc137fd060a2",
+        "bytes": 1420723,
+        "digest_matches": true
+      },
+      "files": []
+    },
+    {
+      "id": "ca-cnf-2026",
+      "kind": "publisher-archive",
+      "region": "CA",
+      "version": "2026",
+      "licence": {
+        "name": "Open Government Licence – Canada",
+        "commercial_use": "permitted",
+        "legal_confirmation": "published-licence"
+      },
+      "archive": {
+        "name": "cnf_fcen_all-files-data_2026.zip",
+        "sha256": "f5faad8977ee6bbdd9d69c8649077cacd87d8658ad200509a4047db1e29edcdd",
+        "bytes": 26656195,
+        "present": true,
+        "digest_matches": true
+      },
+      "repository_artefact": null,
+      "files": [
+        {
+          "name": "Nutrient_Amount.csv",
+          "sha256": "c53803c72faadbdec9750ccaa1fc9a9cfd8732e0c784d2a66c62cd27d09b22d2",
+          "bytes": 21083047,
+          "present": true,
+          "digest_matches": true
+        },
+        {
+          "name": "Food_Name.csv",
+          "sha256": "ee75a3208e8b79ee523ec5adffcf149f3f21806ac5d9942a9449077efe414c6c",
+          "bytes": 1047745,
+          "present": true,
+          "digest_matches": true
+        },
+        {
+          "name": "Nutrient_Name.csv",
+          "sha256": "708a942fc8a6a4913b106cd964f4f3b116845ec72942a936477241be8889f785",
+          "bytes": 15615,
+          "present": true,
+          "digest_matches": true
+        },
+        {
+          "name": "Nutrient_Source.csv",
+          "sha256": "4ac902cf2893107f4e41edc0c9d232503d68762d542fee808364f0bb7347312e",
+          "bytes": 2336,
+          "present": true,
+          "digest_matches": true
+        },
+        {
+          "name": "Food_Source.csv",
+          "sha256": "03aef914ac6cdc98f0b819cfd5bc51a392ecb9d9ac12972e285294a660117aec",
+          "bytes": 2834,
+          "present": true,
+          "digest_matches": true
+        },
+        {
+          "name": "CNF_Food_Group.csv",
+          "sha256": "468e10d666551f90c37ab8e8e149dbbc7a76fc0215f74530b8d43fd1eacfe4bb",
+          "bytes": 1141,
+          "present": true,
+          "digest_matches": true
+        },
+        {
+          "name": "Measure_Weight_Conversion.csv",
+          "sha256": "9d41fac4ba1471fddd25ea7e51a8352aec66de4f3c88802b0a2e02a85ebc3e6f",
+          "bytes": 834367,
+          "present": true,
+          "digest_matches": true
+        },
+        {
+          "name": "Measure_Name.csv",
+          "sha256": "429cf2e8d4bbd2b732a6e9acf35427ce6d3b4e9447aabaf86b427c48833b112f",
+          "bytes": 67867,
+          "present": true,
+          "digest_matches": true
+        },
+        {
+          "name": "Measure_Type.csv",
+          "sha256": "ce6ecd0f370820d6800d7b7b88ae5710691b5d7b358c0503273d36a1a878f977",
+          "bytes": 172,
+          "present": true,
+          "digest_matches": true
+        }
+      ]
+    }
+  ],
+  "result": "every present input matched the manifest; the build refused to run otherwise"
+}

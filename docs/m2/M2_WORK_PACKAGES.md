@@ -142,6 +142,28 @@ guidance, adaptive TDEE, glucose handling and insulin notices are untouched.
 shipped catalogue is replaced, no food identifier changes, no recipe changes,
 no market is enabled, and nothing is merged or deployed.
 
+**Two corrections in this round.**
+
+1. **The serving weights were a hundred times too large.** The M2-0
+   specification said that a Canadian measure becomes `100 x conversion
+   factor`, which is the 2015 rule. The 2026 release publishes the weight of
+   the measure itself, and the multiplication by a hundred has already been
+   applied to it, so applying it again made every serving a hundred times
+   too large. The correction is in `docs/m2/CNF_2026_NORMALIZATION.md` §8,
+   with the publisher's own words and its own worked examples, and the
+   pipeline now uses the published weight unchanged.
+2. **A build now checks its sources before it parses them.** `data:build`
+   verifies the shipped artefact, the publisher archive and every file inside
+   it against the manifest, and stops before publishing anything if one of
+   them does not match, is missing, or is not permitted. The checked-in
+   fixture, whose bytes are deliberately not the published bytes, runs in an
+   explicit `fixture` mode and says so in its own output.
+
+**The benchmark is a Node.js measurement, not a device measurement.** It
+covers start-up cost, memory and lookup cost, on a desktop machine. Detail
+loading, search behaviour, cache use and on-device performance are outside
+what was measured, and the architecture is not chosen here.
+
 **Contents**
 
 - `scripts/build-foods/` split into a per-source normaliser plus a merge step.

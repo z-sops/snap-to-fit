@@ -21,7 +21,7 @@ const cnfInput: BuildInput = {
   },
 };
 
-const dataset = buildDataset([cnfInput], path.join(root, "pipeline", "fixtures", "cnf-2026"));
+const dataset = buildDataset([cnfInput], path.join(root, "pipeline", "fixtures", "cnf-2026"), { mode: "fixture" });
 const out = path.join(root, "pipeline", "fixtures", "golden");
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(

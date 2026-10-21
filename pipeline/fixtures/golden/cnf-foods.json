@@ -28,11 +28,11 @@
    "servings": [
     {
      "label": "140 g",
-     "grams": 14000
+     "grams": 140
     },
     {
      "label": "1 package",
-     "grams": 39370.2
+     "grams": 393.7019644
     },
     {
      "label": "100 g",
@@ -189,31 +189,31 @@
    "servings": [
     {
      "label": "100 ml",
-     "grams": 10750
+     "grams": 107.5
     },
     {
      "label": "125 ml",
-     "grams": 13440
+     "grams": 134.4
     },
     {
      "label": "250 ml",
-     "grams": 26880
+     "grams": 268.8
     },
     {
      "label": "50 g",
-     "grams": 5000
+     "grams": 50
     },
     {
      "label": "100 g",
-     "grams": 10000
+     "grams": 100
     },
     {
      "label": "60 ml",
-     "grams": 6450
+     "grams": 64.5
     },
     {
      "label": "15 ml",
-     "grams": 1610
+     "grams": 16.1
     }
    ],
    "source": "cnf",
@@ -366,27 +366,27 @@
    "servings": [
     {
      "label": "100 ml diced",
-     "grams": 5579
+     "grams": 55.79
     },
     {
      "label": "100 ml shredded",
-     "grams": 4776
+     "grams": 47.76
     },
     {
      "label": "50 g",
-     "grams": 5000
+     "grams": 50
     },
     {
      "label": "250 ml diced",
-     "grams": 13947.6
+     "grams": 139.476
     },
     {
      "label": "250 ml shredded",
-     "grams": 11940
+     "grams": 119.4
     },
     {
      "label": "30 g",
-     "grams": 3000
+     "grams": 30
     },
     {
      "label": "100 g",
@@ -545,19 +545,19 @@
    "servings": [
     {
      "label": "100 ml crumbled",
-     "grams": 6339.8
+     "grams": 63.398
     },
     {
      "label": "50 g",
-     "grams": 5000
+     "grams": 50
     },
     {
      "label": "250 ml, crumbled",
-     "grams": 15849.5
+     "grams": 158.495
     },
     {
      "label": "30 g",
-     "grams": 3000
+     "grams": 30
     },
     {
      "label": "100 g",
@@ -727,19 +727,19 @@
    "servings": [
     {
      "label": "100 ml diced",
-     "grams": 5579
+     "grams": 55.79
     },
     {
      "label": "50 g",
-     "grams": 5000
+     "grams": 50
     },
     {
      "label": "250 ml, diced",
-     "grams": 13975
+     "grams": 139.75
     },
     {
      "label": "30 g",
-     "grams": 3000
+     "grams": 30
     },
     {
      "label": "100 g",
@@ -910,19 +910,19 @@
    "servings": [
     {
      "label": "100 ml",
-     "grams": 10566.4
+     "grams": 105.664
     },
     {
      "label": "125 ml",
-     "grams": 13207.9
+     "grams": 132.079
     },
     {
      "label": "250 ml",
-     "grams": 26415.9
+     "grams": 264.159
     },
     {
      "label": "1 can diluted",
-     "grams": 59968.9
+     "grams": 599.689
     },
     {
      "label": "100 g",
@@ -1085,11 +1085,11 @@
    "servings": [
     {
      "label": "100 ml",
-     "grams": 10355
+     "grams": 103.55
     },
     {
      "label": "250 ml",
-     "grams": 25887.6
+     "grams": 258.876
     },
     {
      "label": "100 g",
@@ -1258,31 +1258,31 @@
    "servings": [
     {
      "label": "1 medium fruit (5.4 cm dia)",
-     "grams": 5800
+     "grams": 58
     },
     {
      "label": "1 large fruit (6 cm dia)",
-     "grams": 8400
+     "grams": 84
     },
     {
      "label": "100 ml sections",
-     "grams": 8960.3
+     "grams": 89.603
     },
     {
      "label": "125 ml sections",
-     "grams": 11200.3
+     "grams": 112.003
     },
     {
      "label": "250 ml sections",
-     "grams": 22400.7
+     "grams": 224.007
     },
     {
      "label": "1 wedge or slice of medium fruit",
-     "grams": 700
+     "grams": 7
     },
     {
      "label": "55 g",
-     "grams": 5500
+     "grams": 55
     },
     {
      "label": "100 g",
@@ -1412,6 +1412,20 @@
      "observations": 0
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 47
+    },
+    {
+     "label": "seeds",
+     "per100": 2
+    },
+    {
+     "label": "peel",
+     "per100": 45
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:09150"
@@ -1445,31 +1459,31 @@
    "servings": [
     {
      "label": "100 ml",
-     "grams": 10312.8
+     "grams": 103.128
     },
     {
      "label": "125 ml",
-     "grams": 12891
+     "grams": 128.91
     },
     {
      "label": "15 ml",
-     "grams": 1546.9
+     "grams": 15.469
     },
     {
      "label": "250 ml",
-     "grams": 25781.9
+     "grams": 257.819
     },
     {
      "label": "5 ml",
-     "grams": 515.6
+     "grams": 5.156
     },
     {
      "label": "1 fruit yields",
-     "grams": 4700
+     "grams": 47
     },
     {
      "label": "1 wedge yields",
-     "grams": 590
+     "grams": 5.9
     },
     {
      "label": "100 g",
@@ -1616,6 +1630,193 @@
    }
   },
   {
+   "id": "cnf:1700",
+   "name": "Applesauce, canned, unsweetened",
+   "group": "Fruits and fruit juices",
+   "per100": {
+    "protein": 0.17,
+    "fat": 0.1,
+    "carbs": 11.27,
+    "calories": 42,
+    "sugar": 9.39,
+    "fibre": 1.1,
+    "calcium": 4,
+    "iron": 0.23,
+    "magnesium": 3,
+    "potassium": 74,
+    "sodium": 2,
+    "zinc": 0.03,
+    "vitaminA": 1,
+    "vitaminD": 0,
+    "vitaminC": 10,
+    "vitaminB12": 0,
+    "folate": 3,
+    "cholesterol": 0,
+    "satFat": 0.008
+   },
+   "servings": [
+    {
+     "label": "100 ml",
+     "grams": 103.128
+    },
+    {
+     "label": "125 ml",
+     "grams": 128.91
+    },
+    {
+     "label": "250 ml",
+     "grams": 257.819
+    },
+    {
+     "label": "150 ml",
+     "grams": 154.691
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "3",
+    "description": "Food based on data from USDA: some nutrients analyzed in the Canadian product"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 3,
+     "standardError": 0.021
+    },
+    "fat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 3,
+     "standardError": 0.014
+    },
+    "carbs": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calories": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sugar": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 3,
+     "standardError": 0.869
+    },
+    "fibre": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 3,
+     "standardError": 0.047
+    },
+    "calcium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 11,
+     "standardError": 0.497
+    },
+    "iron": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 10,
+     "standardError": 0.029
+    },
+    "magnesium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 11,
+     "standardError": 0.106
+    },
+    "potassium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 11,
+     "standardError": 3.961
+    },
+    "sodium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 16,
+     "standardError": 0.397
+    },
+    "zinc": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 11,
+     "standardError": 0.014
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 3,
+     "standardError": 0.285
+    },
+    "vitaminD": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "vitaminC": {
+     "quality": "analysed",
+     "sourceCode": "3",
+     "sourceDescription": "Nutrient analyzed in a Canadian government lab",
+     "observations": 4,
+     "standardError": 0
+    },
+    "vitaminB12": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "folate": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "cholesterol": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "satFat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    }
+   },
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:09019"
+   }
+  },
+  {
    "id": "cnf:1714",
    "name": "Grapefruit, pink, red or white, all areas, raw",
    "group": "Fruits and fruit juices",
@@ -1643,31 +1844,31 @@
    "servings": [
     {
      "label": "100 ml sections",
-     "grams": 9721
+     "grams": 97.21
     },
     {
      "label": "125 ml sections",
-     "grams": 12151.3
+     "grams": 121.513
     },
     {
      "label": "250 ml sections",
-     "grams": 24302.6
+     "grams": 243.026
     },
     {
      "label": "1/2 fruit (approx 11.5cm dia)",
-     "grams": 16600
+     "grams": 166
     },
     {
      "label": "1/2 fruit (approx 10cm dia)",
-     "grams": 12800
+     "grams": 128
     },
     {
      "label": "1/2 fruit (approx 9cm dia)",
-     "grams": 10000
+     "grams": 100
     },
     {
      "label": "140 g",
-     "grams": 14000
+     "grams": 140
     },
     {
      "label": "100 g",
@@ -1805,6 +2006,16 @@
      "observations": 0
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 50
+    },
+    {
+     "label": "peel, seeds, core and membrane",
+     "per100": 50
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:09111"
@@ -1838,23 +2049,23 @@
    "servings": [
     {
      "label": "100 g raw as purchased",
-     "grams": 4938.3
+     "grams": 49.383
     },
     {
      "label": "100 ml chopped or diced",
-     "grams": 5664
+     "grams": 56.64
     },
     {
      "label": "250 ml chopped or diced",
-     "grams": 14160
+     "grams": 141.6
     },
     {
      "label": "100 g",
-     "grams": 10000
+     "grams": 100
     },
     {
      "label": "75 g",
-     "grams": 7500
+     "grams": 75
     }
    ],
    "source": "cnf",
@@ -1979,6 +2190,16 @@
      "observations": 0
     }
    },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 36
+    },
+    {
+     "label": "bone",
+     "per100": 36
+    }
+   ],
    "crossReference": {
     "dataset": "usda",
     "id": "usda:10047"
@@ -2012,15 +2233,15 @@
    "servings": [
     {
      "label": "100 ml",
-     "grams": 4015.2
+     "grams": 40.152
     },
     {
      "label": "125 ml",
-     "grams": 5019
+     "grams": 50.19
     },
     {
      "label": "250 ml",
-     "grams": 10038
+     "grams": 100.38
     },
     {
      "label": "100 g",
@@ -2190,15 +2411,15 @@
    "servings": [
     {
      "label": "100 ml",
-     "grams": 9298.4
+     "grams": 92.984
     },
     {
      "label": "125 ml",
-     "grams": 11623
+     "grams": 116.23
     },
     {
      "label": "250 ml",
-     "grams": 23246
+     "grams": 232.46
     },
     {
      "label": "100 g",
@@ -2360,19 +2581,19 @@
    "servings": [
     {
      "label": "1 order",
-     "grams": 60400
+     "grams": 604
     },
     {
      "label": "100 ml",
-     "grams": 9298.9
+     "grams": 92.989
     },
     {
      "label": "250 ml",
-     "grams": 23247.2
+     "grams": 232.472
     },
     {
      "label": "125 ml",
-     "grams": 11623.6
+     "grams": 116.236
     },
     {
      "label": "100 g",
@@ -2540,23 +2761,23 @@
    "servings": [
     {
      "label": "1 leg",
-     "grams": 17400
+     "grams": 174
     },
     {
      "label": "100 ml chopped or diced",
-     "grams": 5917.2
+     "grams": 59.172
     },
     {
      "label": "100 g",
-     "grams": 10000
+     "grams": 100
     },
     {
      "label": "250 ml chopped or diced",
-     "grams": 14792.9
+     "grams": 147.929
     },
     {
      "label": "75 g",
-     "grams": 7500
+     "grams": 75
     }
    ],
    "source": "cnf",
@@ -2642,7 +2863,13 @@
      "sourceDescription": "Nutrient calculated from data other than USDA",
      "observations": 0
     }
-   }
+   },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 14
+    }
+   ]
   },
   {
    "id": "cnf:6",
@@ -2672,23 +2899,23 @@
    "servings": [
     {
      "label": "1 fritter",
-     "grams": 3500
+     "grams": 35
     },
     {
      "label": "100 ml",
-     "grams": 4522.4
+     "grams": 45.224
     },
     {
      "label": "125 ml",
-     "grams": 5653
+     "grams": 56.53
     },
     {
      "label": "250 ml",
-     "grams": 11306
+     "grams": 113.06
     },
     {
      "label": "55 g",
-     "grams": 5500
+     "grams": 55
     },
     {
      "label": "100 g",
@@ -2858,11 +3085,11 @@
    "servings": [
     {
      "label": "140 g",
-     "grams": 14000
+     "grams": 140
     },
     {
      "label": "1 package",
-     "grams": 26378
+     "grams": 263.78
     },
     {
      "label": "100 g",
@@ -3004,6 +3231,177 @@
    }
   },
   {
+   "id": "cnf:7215",
+   "name": "Apple, Granny Smith, raw, with skin",
+   "group": "Fruits and fruit juices",
+   "per100": {
+    "protein": 0.44,
+    "fat": 0.19,
+    "carbs": 13.61,
+    "calories": 58,
+    "sugar": 9.59,
+    "fibre": 2.8,
+    "calcium": 5,
+    "iron": 0.15,
+    "magnesium": 5,
+    "potassium": 120,
+    "sodium": 1,
+    "zinc": 0.04,
+    "vitaminA": 5,
+    "folate": 3
+   },
+   "servings": [
+    {
+     "label": "1 small",
+     "grams": 144
+    },
+    {
+     "label": "1 medium",
+     "grams": 167
+    },
+    {
+     "label": "1 large",
+     "grams": 206
+    },
+    {
+     "label": "100 ml slices",
+     "grams": 46.072
+    },
+    {
+     "label": "125 ml slices",
+     "grams": 57.59
+    },
+    {
+     "label": "250 ml slices",
+     "grams": 115.179
+    },
+    {
+     "label": "140 g",
+     "grams": 140
+    },
+    {
+     "label": "100 g",
+     "grams": 100
+    }
+   ],
+   "source": "cnf",
+   "region": "CA",
+   "sourceVersion": "2026",
+   "foodProvenance": {
+    "code": "0",
+    "description": "Food based on data from USDA: No changes"
+   },
+   "nutrients": {
+    "protein": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 8,
+     "standardError": 0.023
+    },
+    "fat": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.028
+    },
+    "carbs": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "calories": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 0
+    },
+    "sugar": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.172
+    },
+    "fibre": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 6,
+     "standardError": 0.076
+    },
+    "calcium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 5,
+     "standardError": 0.659
+    },
+    "iron": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 3,
+     "standardError": 0.003
+    },
+    "magnesium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 5,
+     "standardError": 0.196
+    },
+    "potassium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 5,
+     "standardError": 1.771
+    },
+    "sodium": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 1
+    },
+    "zinc": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 5,
+     "standardError": 0.001
+    },
+    "vitaminA": {
+     "quality": "inherited",
+     "sourceCode": "0",
+     "sourceDescription": "No change from USDA",
+     "observations": 4,
+     "standardError": 0.315
+    },
+    "folate": {
+     "quality": "calculated",
+     "sourceCode": "2",
+     "sourceDescription": "Nutrient calculated from data other than USDA"
+    }
+   },
+   "refuse": [
+    {
+     "label": "total refuse",
+     "per100": 11
+    },
+    {
+     "label": "core and stem",
+     "per100": 11
+    }
+   ],
+   "crossReference": {
+    "dataset": "usda",
+    "id": "usda:09502"
+   }
+  },
+  {
    "id": "cnf:7529",
    "name": "Babyfood, vegetable and grain, jarred, creamed corn with rice",
    "group": "Babyfoods",
@@ -3031,19 +3429,19 @@
    "servings": [
     {
      "label": "1 small container",
-     "grams": 12800
+     "grams": 128
     },
     {
      "label": "100 ml",
-     "grams": 10513.5
+     "grams": 105.135
     },
     {
      "label": "30 ml",
-     "grams": 3154
+     "grams": 31.54
     },
     {
      "label": "60 ml",
-     "grams": 6308
+     "grams": 63.08
     },
     {
      "label": "100 g",
@@ -3197,11 +3595,11 @@
    "servings": [
     {
      "label": "140 g",
-     "grams": 14000
+     "grams": 140
     },
     {
      "label": "1 package",
-     "grams": 37214.9
+     "grams": 372.1490522
     },
     {
      "label": "100 g",
@@ -3363,7 +3761,7 @@
    "servings": [
     {
      "label": "195 g",
-     "grams": 19500
+     "grams": 195
     },
     {
      "label": "100 g",
@@ -3516,6 +3914,11 @@
   },
   {
    "kind": "unresolved-cross-reference",
+   "id": "cnf:1700",
+   "detail": "the source names usda:09019 as the matching record, and this catalogue does not have it"
+  },
+  {
+   "kind": "unresolved-cross-reference",
    "id": "cnf:1714",
    "detail": "the source names usda:09111 as the matching record, and this catalogue does not have it"
   },
@@ -3534,6 +3937,11 @@
    "id": "cnf:5224",
    "nutrient": "calories",
    "detail": "the source marks this value as an assumed zero, but the amount it published is not zero"
+  },
+  {
+   "kind": "unresolved-cross-reference",
+   "id": "cnf:7215",
+   "detail": "the source names usda:09502 as the matching record, and this catalogue does not have it"
   },
   {
    "kind": "source-conflict",

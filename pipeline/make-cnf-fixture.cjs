@@ -85,16 +85,22 @@ for (const row of nutrientAmount.rows) {
 }
 
 const chosen = new Set();
+// The two foods the publisher's own documentation works through: food 1700,
+// 250 ml of unsweetened applesauce, is 257.819 g, and food 7215, one medium
+// Granny Smith apple, is 167 g. The fixture carries both, so the tests can
+// check the conversion against the publisher's own numbers.
+chosen.add("1700");
+chosen.add("7215");
 for (const row of foodName.rows) {
   const code = cell(row, foodName.index, "Food_Code");
-  if (chosen.size < 8) chosen.add(code);
+  if (chosen.size < 10) chosen.add(code);
 }
 // The contradictions on a mapped nutrient come first: they are the ones the
 // pipeline has to keep flagging.
-for (const code of [...conflictsOnMapped].sort()) if (chosen.size < 12) chosen.add(code);
-for (const code of [...conflicts].sort()) if (chosen.size < 16) chosen.add(code);
-for (const code of [...unknownCodeFoods].sort()) if (chosen.size < 18) chosen.add(code);
-for (const code of [...laboratory].sort()) if (chosen.size < 20) chosen.add(code);
+for (const code of [...conflictsOnMapped].sort()) if (chosen.size < 14) chosen.add(code);
+for (const code of [...conflicts].sort()) if (chosen.size < 18) chosen.add(code);
+for (const code of [...unknownCodeFoods].sort()) if (chosen.size < 20) chosen.add(code);
+for (const code of [...laboratory].sort()) if (chosen.size < 22) chosen.add(code);
 
 fs.mkdirSync(out, { recursive: true });
 const write = (name, header, rows) => {

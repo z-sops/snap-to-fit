@@ -50,6 +50,12 @@ Two more scripts are for the evidence rather than for the build:
 | --- | --- |
 | `node --import tsx pipeline/make-report.ts` | Writes `pipeline/reports/`, from the full sources. |
 | `node --import tsx pipeline/analyse-conflicts.ts` | Measures the source contradictions the findings come from. |
+| `node pipeline/read-pdf.cjs <file.pdf> [text]` | Reads the text of the publisher's own documentation, which ships inside the pinned archive. |
+
+The last one matters: the rules in this file are not folklore. The Canadian
+Nutrient File's *database structure and file content description 2026* and
+its *users' guide 2026* are two PDFs inside the pinned archive, and the
+reading of the `Measure_Weight_Conversion` field comes from them.
 
 ## The manifest
 
@@ -73,6 +79,40 @@ Two things follow from that, and both are enforced in code:
 2. **Fail on a checksum change.** Every input is checked against its pinned
    digest, and so is every file inside an archive. A changed publisher file
    fails the build, and fails CI.
+
+### The build checks before it parses
+
+`data:build` does not read a publisher file until it has proved that the file
+is the one the manifest pins. Before anything is parsed it checks:
+
+- the shipped United States artefact, against its digest and its size;
+- the publisher archive, against its digest and its size;
+- **every file inside the archive**, against its digest and its size.
+
+A missing file is a failure, not a skip. A changed or truncated file is a
+failure. An unapproved source is a failure. The build stops before it has
+published anything, so a broken source cannot reach a catalogue.
+
+`data:fetch` checks the same way: the archive is verified before it is
+unpacked, and the cache is only accepted once every published file inside it
+has been checked too. A file that does not match discards the cache rather
+than leaving it there to be read by a later build.
+
+There is one exception, and it is explicit. The checked-in fixture is a slice
+of the Canadian release whose bytes are deliberately not the published bytes,
+so it cannot be compared with the manifest. A build against it runs in
+`fixture` mode, says so in its own output, and is only reachable by asking
+for it. The shipped United States artefact is checked in every mode, because
+it has a real digest and the real file is in the repository.
+
+### What CI does, and does not, verify
+
+CI runs `data:verify`. It checks the shipped United States artefact, which is
+in the repository, and it reports the Canadian archive as **not fetched**,
+because CI does not download a 26 MB archive. So CI does **not** verify the
+nine Canadian CSV files. The strict verification of all nine files happens in
+the full build, in the environment where the pinned archive is available, and
+that build is what the reports in `pipeline/reports/` come from.
 
 The United Kingdom source is recorded in `excluded`, with the reason: the
 commercial-use terms are unresolved, and the CoFID API is published under
@@ -114,6 +154,18 @@ canonical keys, plus the evidence for each one:
   `imputed`, `inherited` and `estimated` are the source's own statement about
   how the number came about, and each one is carried through from the
   Canadian `Nutrient_Source_Code`.
+- **A serving is the weight of a portion, in grams.** The Canadian release
+  publishes the weight of the measure itself. The 2015 release published a
+  conversion factor that had to be multiplied by a hundred to get the same
+  number, and the 2026 release already includes that multiplication. The
+  publisher's own worked examples are in the release: 250 ml of unsweetened
+  applesauce is 257.819 g, and one medium Granny Smith apple is 167 g. A
+  measure whose published weight is blank, is not a number, or is not
+  positive is not a portion and never becomes one.
+- **The inedible part is kept, not dropped.** A refuse measure is not a
+  portion, so it is never a serving, but it travels with the record: the
+  nutrient values are per 100 g of the *edible* part, and the difference
+  between the two is exactly what a refuse measure says.
 - **A documented zero is only a zero when the source says so.** The code `12`
   means "assumed zero" in the Canadian file. When such a row's amount is
   `0`, it is a documented zero. When it is not `0`, the row contradicts itself,
@@ -140,15 +192,19 @@ canonical keys, plus the evidence for each one:
 
 ## The fixtures and the golden file
 
-`pipeline/fixtures/cnf-2026/` is a slice of the Canadian release: twenty
+`pipeline/fixtures/cnf-2026/` is a slice of the Canadian release: twenty-two
 foods, chosen to cover the interesting cases — a value with observations, an
-inherited value, a calculated value, a nutrient the app does not map, and the
-two rows where the source contradicts itself on a nutrient the app does map.
-The full release is 565,409 nutrient rows; the slice is 2,300.
+inherited value, a calculated value, a nutrient the app does not map, the two
+rows where the source contradicts itself on a nutrient the app does map, and
+the two foods the publisher's own documentation works through, so the serving
+weights can be checked against the publisher's numbers. The full release is
+565,409 nutrient rows; the slice is 2,452.
 
 `pipeline/fixtures/golden/cnf-foods.json` is the output the builder must
 produce from that slice. It is checked in, and a test compares the built
-dataset against it exactly.
+dataset against it exactly. It carries 16 findings: the two source
+contradictions, and 14 Canadian foods that name a United States record the
+catalogue does not have.
 
 To regenerate both, with the full Canadian release unpacked in the cache:
 
@@ -162,24 +218,40 @@ intentionally changed, and the change is then explained in the pull request.
 
 ## The measured results
 
-`pipeline/reports/build-us-ca.json` and `pipeline/reports/benchmark-us-ca.json`
-are the measured output for the full United States and Canadian sources.
+`pipeline/reports/` holds three reports, all generated from the full United
+States and Canadian sources:
+
+- `build-us-ca.json` — the records, the findings and the value quality of
+  every value;
+- `benchmark-us-ca.json` — the three architectures, measured;
+- `source-integrity.json` — what was checked against the manifest, by digest
+  and by size, before the build parsed anything.
 
 - 14,250 records: 8,257 from the United States and 5,993 from Canada.
 - 222 findings: 220 Canadian foods that name a United States record the
   catalogue does not have, and 2 Canadian rows whose own source code
   contradicts the amount printed beside it.
+- 11 artefacts checked against the manifest, 11 matching: the shipped United
+  States catalogue, the publisher archive, and the nine CSV files inside it.
 - The three architectures, on the real data. Each was loaded in a process of
   its own, so the heap figure is the catalogue and nothing else:
 
 | | bytes | gzip | parsed at start-up | heap |
 | --- | --- | --- | --- | --- |
-| A, one merged catalogue | 40.3 MB | 1.69 MB | 40.3 MB, ~397 ms | 134 MB |
-| B, one catalogue per market | 40.3 MB | 1.69 MB | the market in use: 22.6 MB (US) or 17.8 MB (CA), ~190 ms | 45 MB (US), 57 MB (CA) |
-| C, a search index and a separate detail store | 37.4 MB | 1.55 MB | the index only: 925 KB, ~25 ms | 3 MB |
+| A, one merged catalogue | 40.4 MB | 1.69 MB | 40.4 MB, ~344 ms | 134 MB |
+| B, one catalogue per market | 40.4 MB | 1.69 MB | the market in use: 22.6 MB (US) or 17.7 MB (CA), ~189 ms | 45 MB (US), 57 MB (CA) |
+| C, a search index and a separate detail store | 37.5 MB | 1.55 MB | the index only: 925 KB, ~13 ms | 3 MB |
 
 A lookup costs 0.10 to 0.24 microseconds in all three, so the choice is about
 start-up cost and memory, not about speed.
+
+**These are Node.js figures, measured on a desktop machine.** They are not
+Android or iPhone performance, and they are not a reason to pick an
+architecture. Architecture C's start-up numbers cover the search index only:
+the cost of loading a food's nutrient detail, the behaviour of search itself,
+the cache the app would use, and the behaviour of a real device are all
+outside what was measured, and all have to be measured before anything is
+chosen.
 
 The measurement is in `pipeline/reports/`, not in this file, because the
 numbers are from a run and they move a little between machines. The table

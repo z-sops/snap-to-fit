@@ -6,7 +6,7 @@ import path from "node:path";
 import { buildDataset, serialise, writeBuild, SCHEMA_VERSION, type BuildInput } from "../pipeline/build/build";
 import { lintDataset, summariseFindings } from "../pipeline/build/lint";
 import { readUsda, shippedUsdaPath } from "../pipeline/adapters/usda";
-import { readCnf } from "../pipeline/adapters/cnf";
+import { readCnf, measureWeightGrams } from "../pipeline/adapters/cnf";
 import { cell, readCsv } from "../pipeline/adapters/csv";
 import { CANONICAL_NUTRIENT_KEYS, CNF_SOURCE_QUALITY, CNF_TAG_BY_APP_KEY } from "../pipeline/adapters/nutrients";
 import { mayUse, readManifest, sha256, verifyFile, verifyInputs } from "../pipeline/fetch";
@@ -95,7 +95,7 @@ test("every existing USDA identifier still resolves, with the same values", () =
 test("the shipping catalogue is never modified by the pipeline", () => {
   const before = sha256(shippedUsdaPath(root));
   assert.equal(before, usdaInput.sha256);
-  buildDataset([usdaInput], fixtureDir);
+  buildDataset([usdaInput], fixtureDir, { mode: "fixture" });
   assert.equal(sha256(shippedUsdaPath(root)), before);
 });
 
@@ -191,13 +191,13 @@ test("duplicate and malformed records are reported rather than silently accepted
 });
 
 test("the build is reproducible: the same bytes give the same file", () => {
-  const first = serialise(buildDataset([usdaInput, cnfInput], fixtureDir));
-  const second = serialise(buildDataset([usdaInput, cnfInput], fixtureDir));
+  const first = serialise(buildDataset([usdaInput, cnfInput], fixtureDir, { mode: "fixture" }));
+  const second = serialise(buildDataset([usdaInput, cnfInput], fixtureDir, { mode: "fixture" }));
   assert.equal(first, second);
 });
 
 test("the built Canadian records match the golden fixture", () => {
-  const built = buildDataset([cnfInput], fixtureDir);
+  const built = buildDataset([cnfInput], fixtureDir, { mode: "fixture" });
   const golden = JSON.parse(fs.readFileSync(goldenFile, "utf8"));
   // The golden file is JSON, so it is compared in its serialised form: a
   // property that is undefined is not written out.
@@ -214,7 +214,10 @@ test("a source whose commercial use is not permitted is refused", () => {
     region: "CA",
     licence: { name: "unknown", commercial_use: "unresolved", legal_confirmation: "pending" },
   };
-  assert.throws(() => buildDataset([unresolved], fixtureDir), /commercial use is unresolved/);
+  assert.throws(
+    () => buildDataset([unresolved], fixtureDir, { mode: "fixture" }),
+    /commercial use of uk-cofid-2021 is unresolved/,
+  );
 });
 
 test("a build writes nothing into the application tree", () => {
@@ -237,7 +240,7 @@ test("a build writes nothing into the application tree", () => {
   const before = fingerprint(path.join(root, "src"));
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "m2-pipeline-"));
   try {
-    const built = buildDataset([usdaInput, cnfInput], fixtureDir);
+    const built = buildDataset([usdaInput, cnfInput], fixtureDir, { mode: "fixture" });
     writeBuild(built, [usdaInput, cnfInput], out);
     assert.ok(fs.existsSync(path.join(out, "foods.v2.json")));
   } finally {
@@ -304,7 +307,7 @@ test("a cross-reference that names a record the catalogue does not have is repor
   // The Canadian file names a United States number for many of its foods.
   // Where that number is not in the catalogue, the pointer says so rather than
   // resolving to nothing.
-  const built = buildDataset([usdaInput, cnfInput], fixtureDir);
+  const built = buildDataset([usdaInput, cnfInput], fixtureDir, { mode: "fixture" });
   const usdaIds = new Set(built.foods.filter((f) => f.source === "usda").map((f) => f.id));
   const referenced = built.foods.filter((f) => f.crossReference);
   assert.ok(referenced.length, "the fixture has no cross-references to check");
@@ -322,3 +325,202 @@ test("a cross-reference that names a record the catalogue does not have is repor
   }
 });
 
+
+test("a measure weight conversion is the weight of the measure, in grams", () => {
+  // The CNF 2026 publishes the weight of the measure itself. The 2015
+  // release published a conversion factor that had to be multiplied by a
+  // hundred to get the same number, and the 2026 release already includes
+  // that multiplication. The publisher's own worked examples are in the
+  // fixture:
+  //
+  //   food 1700, 250 ml of unsweetened applesauce, is 257.819 g;
+  //   food 7215, one medium Granny Smith apple, is 167 g.
+  const applesauce = cnfDataset.foods.find((f) => f.id === "cnf:1700");
+  const apple = cnfDataset.foods.find((f) => f.id === "cnf:7215");
+  assert.ok(applesauce, "the fixture has no applesauce");
+  assert.ok(apple, "the fixture has no Granny Smith apple");
+
+  const cup = applesauce!.servings.find((s) => s.label === "250 ml");
+  assert.ok(cup, "the 250 ml measure is missing");
+  assert.equal(cup!.grams, 257.819);
+
+  const medium = apple!.servings.find((s) => s.label === "1 medium");
+  assert.ok(medium, "the one medium measure is missing");
+  assert.equal(medium!.grams, 167);
+
+  // The 2015 conversion would have made these a hundred times too large.
+  assert.notEqual(cup!.grams, 25781.9);
+  assert.notEqual(medium!.grams, 16700);
+});
+
+test("a portion weight, its per-100-gram value and the per-portion value agree", () => {
+  // The publisher's formula: N = V * W / 100, where W is the measure weight
+  // conversion. Its worked example is the Granny Smith apple, which has
+  // 120 mg of potassium per 100 g and weighs 167 g, giving 200 mg.
+  const apple = cnfDataset.foods.find((f) => f.id === "cnf:7215");
+  assert.ok(apple);
+  const medium = apple!.servings.find((s) => s.label === "1 medium");
+  assert.ok(medium);
+  assert.equal(apple!.per100.potassium, 120);
+
+  const perPortion = apple!.per100.potassium! * (medium!.grams / 100);
+  assert.equal(Number(perPortion.toFixed(1)), 200.4);
+  assert.equal(Math.round(perPortion), 200);
+
+  // The same arithmetic, for every serving of every fixture food that has
+  // both a weight and a value.
+  for (const food of cnfDataset.foods)
+    for (const serving of food.servings) {
+      assert.ok(serving.grams > 0, `${food.id} ${serving.label} weighs nothing`);
+      assert.ok(Number.isFinite(serving.grams), `${food.id} ${serving.label} has no weight`);
+      assert.ok(serving.grams < 10000, `${food.id} ${serving.label} weighs ${serving.grams} g`);
+      if (food.per100.potassium === undefined) continue;
+      const expected = food.per100.potassium * (serving.grams / 100);
+      assert.ok(Number.isFinite(expected));
+    }
+});
+
+test("an unusable portion conversion never becomes a serving", () => {
+  // A blank, a non-number, a weight of nothing and a negative weight are not
+  // portions, and none of them may become one.
+  for (const published of [undefined, "", "   ", "0", "0.0", "-5", "not a number", "NaN", "Infinity"])
+    assert.equal(measureWeightGrams(published), undefined, `${String(published)} became a weight`);
+
+  // A usable one is kept exactly as published, without rounding.
+  assert.equal(measureWeightGrams("257.819"), 257.819);
+  assert.equal(measureWeightGrams(" 167 "), 167);
+
+  // The refuse measure is the inedible part of the food, not a portion, so it
+  // is never a serving.
+  for (const food of cnfDataset.foods)
+    for (const serving of food.servings)
+      assert.ok(!/refuse/i.test(serving.label), `${food.id} has the refuse measure as a serving`);
+
+  // It is not dropped either: the nutrient values are per 100 g of the edible
+  // part, so the inedible part has to travel with the record.
+  const apple = cnfDataset.foods.find((f) => f.id === "cnf:7215");
+  assert.ok(apple, "the fixture has no Granny Smith apple");
+  assert.ok(apple!.refuse?.length, "the refuse of the apple was dropped");
+  const total = apple!.refuse!.find((r) => r.label === "total refuse");
+  assert.ok(total, "the total refuse of the apple is missing");
+  assert.equal(total!.per100, 11);
+  // The published share, as the release states it: eleven parts per hundred
+  // of the apple as purchased.
+  assert.ok(total!.per100 > 0 && total!.per100 <= 100);
+});
+/**
+ * A source folder on disk, with the manifest pins for what is in it.
+ *
+ * The published archive is not in the repository, so the test builds its own
+ * folder from the checked-in slice, pins it, and then breaks it in the ways a
+ * source can break.
+ */
+function preparedSource(): { dir: string; input: BuildInput } {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-verify-"));
+  const names = fs.readdirSync(fixtureDir);
+  for (const name of names) fs.copyFileSync(path.join(fixtureDir, name), path.join(dir, name));
+  const archive = path.join(dir, "cnf.zip");
+  fs.writeFileSync(archive, "a stand-in for the published archive");
+  const input: BuildInput = {
+    id: "ca-cnf-2026",
+    kind: "publisher-archive",
+    archive: "cnf.zip",
+    sha256: sha256(archive),
+    bytes: fs.statSync(archive).size,
+    files: names.map((name) => ({
+      name,
+      sha256: sha256(path.join(dir, name)),
+      bytes: fs.statSync(path.join(dir, name)).size,
+    })),
+    region: "CA",
+    version: "2026",
+    licence: {
+      name: "Open Government Licence - Canada",
+      commercial_use: "permitted",
+      legal_confirmation: "published-licence",
+    },
+  };
+  return { dir, input };
+}
+
+test("a build from a source that matches the manifest proceeds", () => {
+  const { dir, input } = preparedSource();
+  try {
+    const built = buildDataset([usdaInput, input], dir, {
+      mode: "verified",
+      sourceDirs: new Map([[input.id, dir]]),
+    });
+    assert.equal(built.verification, "verified");
+    assert.ok(built.foods.length > 0);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a build refuses a changed, a truncated, a missing or an unapproved source", () => {
+  const { dir, input } = preparedSource();
+  const build = () =>
+    buildDataset([usdaInput, input], dir, {
+      mode: "verified",
+      sourceDirs: new Map([[input.id, dir]]),
+    });
+  try {
+    // A file whose bytes were changed.
+    const changed = path.join(dir, "Nutrient_Amount.csv");
+    const original = fs.readFileSync(changed);
+    fs.writeFileSync(changed, Buffer.concat([original, Buffer.from("\n2,208,1,,")]));
+    assert.throws(build, /Nutrient_Amount\.csv of ca-cnf-2026 does not match the manifest/);
+    fs.writeFileSync(changed, original);
+
+    // A file that was truncated.
+    fs.writeFileSync(changed, original.slice(0, Math.floor(original.length / 2)));
+    assert.throws(build, /Nutrient_Amount\.csv of ca-cnf-2026 does not match the manifest/);
+    fs.writeFileSync(changed, original);
+
+    // A file that is not there at all.
+    const removed = path.join(dir, "Food_Name.csv");
+    const kept = fs.readFileSync(removed);
+    fs.rmSync(removed);
+    assert.throws(build, /Food_Name\.csv of ca-cnf-2026 does not match the manifest/);
+    fs.writeFileSync(removed, kept);
+
+    // An archive whose digest is not the pinned one.
+    const archive = path.join(dir, "cnf.zip");
+    const archiveBytes = fs.readFileSync(archive);
+    fs.writeFileSync(archive, "a different archive");
+    assert.throws(build, /the archive of ca-cnf-2026 does not match the manifest/);
+    fs.writeFileSync(archive, archiveBytes);
+
+    // A source whose commercial use is not permitted.
+    const unapproved: BuildInput = {
+      ...input,
+      licence: { ...input.licence, commercial_use: "unresolved" },
+    };
+    assert.throws(
+      () =>
+        buildDataset([usdaInput, unapproved], dir, {
+          mode: "verified",
+          sourceDirs: new Map([[unapproved.id, dir]]),
+        }),
+      /commercial use of ca-cnf-2026 is unresolved/,
+    );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("the fixture mode is explicit, and is recorded in the build", () => {
+  // The checked-in slice is not the published bytes, so it cannot be checked
+  // against the manifest. A build in that mode says so, and the shipped
+  // artefact is still checked.
+  const fixture = buildDataset([usdaInput, cnfInput], fixtureDir, { mode: "fixture" });
+  assert.equal(fixture.verification, "fixture");
+
+  // The shipped catalogue is checked in every mode, because it has a real
+  // pin and the real file.
+  const wrongPin: BuildInput = { ...usdaInput, sha256: "0".repeat(64) };
+  assert.throws(
+    () => buildDataset([wrongPin, cnfInput], fixtureDir, { mode: "fixture" }),
+    /usda-sr28 does not match the manifest/,
+  );
+});

@@ -44,10 +44,12 @@ serving sizes and densities in `Measure_Name.csv`, `Measure_Type.csv` and
 measure, not a name. That is why those three tables exist in the release, and
 why the Canadian normaliser reads them.
 
-**The nutrient coverage differs.** The Canadian release carries 172 nutrients
-and reports them for 54.9% of the foods it lists. The 19 nutrients the app
-maps are the part that overlaps. The rest is real data the app does not
-model, and it is not evidence of anything about the mapped nutrients.
+**The nutrient coverage differs.** The Canadian release's nutrient dictionary
+lists 173 nutrients, 172 of which appear in the nutrient amounts, and the
+amounts are sparse: 565,409 rows over 5,993 foods, a median of 94 values per
+food. The 19 nutrients the app maps are the part that overlaps. The rest is
+real data the app does not model, and it is not evidence of anything about
+the mapped nutrients.
 
 ## A pointer that does not resolve
 
@@ -75,7 +77,7 @@ information.
 | | United States | Canada |
 | --- | --- | --- |
 | records in the catalogue | 8,257 | 5,993 |
-| nutrients published per record | 19, as the app maps them | 172 in total, of which 19 are mapped |
+| nutrients published per record | 19, as the app maps them | 173 in the dictionary, 94 values per food on average |
 | rows of source data | the shipped catalogue | 565,409 nutrient rows |
 | identifier namespace | `usda:<ndb>` | `ca:<cnf>` |
 | commercial use | CC0 1.0, permitted | Open Government Licence — Canada, permitted |

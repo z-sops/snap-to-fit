@@ -161,3 +161,127 @@ export function mayUse(input: ManifestInput): { ok: boolean; reason?: string } {
     reason: `the commercial use of ${input.id} is ${input.licence.commercial_use}, so it is not used`,
   };
 }
+
+/** One file inside a publisher archive, as the manifest pins it. */
+export interface VerifiableFile {
+  name: string;
+  sha256: string;
+  bytes: number;
+}
+
+/** An input, as a build sees it, with everything needed to verify it. */
+export interface VerifiableInput {
+  id: string;
+  kind: "repository-artefact" | "publisher-archive";
+  path?: string;
+  archive?: string;
+  sha256: string;
+  bytes: number;
+  files?: VerifiableFile[];
+  licence: { commercial_use: string };
+}
+
+/**
+ * How a build checks its inputs.
+ *
+ * `verified` is the only mode an ordinary build may use. It requires every
+ * input to match the manifest, byte for byte, before anything is parsed.
+ *
+ * `fixture` is for the checked-in slice of the Canadian release. The slice is
+ * deliberately not the published bytes, so it cannot be verified against the
+ * manifest, and a build in that mode says so in its own output.
+ */
+export type VerificationMode = "verified" | "fixture";
+
+/** A failure to match the manifest. */
+export class SourceVerificationError extends Error {
+  constructor(
+    readonly input: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "SourceVerificationError";
+  }
+}
+
+/**
+ * Check every input against the manifest, before anything is parsed.
+ *
+ * A missing file is a failure, not a skip: a build that quietly carries on
+ * without one of the published files would produce a catalogue that is wrong
+ * in a way nobody would notice.
+ *
+ * The repository artefact is always checked. A publisher archive is checked
+ * in `verified` mode: the archive itself, and every file inside it. In
+ * `fixture` mode the archive is not checked, because the fixture is a slice
+ * of the release rather than the release.
+ */
+export function verifyBuildInputs(
+  inputs: VerifiableInput[],
+  sourceDirs: Map<string, string>,
+  mode: VerificationMode,
+): { id: string; checked: string[] }[] {
+  const results: { id: string; checked: string[] }[] = [];
+
+  for (const input of inputs) {
+    if (input.licence.commercial_use !== "permitted")
+      throw new SourceVerificationError(
+        input.id,
+        `the commercial use of ${input.id} is ${input.licence.commercial_use}, so it is not used`,
+      );
+
+    const checked: string[] = [];
+
+    if (input.kind === "repository-artefact") {
+      if (!input.path)
+        throw new SourceVerificationError(input.id, `${input.id} has no path, so it cannot be checked`);
+      const check = verifyFile(input.path, input);
+      if (!check.ok)
+        throw new SourceVerificationError(
+          input.id,
+          `${input.id} does not match the manifest: ${check.reason}`,
+        );
+      checked.push(input.path);
+      results.push({ id: input.id, checked });
+      continue;
+    }
+
+    if (mode === "fixture") {
+      // The slice in the repository is not the published bytes, so there is
+      // nothing to compare them with. The build records that it ran in this
+      // mode, and the difference is visible in its output.
+      results.push({ id: input.id, checked: [] });
+      continue;
+    }
+
+    const dir = sourceDirs.get(input.id);
+    if (!dir)
+      throw new SourceVerificationError(input.id, `there is no folder for ${input.id}, so it cannot be checked`);
+    if (!input.archive)
+      throw new SourceVerificationError(input.id, `${input.id} has no archive, so it cannot be checked`);
+
+    const archive = path.join(dir, input.archive);
+    const archiveCheck = verifyFile(archive, input);
+    if (!archiveCheck.ok)
+      throw new SourceVerificationError(
+        input.id,
+        `the archive of ${input.id} does not match the manifest: ${archiveCheck.reason}`,
+      );
+    checked.push(archive);
+
+    for (const part of input.files ?? []) {
+      const file = path.join(dir, part.name);
+      const check = verifyFile(file, part);
+      if (!check.ok)
+        throw new SourceVerificationError(
+          input.id,
+          `the file ${part.name} of ${input.id} does not match the manifest: ${check.reason}`,
+        );
+      checked.push(file);
+    }
+
+    results.push({ id: input.id, checked });
+  }
+
+  return results;
+}

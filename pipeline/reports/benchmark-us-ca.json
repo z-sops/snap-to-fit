@@ -12,57 +12,57 @@
   "architectures": [
     {
       "architecture": "A-merged",
-      "uncompressed_bytes": 40312885,
-      "compressed_bytes": 1685537,
-      "startup_bytes": 40312885,
+      "uncompressed_bytes": 40401261,
+      "compressed_bytes": 1702455,
+      "startup_bytes": 40401261,
       "search_index_bytes": 0,
       "detail_bytes": 0,
-      "startup_parse_ms": 397.211,
-      "lookup_ms": 3.878,
-      "lookup_us": 0.1939,
-      "memory_mb": 133.66,
+      "startup_parse_ms": 343.861,
+      "lookup_ms": 5.614,
+      "lookup_us": 0.2807,
+      "memory_mb": 134.134,
       "records": 14250
     },
     {
       "architecture": "B-per-market",
-      "uncompressed_bytes": 40312915,
-      "compressed_bytes": 1685203,
+      "uncompressed_bytes": 40401291,
+      "compressed_bytes": 1702133,
       "startup_bytes": 22555769,
       "search_index_bytes": 0,
       "detail_bytes": 0,
-      "startup_parse_ms": 188.574,
-      "lookup_ms": 2.071,
-      "lookup_us": 0.1035,
-      "memory_mb": 44.806,
+      "startup_parse_ms": 188.982,
+      "lookup_ms": 2.81,
+      "lookup_us": 0.1405,
+      "memory_mb": 44.578,
       "records": 14250,
       "per_market": [
         {
           "region": "CA",
-          "bytes": 17757146,
-          "compressed_bytes": 963351,
-          "parse_ms": 228.659,
-          "memory_mb": 56.872
+          "bytes": 17845522,
+          "compressed_bytes": 980281,
+          "parse_ms": 170.108,
+          "memory_mb": 57.345
         },
         {
           "region": "US",
           "bytes": 22555769,
           "compressed_bytes": 721852,
-          "parse_ms": 205.62,
+          "parse_ms": 173.952,
           "memory_mb": 44.806
         }
       ]
     },
     {
       "architecture": "C-search-index",
-      "uncompressed_bytes": 37441377,
-      "compressed_bytes": 1545766,
+      "uncompressed_bytes": 37427137,
+      "compressed_bytes": 1546726,
       "startup_bytes": 925044,
       "search_index_bytes": 925044,
-      "detail_bytes": 36516333,
-      "startup_parse_ms": 24.84,
-      "lookup_ms": 4.724,
-      "lookup_us": 0.2362,
-      "memory_mb": 2.961,
+      "detail_bytes": 36502093,
+      "startup_parse_ms": 12.557,
+      "lookup_ms": 3.231,
+      "lookup_us": 0.1616,
+      "memory_mb": 2.512,
       "records": 14250
     }
   ],

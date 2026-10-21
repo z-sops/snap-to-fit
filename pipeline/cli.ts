@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { mayUse, readManifest, sha256, sourceDir, verifyFile, verifyInputs, type ManifestInput } from "./fetch";
-import { buildDataset, writeBuild, type BuildInput } from "./build/build";
+import { mayUse, readManifest, sha256, sourceDir, verifyBuildInputs, verifyFile, verifyInputs, type ManifestInput, type SourceManifest } from "./fetch";
+import { buildDataset, toBuildInput, writeBuild } from "./build/build";
 import { summariseFindings } from "./build/lint";
 import { runBenchmark } from "./build/benchmark";
 
@@ -11,29 +11,20 @@ import { runBenchmark } from "./build/benchmark";
  * `verify`   checks the pinned inputs; it never downloads anything.
  * `fetch`    downloads one publisher archive, on request only, and only if a
  *            checksum is pinned and the commercial use is permitted.
- * `build`    builds the normalised dataset from the cached sources.
+ * `build`    builds the normalised dataset from the cached sources, after
+ *            checking every one of them against the manifest.
  * `bench`    measures the three candidate architectures.
  *
  * Nothing here runs in CI, and nothing here writes to `src/`.
  */
 const root = process.cwd();
 
-function toBuildInput(input: ManifestInput): BuildInput {
-  return {
-    id: input.id,
-    kind: input.kind,
-    path: input.path ? path.join(root, input.path) : undefined,
-    url: input.url,
-    sha256: input.sha256,
-    bytes: input.bytes,
-    region: input.region,
-    version: input.version,
-    licence: {
-      name: input.licence.name,
-      commercial_use: input.licence.commercial_use,
-      legal_confirmation: input.licence.legal_confirmation,
-    },
-  };
+/** Where each input's files are, by input id. */
+function sourceDirs(manifest: SourceManifest): Map<string, string> {
+  const dirs = new Map<string, string>();
+  for (const input of manifest.inputs)
+    if (input.kind === "publisher-archive") dirs.set(input.id, sourceDir(root, input.id));
+  return dirs;
 }
 
 async function main() {
@@ -79,17 +70,37 @@ async function main() {
         "the archive was fetched and verified, but it could not be unpacked; unpack it by hand into the same folder",
       );
     }
-    console.log(`unpacked ${input.id} into ${folder}`);
+    // The cache is only accepted once every published file inside it has been
+    // checked against the manifest. An unpacked file that does not match is a
+    // broken cache, and a build must not be able to read it.
+    for (const part of input.files ?? []) {
+      const file = path.join(folder, part.name);
+      const partCheck = verifyFile(file, part);
+      if (!partCheck.ok) {
+        fs.rmSync(folder, { recursive: true, force: true });
+        throw new Error(
+          `the unpacked file ${part.name} does not match the manifest: ${partCheck.reason}; the cache was discarded`,
+        );
+      }
+    }
+    console.log(`unpacked and verified ${input.id} into ${folder}`);
     return;
   }
 
   if (command === "build") {
-    const inputs = manifest.inputs.map(toBuildInput);
+    const inputs = manifest.inputs.map((input) => toBuildInput(input, root));
     const cnf = manifest.inputs.find((i) => i.region === "CA");
     const cnfDir = cnf ? sourceDir(root, cnf.id) : undefined;
     if (cnf && cnfDir && !fs.existsSync(cnfDir))
       throw new Error(`the Canadian source is not in the cache; run "fetch ${cnf.id}" first`);
-    const dataset = buildDataset(inputs, cnfDir);
+    // Every input is checked against the manifest before anything is parsed.
+    const verified = verifyBuildInputs(inputs, sourceDirs(manifest), "verified");
+    for (const input of verified)
+      console.log(`verified    ${input.id} (${input.checked.length} file${input.checked.length === 1 ? "" : "s"})`);
+    const dataset = buildDataset(inputs, cnfDir, {
+      mode: "verified",
+      sourceDirs: sourceDirs(manifest),
+    });
     const out = writeBuild(dataset, inputs, path.join(root, "pipeline", "out"));
     console.log(`wrote ${out.dataset}`);
     console.log(`wrote ${out.manifest}`);
@@ -99,7 +110,7 @@ async function main() {
   }
 
   if (command === "bench") {
-    const manifestInputs = manifest.inputs.map(toBuildInput);
+    const manifestInputs = manifest.inputs.map((input) => toBuildInput(input, root));
     const cnf = manifest.inputs.find((i) => i.region === "CA");
     const cnfDir = cnf ? sourceDir(root, cnf.id) : undefined;
     if (cnf && cnfDir && !fs.existsSync(cnfDir))
