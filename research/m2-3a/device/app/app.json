@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "M2-3A device benchmark",
+    "slug": "m2-3a-device-benchmark",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "android": {
+      "package": "com.zunitech.m2-3a-benchmark"
+    },
+    "ios": {
+      "bundleIdentifier": "com.zunitech.m2-3a-benchmark"
+    }
+  }
+}

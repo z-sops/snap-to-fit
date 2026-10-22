@@ -1,0 +1,155 @@
+{
+  "generated_by": "research/m2-3a/bench/run.ts",
+  "node": "v24.15.0",
+  "platform": "win32 x64",
+  "host": {
+    "cpus": 12,
+    "model": "AMD Ryzen 5 3600 6-Core Processor",
+    "total_memory_gb": 15.9
+  },
+  "note": "These are Node.js figures on a desktop machine, measured in a separate process per architecture. They compare the two architectures on the same data and the same runtime code. They are not a statement about a phone, and no architecture is selected here.",
+  "asset_sizes": [],
+  "architectures": [
+    {
+      "architecture": "B-bundle",
+      "measurements": {
+        "open_us_ms": 223.583,
+        "open_us_records": 8257,
+        "open_us_ok": true,
+        "open_ca_ms": 165.646,
+        "open_ca_records": 5993,
+        "open_ca_ok": true,
+        "open_both_markets_ms": 390.715,
+        "search_cold_ms": 12.642,
+        "search_cold_results": 20,
+        "search_cold_cross_market": 0,
+        "fallback_query": "waffle",
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "fallback_labelled": true,
+        "search_warm_ms": 3.845,
+        "detail_cold_ms": 0.381,
+        "detail_warm_ms": 0.017,
+        "recipe_keys": 138,
+        "recipe_resolution_ms": 7.674,
+        "recipe_resolved": 138,
+        "recipe_fallbacks": 0,
+        "recipe_unavailable": 0,
+        "popular_keys": 74,
+        "repeated_searches": 100,
+        "repeated_search_mean_ms": 1.694,
+        "market_switches": 10,
+        "market_switch_mean_ms": 1.639,
+        "cache_eviction_pass_ms": 0.652,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "cache_budget_bytes": 8388608,
+        "cache_hit_rate": 0.456,
+        "cache_evicted": 0
+      },
+      "memory": {
+        "before": {
+          "rss_mb": 70.07,
+          "heap_used_mb": 10.68,
+          "heap_total_mb": 18.19,
+          "external_mb": 4.41
+        },
+        "retained_after_workload": {
+          "rss_mb": 319.14,
+          "heap_used_mb": 74.93,
+          "heap_total_mb": 220.7,
+          "external_mb": 21.03
+        },
+        "after_cache_cleared": {
+          "rss_mb": 305.52,
+          "heap_used_mb": 74.89,
+          "heap_total_mb": 205.2,
+          "external_mb": 4.35
+        },
+        "peak_rss_mb": 355.95,
+        "retained_delta_mb": 64.25,
+        "peak_delta_rss_mb": 285.88
+      }
+    },
+    {
+      "architecture": "C-split",
+      "measurements": {
+        "open_us_ms": 18.008,
+        "open_us_records": 8257,
+        "open_us_ok": true,
+        "open_ca_ms": 19.981,
+        "open_ca_records": 5993,
+        "open_ca_ok": true,
+        "open_both_markets_ms": 32.587,
+        "search_cold_ms": 6.821,
+        "search_cold_results": 20,
+        "search_cold_cross_market": 0,
+        "fallback_query": "waffle",
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "fallback_labelled": true,
+        "search_warm_ms": 6.22,
+        "detail_cold_ms": 1.586,
+        "detail_warm_ms": 0.015,
+        "recipe_keys": 138,
+        "recipe_resolution_ms": 100.531,
+        "recipe_resolved": 138,
+        "recipe_fallbacks": 0,
+        "recipe_unavailable": 0,
+        "popular_keys": 74,
+        "repeated_searches": 100,
+        "repeated_search_mean_ms": 1.321,
+        "market_switches": 10,
+        "market_switch_mean_ms": 1.095,
+        "cache_eviction_pass_ms": 21.668,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "cache_budget_bytes": 8388608,
+        "cache_hit_rate": 0.456,
+        "cache_evicted": 0
+      },
+      "memory": {
+        "before": {
+          "rss_mb": 55.12,
+          "heap_used_mb": 9.97,
+          "heap_total_mb": 17.94,
+          "external_mb": 4.35
+        },
+        "retained_after_workload": {
+          "rss_mb": 99.65,
+          "heap_used_mb": 18.19,
+          "heap_total_mb": 51.2,
+          "external_mb": 8.34
+        },
+        "after_cache_cleared": {
+          "rss_mb": 96.53,
+          "heap_used_mb": 17.69,
+          "heap_total_mb": 51.2,
+          "external_mb": 4.32
+        },
+        "peak_rss_mb": 103.37,
+        "retained_delta_mb": 8.22,
+        "peak_delta_rss_mb": 48.25
+      }
+    }
+  ],
+  "failures": {
+    "missing_asset": {
+      "ok": false,
+      "reason": "the search index index-us.json is not there"
+    },
+    "corrupt_asset": {
+      "ok": false,
+      "reason": "Expected property name or '}' in JSON at position 2 (line 1 column 3)"
+    },
+    "no_such_market": {
+      "ok": false,
+      "reason": "there is no catalogue for CA"
+    }
+  },
+  "compatibility": {
+    "popular_foods": 74,
+    "recipes": 116,
+    "alias_entries": 165
+  }
+}
