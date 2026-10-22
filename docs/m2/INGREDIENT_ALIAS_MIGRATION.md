@@ -1,9 +1,12 @@
 # The ingredient alias table: the contract M2-4 must satisfy
 
-**Status: contract only. Nothing here is implemented.**
+**Status: the foundation is built. The runtime is not.**
 
-This is the document M2-4 is built against, and the reason M2-4 has to land
-**before** any catalogue refresh rather than after it.
+M2-4 has delivered the alias **foundation**: a canonical ingredient registry,
+its validation, and a resolution contract that says plainly what happened.
+The recipe engine has not been changed to use it, and the shipped catalogue is
+untouched. This document records what the foundation is, what it refuses to
+do, and what is still ahead.
 
 ## The problem, stated exactly
 
@@ -27,108 +30,297 @@ The numbers in the repository today:
 | --- | --- | --- |
 | `popular` entries, addressed by USDA number | 74 | `src/core/foods.ts` |
 | recipes | 116 | `src/core/foods.ts` |
+| ingredient parts across those recipes | 443 | `src/core/foods.ts` |
 | distinct ingredient numbers used by those recipes | 138 | `src/core/foods.ts` |
+| **distinct numbers referenced in total** | **165** | the union of the two |
+| of those, referenced by both | 47 | |
+| of those, popular only | 27 | |
+| of those, recipes only | 91 | |
 | persisted food ids in a user's history | any number of `usda:<ndb>` | `Meal.foodId` |
 
-## The contract
+Every one of the 165 resolves today, in the shipped catalogue. The regional
+dish libraries planned for M2-6 do not exist yet, so there is nothing of
+theirs to inventory; when they arrive they add entries to the same registry,
+and the completeness test keeps it complete.
 
-### 1. Ingredients are addressed by a stable canonical key
+## The identifiers
 
-A recipe part is a canonical key and a gram weight. The key names the
-*ingredient*, not a row:
+| Namespace | Owner | Shape |
+|---|---|---|
+| `usda:` | the shipped United States catalogue | `usda:<ndb>` |
+| `cnf:` | the Canadian Nutrient File | `cnf:<Food_Code>` |
+| `recipe:` | the app's own recipe library | `recipe:<id>` |
+| `off:` | Open Food Facts, from a barcode | `off:<id>` |
 
-```
-chicken breast            ->  ingredient:chicken-breast
-white rice, cooked        ->  ingredient:rice-white-cooked
-whole milk                ->  ingredient:milk-whole
-```
+**`cnf:<Food_Code>` is the canonical Canadian identifier.** There is no `ca:`
+namespace, and none may be introduced: the identifier has to say which
+publication the record came from, and the Canadian record is a CNF record.
 
-The key is a string, it is not derived from any publisher's identifier, and it
-does not change when the catalogue is refreshed. A key is the app's own
-vocabulary; the sources are matched to it.
+A Canadian record and its United States cross-reference are **not the same
+identity**. The CNF names a United States number for 4,798 of its 5,993
+foods, and that pointer is a statement about origin, not permission to merge
+the two records. A Canadian food keeps its own identifier, its own values and
+its own provenance.
 
-### 2. The alias table maps a key to a source id, per market, in order
+**No mapping is created by inference.** Neither a cross-reference nor a
+matching name turns into an approved equivalent. A market mapping exists
+only when a person has reviewed it and written it into the registry.
+
+### The two records that were reviewed and refused
+
+The Canadian file contains rows whose own source code contradicts the amount
+printed beside it. The code `12` means "assumed zero". On 65,805 of the
+65,887 such rows the amount really is zero. On 82 it is not, and the row
+contradicts itself. Two of those 82 land on a nutrient the app maps:
+
+| Record | Food | Nutrient | Amount | Observations |
+| --- | --- | --- | --- | --- |
+| `cnf:5224` | Goose, wild (Canada goose), leg, meat and skin, fire roasted | energy | 277 kcal | 0 |
+| `cnf:7529` | Babyfood, vegetable and grain, jarred, creamed corn with rice | cholesterol | 1 mg | none recorded |
+
+**Nutritional equivalence for these two is not approved**, and the registry
+records that decision, so a later bulk import of the Canadian cross-references
+cannot quietly map them. The registry's validation refuses any identifier
+that appears in the not-approved list, and a test asserts that neither
+identifier is used anywhere.
+
+## The registry
+
+The registry has two parts, and they are kept apart on purpose.
+
+### The baseline: `src/data/ingredient-alias-baseline.json`
+
+**The canonical key is a stable identifier, and the baseline is what pins
+it.** The baseline is hand-maintained and reviewed like code. It holds the
+assignment of key to identifier, the reviewed market mappings, and the
+approval and refusal decisions. It does **not** hold the display name,
+because a display name changes and a key must not.
 
 ```jsonc
-"ingredient:chicken-breast": {
-  "US": ["usda:5064", "usda:5098"],
-  "CA": ["ca:5224", "ca:5226"]
+{
+  "version": 1,
+  "default_market": "US",
+  "reviewed_on": "2026-10-22",
+  "ingredients": [
+    { "key": "ingredient:chicken-breast-roasted", "ids": { "US": "usda:5064" } },
+    { "key": "ingredient:apple", "ids": { "US": "usda:9003" },
+      "markets": { "CA": { "id": "cnf:...", "reviewed": "2026-10-22" } } }
+  ],
+  "not_approved": [
+    { "id": "cnf:5224", "reason": "the source contradicts itself on this food's energy value..." }
+  ]
 }
 ```
 
-- The list is **ordered**: the first entry is preferred, the rest are
-  fallbacks.
-- Each market's list is resolved against that market's own catalogue. A key
-  never resolves to an id that does not exist in the market being used.
-- A key with no entry for a market falls back to the market's default order
-  (today: the United States), and says so in the record.
+- **A key never changes because a name changed.** The key comes from the
+  baseline, so renaming "Chicken breast, grilled" in the app does not rename
+  `ingredient:chicken-breast-grilled`.
+- **A new ingredient needs a reviewed baseline entry.** The generator
+  refuses to write a registry for an identifier the baseline does not know,
+  and it names the identifier and the key it would have used.
+- **A removal needs an explicit migration.** If the app stops referring to an
+  identifier, the generator refuses, because a silent removal is a change to
+  the meaning of the registry.
+- **A duplicate or a conflict is refused.** Two identifiers may not share a
+  key, and one identifier may not be given to two keys.
+- **The generator never reads the registry it writes.** It compares against
+  the baseline, so a registry that regenerates itself cannot notice when it
+  has been changed.
 
-### 3. The table is seeded from the numbers in use today
+### The registry: `src/data/ingredient-aliases.json`
 
-The seed is the current 74 popular numbers and the current 138 recipe
-ingredient numbers. The seeding rule is strict:
+Generated by `scripts/build-ingredient-aliases.ts` from the baseline and the
+recipe library, so it cannot fall behind the app.
+
+```jsonc
+{
+  "version": 1,
+  "default_market": "US",
+  "generated_by": "scripts/build-ingredient-aliases.ts",
+  "ingredients": [
+    {
+      "key": "ingredient:chicken-breast-roasted",
+      "name": "Chicken breast, roasted",
+      "ids": { "US": "usda:5064" },
+      "reviewed": { "US": "2026-10-22" }
+    }
+  ],
+  "not_approved": [ ... ]
+}
+```
+
+- **The name** is the app's own, and it may change.
+- **The identifier** is the baseline's.
+- **`reviewed` is what makes a mapping a mapping.** A mapping without a
+  review date is an arbitrary string, and the resolution refuses it. This is
+  what separates a reviewed mapping from something typed into a registry by
+  hand. **A review date is a marker that a review happened; it is not by
+  itself evidence of nutritional equivalence, and nothing may describe it
+  as such.**
+- **`evidence` is what the reviewer read.** A mapping to a market other than
+  the default one needs it, and it is refused without it.
+- The order is deterministic: the ingredients are sorted by key.
+
+### A market's numbers come from that market's own source
+
+| Market | Allowed source | Identifier |
+|---|---|---|
+| US | `usda` | `usda:<ndb>` |
+| CA | `cnf` | `cnf:<Food_Code>` |
+
+- A United States identifier under a Canadian market is **not** a Canadian
+  mapping. It is a United States record that has not been labelled as one,
+  so it is refused. A United States record used for a Canadian request has
+  to be an **explicitly labelled cross-market fallback**.
+- The identifier has to be well formed: the namespace has to be one the app
+  knows, and the number has to be a number. `usda:`, `usda:12a` and `ca:1`
+  are not identifiers.
+- A market that is not in the table has no allowed source, and a mapping
+  into it is refused. **Extending the table is a separate, reviewed
+  decision**: a new row says that a market's numbers may come from a new
+  source, and it is made deliberately, not by a data change.
+
+### The evidence a Canadian mapping needs
+
+No Canadian mapping exists today, and none may be added without a review
+that recorded the following. A review date alone is **not** that evidence.
+
+| What the review has to record | Why |
+|---|---|
+| the Canadian record's food code and its published name | the two records have to be identifiable |
+| the United States record's identifier and its published name | and so has the other one |
+| the basis they are compared on - the edible portion, the measure, the preparation | the two catalogues measure differently, so the comparison needs a basis |
+| which of the mapped nutrients agree, and which differ materially | the app shows the numbers, so the differences have to be known |
+| the Canadian record's own provenance, including whether its source contradicts itself | `cnf:5224` and `cnf:7529` are refused for exactly this reason |
+| the date and the reviewer | so the decision is attributable |
+
+### Validation
+
+`validateRegistry()` returns every problem rather than throwing on the first,
+so a reviewer sees the whole list:
+
+| Kind | What it catches |
+|---|---|
+| `missing-id` | a market mapping that is empty |
+| `unreviewed-mapping` | a mapping with no review date, so not a reviewed mapping |
+| `missing-evidence` | a mapping to another market with no evidence of the review |
+| `duplicate-key` | the same key twice |
+| `conflicting-id` | two ingredients claiming one identifier in one market |
+| `market-source-mismatch` | a United States identifier under a Canadian market, or the other way round |
+| `unsupported-market` | a market that is not in the allowed table |
+| `unknown-alias` | an alias pointing at a key that is not there |
+| `cyclic-alias` | an alias chain that loops |
+| `not-approved` | an identifier that was reviewed and refused |
+| `malformed-entry` | an entry with no key, no name, or a malformed identifier |
+
+## The resolution contract
+
+**The resolution is fail-closed.** It does not rely on the caller having run
+the validation: the **whole registry** is checked, and every rule the
+validation enforces is enforced again at the point of use, so a registry that
+has never been checked still cannot produce an identifier the rules forbid.
+
+| Rule | What happens |
+|---|---|
+| the registry has any problem at all - a duplicate key, a conflicting claim, a malformed entry, a broken alias | **nothing resolves**, and the reason names the first problem |
+| a mapping with no review date | **not used** - it is an arbitrary string |
+| a mapping to another market with no evidence | **not used** |
+| an identifier in a namespace the app does not know, or a malformed one | **not used** |
+| a market's identifier from the wrong source | **not used** |
+| an identifier that was reviewed and refused | **not used**, in any market |
+| an alias chain that loops | **unavailable**, with the loop named |
+| an alias that points at nothing | **unavailable**, with the target named |
+| a malformed registry | **unavailable**, never an apparently valid result |
+| a Canadian cross-reference | **never proof of equivalence** - only an explicit mapping is used |
+
+The registry the app ships is validated **once** and the result cached,
+because it does not change while the app runs. A registry that was handed in
+is validated on every call, because it may be a test fixture that changed.
+
+`resolveIngredient(key, market)` returns one of four outcomes, and never
+guesses:
+
+| Outcome | Meaning |
+|---|---|
+| `resolved` | the ingredient was found in the market that was asked for |
+| `fallback` | the ingredient was found, but in another market. `cross_market` is true and `source_market` names where it came from, so the caller has to label it |
+| `incomplete` | part of a composition could not be resolved. The composition is **not** a complete recipe |
+| `unavailable` | the ingredient could not be resolved at all |
+
+`resolveComposition(parts, market)` resolves a whole recipe. Every part
+keeps its exact gram weight. A part that does not resolve is **not dropped**,
+**not counted as zero**, and **not replaced by a different food**: it comes
+back in `missing`, and the composition comes back `complete: false`.
+
+| Outcome | When |
+|---|---|
+| `resolved` | every ingredient resolved directly in the market that was asked for |
+| `fallback` | every ingredient resolved, but at least one of them came from another market, and the result names it |
+| `incomplete` | some ingredients resolved and one or more did not |
+| `unavailable` | **none** of the required ingredients resolved |
+
+**A composition with no ingredients at all is not a complete recipe**, so it
+comes back unavailable rather than resolved.
+
+**A missing ingredient must not turn chicken curry into a materially
+different food while the app keeps claiming complete nutrition.** So:
+
+- a recipe with an unresolved ingredient is marked **incomplete**, and the
+  screen says which ingredient is missing;
+- a recipe whose ingredients cannot be resolved at all is **unavailable**;
+- the partial nutrient calculation is never shown as if it were the whole
+  recipe;
+- a substitute is only ever used when it is a **reviewed** alias, and it is
+  labelled with the market it came from.
+
+## The United States must not change
+
+The seeding rule is strict:
 
 > For every popular entry and every recipe ingredient that exists today, the
-> alias table must resolve, in the United States, to **the same id that
-> resolves today**.
+> registry resolves, in the United States, to **the same id that resolves
+> today**.
 
-A test enumerates all of them and compares against the current behaviour.
-This is gate G4.2, and it is the reason the seed is not "a sensible set of
-aliases" but "the exact set that is in use".
+`tests/fixtures/ingredient-aliases-golden.json` pins what the app produces
+right now: for all 74 popular foods and all 116 recipes, the identifier, the
+name, the nutrient values, the servings, the uncertainty, and the recipes'
+parts and gram weights. The golden is compared, exactly, by a test — and the
+test also rebuilds the golden and compares that, so the file cannot drift
+away from the app without the test noticing.
 
-### 4. Resolution never throws
+Nothing else may change either:
 
-If a key resolves to nothing in a market, the ingredient is **dropped** and
-the recipe is built from the ingredients that did resolve, with the gram
-weights of the missing ones excluded from the total. The recipe still
-renders. It does not throw, and it does not silently claim a weight it does
-not have.
-
-- The gram total is the sum of the parts that resolved, not the sum that was
-  written in the recipe. A recipe that loses an ingredient is a smaller
-  recipe, and says so.
-- The dropped ingredient is recorded on the built recipe, so the screen can
-  say "this dish is missing its yoghurt" rather than quietly serving a
-  different dish.
-- A recipe that loses ingredients worth more than a stated threshold is
-  flagged for review, not shipped silently.
-
-This is gate G4.3, and it is a change to `recipeFood()`'s contract, so it is
-a change to the app and not only to the data.
-
-### 5. A canonical key is never invented at runtime
-
-The keys are data, in a file, reviewed like code. The builder does not
-generate a key for a food it has not been given one for; a food with no key
-keeps its own id, and the alias table simply does not mention it.
+- The shipped catalogue stays byte-identical. The test asserts its digest.
+- The recipe engine's execution is not replaced. The test asserts that
+  `src/core/foods.ts` does not import the registry at all.
+- The numbers, the search bands (popular at 1000, recipes at 900, raw rows at
+  500), the personal targets, the AI consent behaviour and the medical
+  notices are untouched.
 
 ## What the alias table must not do
 
-- It must not change the numbers in the United States catalogue. The shipped
-  catalogue stays byte-identical through M2-4.
+- It must not change the numbers in the United States catalogue.
 - It must not renumber a persisted `Meal.foodId`. A `usda:` id in a user's
-  history keeps meaning what it means today, which is gate G3.1 in the
-  work packages and the reason the id prefix is not cosmetic.
-- It must not rank foods differently. The search bands — popular at 1000,
-  recipe dishes at 900, raw rows at 500 — are untouched by M2-4, and the
-  United States order stays exactly as it is.
-- It must not turn a missing ingredient into a zero. An ingredient that does
-  not resolve contributes nothing, and is not a nutrient of zero.
-
-## The order of work
-
-```
-M2-4 (this contract)  ->  a catalogue refresh  ->  M2-3 runtime
-```
-
-A refresh before M2-4 is what the throwing `recipeFood()` turns into a
-production incident. A refresh after M2-4 is a data change, which is what a
-data change should be.
+  history keeps meaning what it means today, which is gate G3.1 in the work
+  packages and the reason the id prefix is not cosmetic.
+- It must not rank foods differently.
+- It must not turn a missing ingredient into a zero, or into a different
+  food.
+- It must not invent a Canadian equivalent from a cross-reference or a name.
+- It must not fall back across a market without labelling where the numbers
+  came from.
 
 ## The gates, restated
 
 | Gate | Statement | How it is checked |
 | --- | --- | --- |
-| G4.1 | every alias resolves in every market that ships | a test that resolves every key in every enabled market, against the catalogue that ships |
-| G4.2 | the United States meal plan is identical before and after | the existing `tests/planning.test.ts` assertions, plus a test that enumerates the 74 popular and 138 recipe numbers and compares the resolution |
-| G4.3 | no production path can throw on a missing ingredient | a test that resolves a recipe whose ingredients are absent, and asserts that it returns a recipe rather than throwing |
+| G4.1 | every alias resolves in every market that ships | the resolution contract, and a test that the registry has no validation problems |
+| G4.2 | the United States meal plan is identical before and after | `tests/fixtures/ingredient-aliases-golden.json`, compared exactly, for all 74 popular foods and 116 recipes |
+| G4.3 | no production path can throw on a missing ingredient | the resolution contract returns `incomplete` or `unavailable`; the runtime that uses it is M2-3, and it is not written yet |
+| G4.4 | every referenced id is in the registry, exactly once | the inventory test, over the 165 ids |
+| G4.5 | a conflicting, cyclic, missing or refused mapping never becomes accepted | the validation tests, and the not-approved list |
+| G4.6 | the resolution is fail-closed without the validation | the C1 tests, which call the resolution directly on a registry that was never validated |
+| G4.7 | a canonical key is stable, and a generation is not destructive | the C2 tests: a name change keeps the key, an addition and a removal need a reviewed baseline entry, and a duplicate or a conflict is refused |
+| G4.8 | a composition says exactly what happened | the C3 tests: resolved, fallback, incomplete, unavailable, and an empty composition |
+| G4.9 | the whole registry is checked at the point of use | the C4 tests: a duplicate key, a conflicting claim, a malformed entry and a broken alias all resolve to nothing, without the caller validating first |
+| G4.10 | a market's numbers come from that market's own source | the C5 tests: a United States identifier under a Canadian market, a malformed identifier, a conflicting Canadian claim, and the legitimate United States fallback |

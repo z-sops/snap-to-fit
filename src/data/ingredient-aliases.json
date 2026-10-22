@@ -1,0 +1,1667 @@
+{
+  "version": 1,
+  "default_market": "US",
+  "generated_by": "scripts/build-ingredient-aliases.ts",
+  "ingredients": [
+    {
+      "key": "ingredient:almonds",
+      "name": "Almonds",
+      "ids": {
+        "US": "usda:12061"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:apple",
+      "name": "Apple",
+      "ids": {
+        "US": "usda:9003"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:avocado",
+      "name": "Avocado",
+      "ids": {
+        "US": "usda:9038"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:bacon-cooked",
+      "name": "Bacon, cooked",
+      "ids": {
+        "US": "usda:10860"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:bagels-plain-enriched-with-calcium-propionate",
+      "name": "Bagels, plain, enriched, with calcium propionate (includes onion, poppy, sesame)",
+      "ids": {
+        "US": "usda:18001"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:baked-potato",
+      "name": "Baked potato",
+      "ids": {
+        "US": "usda:11674"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:banana",
+      "name": "Banana",
+      "ids": {
+        "US": "usda:9040"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beans-baked-canned-plain-or-vegetarian",
+      "name": "Beans, baked, canned, plain or vegetarian",
+      "ids": {
+        "US": "usda:16006"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beans-pinto-mature-seeds-cooked-boiled-without-salt",
+      "name": "Beans, pinto, mature seeds, cooked, boiled, without salt",
+      "ids": {
+        "US": "usda:16043"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beef-chuck-for-stew-separable-lean-and-fat-all-grades-cooked-braised",
+      "name": "Beef, chuck for stew, separable lean and fat, all grades, cooked, braised",
+      "ids": {
+        "US": "usda:23090"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beef-flank-steak-separable-lean-only-trimmed-to-0-fat-select-cooked-broiled",
+      "name": "Beef, flank, steak, separable lean only, trimmed to 0\" fat, select, cooked, broiled",
+      "ids": {
+        "US": "usda:23655"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beef-ground-85-percent-lean-meat-15-percent-fat-crumbles-cooked-pan-browned",
+      "name": "Beef, ground, 85% lean meat / 15% fat, crumbles, cooked, pan-browned",
+      "ids": {
+        "US": "usda:23570"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beef-ground-85-percent-lean-meat-15-percent-fat-patty-cooked-pan-broiled",
+      "name": "Beef, ground, 85% lean meat / 15% fat, patty, cooked, pan-broiled",
+      "ids": {
+        "US": "usda:23569"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beef-ground-90-percent-lean-meat-10-percent-fat-patty-cooked-pan-broiled",
+      "name": "Beef, ground, 90% lean meat / 10% fat, patty, cooked, pan-broiled",
+      "ids": {
+        "US": "usda:23564"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beef-round-tip-round-roast-separable-lean-only-trimmed-to-0-fat-choice-cooked-roasted",
+      "name": "Beef, round, tip round, roast, separable lean only, trimmed to 0\" fat, choice, cooked, roasted",
+      "ids": {
+        "US": "usda:13425"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beef-top-sirloin-steak-separable-lean-only-trimmed-to-0-fat-choice-cooked-broiled",
+      "name": "Beef, top sirloin, steak, separable lean only, trimmed to 0\" fat, choice, cooked, broiled",
+      "ids": {
+        "US": "usda:13455"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beverages-coffee-brewed-espresso-restaurant-prepared",
+      "name": "Beverages, coffee, brewed, espresso, restaurant-prepared",
+      "ids": {
+        "US": "usda:14210"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:beverages-tea-black-brewed-prepared-with-tap-water",
+      "name": "Beverages, tea, black, brewed, prepared with tap water",
+      "ids": {
+        "US": "usda:14355"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:black-beans-cooked",
+      "name": "Black beans, cooked",
+      "ids": {
+        "US": "usda:16015"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:blueberries",
+      "name": "Blueberries",
+      "ids": {
+        "US": "usda:9050"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:bratwurst-pork-cooked",
+      "name": "Bratwurst, pork, cooked",
+      "ids": {
+        "US": "usda:7013"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:bread-french-or-vienna",
+      "name": "Bread, french or vienna (includes sourdough)",
+      "ids": {
+        "US": "usda:18029"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:bread-rye",
+      "name": "Bread, rye",
+      "ids": {
+        "US": "usda:18060"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:bread-white-commercially-prepared-toasted",
+      "name": "Bread, white, commercially prepared, toasted",
+      "ids": {
+        "US": "usda:18070"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:broccoli-cooked",
+      "name": "Broccoli, cooked",
+      "ids": {
+        "US": "usda:11091"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:brown-rice-cooked",
+      "name": "Brown rice, cooked",
+      "ids": {
+        "US": "usda:20037"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:bulgur-cooked",
+      "name": "Bulgur, cooked",
+      "ids": {
+        "US": "usda:20013"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:butter",
+      "name": "Butter",
+      "ids": {
+        "US": "usda:1001"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:butter-croissant",
+      "name": "Butter croissant",
+      "ids": {
+        "US": "usda:18239"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:butter-oil-anhydrous",
+      "name": "Butter oil, anhydrous",
+      "ids": {
+        "US": "usda:1003"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cabbage-cooked-boiled-drained-without-salt",
+      "name": "Cabbage, cooked, boiled, drained, without salt",
+      "ids": {
+        "US": "usda:11110"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:carrots-cooked-boiled-drained-without-salt",
+      "name": "Carrots, cooked, boiled, drained, without salt",
+      "ids": {
+        "US": "usda:11125"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cauliflower-cooked-boiled-drained-without-salt",
+      "name": "Cauliflower, cooked, boiled, drained, without salt",
+      "ids": {
+        "US": "usda:11136"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cereals-ready-to-eat-granola-homemade",
+      "name": "Cereals ready-to-eat, granola, homemade",
+      "ids": {
+        "US": "usda:8037"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheddar-cheese",
+      "name": "Cheddar cheese",
+      "ids": {
+        "US": "usda:1009"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-enchiladas",
+      "name": "Cheese enchiladas (restaurant)",
+      "ids": {
+        "US": "usda:36050"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-gruyere",
+      "name": "Cheese, gruyere",
+      "ids": {
+        "US": "usda:1023"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-monterey",
+      "name": "Cheese, monterey",
+      "ids": {
+        "US": "usda:1025"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-parmesan-grated",
+      "name": "Cheese, parmesan, grated",
+      "ids": {
+        "US": "usda:1032"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-parmesan-hard",
+      "name": "Cheese, parmesan, hard",
+      "ids": {
+        "US": "usda:1033"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-pizza-thin-crust",
+      "name": "Cheese pizza, thin crust",
+      "ids": {
+        "US": "usda:21505"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-quesadilla",
+      "name": "Cheese quesadilla (restaurant)",
+      "ids": {
+        "US": "usda:36052"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-ricotta-whole-milk",
+      "name": "Cheese, ricotta, whole milk",
+      "ids": {
+        "US": "usda:1036"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-spread-cream-cheese-base",
+      "name": "Cheese spread, cream cheese base",
+      "ids": {
+        "US": "usda:43276"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cheese-swiss",
+      "name": "Cheese, swiss",
+      "ids": {
+        "US": "usda:1040"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:chicken-breast-grilled",
+      "name": "Chicken breast, grilled",
+      "ids": {
+        "US": "usda:5747"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:chicken-breast-roasted",
+      "name": "Chicken breast, roasted",
+      "ids": {
+        "US": "usda:5064"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:chicken-broilers-or-fryers-wing-meat-and-skin-cooked-roasted",
+      "name": "Chicken, broilers or fryers, wing, meat and skin, cooked, roasted",
+      "ids": {
+        "US": "usda:5103"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:chicken-nuggets",
+      "name": "Chicken nuggets",
+      "ids": {
+        "US": "usda:22975"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:chicken-thigh-roasted",
+      "name": "Chicken thigh, roasted (no skin)",
+      "ids": {
+        "US": "usda:5098"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:chickpea-flour",
+      "name": "Chickpea flour (besan)",
+      "ids": {
+        "US": "usda:16157"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:chickpeas-cooked",
+      "name": "Chickpeas, cooked",
+      "ids": {
+        "US": "usda:16357"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:coffee-black",
+      "name": "Coffee, black",
+      "ids": {
+        "US": "usda:14209"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cola",
+      "name": "Cola (regular soda)",
+      "ids": {
+        "US": "usda:14148"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:collards-cooked-boiled-drained-without-salt",
+      "name": "Collards, cooked, boiled, drained, without salt",
+      "ids": {
+        "US": "usda:11162"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:coriander-leaves-raw",
+      "name": "Coriander (cilantro) leaves, raw",
+      "ids": {
+        "US": "usda:11165"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:corn-sweet-yellow-cooked-boiled-drained-without-salt",
+      "name": "Corn, sweet, yellow, cooked, boiled, drained, without salt",
+      "ids": {
+        "US": "usda:11168"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:corn-tortilla",
+      "name": "Corn tortilla",
+      "ids": {
+        "US": "usda:18363"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cottage-cheese-2-percent",
+      "name": "Cottage cheese, 2%",
+      "ids": {
+        "US": "usda:1015"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cream-fluid-heavy-whipping",
+      "name": "Cream, fluid, heavy whipping",
+      "ids": {
+        "US": "usda:1053"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:crustaceans-shrimp-cooked",
+      "name": "Crustaceans, shrimp, cooked (not previously frozen)",
+      "ids": {
+        "US": "usda:15271"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:cucumber-with-peel-raw",
+      "name": "Cucumber, with peel, raw",
+      "ids": {
+        "US": "usda:11205"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:diet-cola",
+      "name": "Diet cola",
+      "ids": {
+        "US": "usda:14416"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:edamame-frozen-prepared",
+      "name": "Edamame, frozen, prepared",
+      "ids": {
+        "US": "usda:11212"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:egg-large",
+      "name": "Egg, large",
+      "ids": {
+        "US": "usda:1123"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:egg-whole-cooked-fried",
+      "name": "Egg, whole, cooked, fried",
+      "ids": {
+        "US": "usda:1128"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:energy-drink",
+      "name": "Energy drink",
+      "ids": {
+        "US": "usda:14154"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:fish-cod-atlantic-cooked-dry-heat",
+      "name": "Fish, cod, Atlantic, cooked, dry heat",
+      "ids": {
+        "US": "usda:15016"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:fish-salmon-sockeye-cooked-dry-heat",
+      "name": "Fish, salmon, sockeye, cooked, dry heat",
+      "ids": {
+        "US": "usda:15086"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:fish-tilapia-cooked-dry-heat",
+      "name": "Fish, tilapia, cooked, dry heat",
+      "ids": {
+        "US": "usda:15262"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:flour-tortilla",
+      "name": "Flour tortilla",
+      "ids": {
+        "US": "usda:18364"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:frankfurter-pork",
+      "name": "Frankfurter, pork",
+      "ids": {
+        "US": "usda:7939"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:french-fries",
+      "name": "French fries (fast food, small)",
+      "ids": {
+        "US": "usda:21238"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:fried-rice",
+      "name": "Fried rice (restaurant)",
+      "ids": {
+        "US": "usda:36602"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:gravy-beef-canned-ready-to-serve",
+      "name": "Gravy, beef, canned, ready-to-serve",
+      "ids": {
+        "US": "usda:6116"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:greek-yogurt-plain-nonfat",
+      "name": "Greek yogurt, plain nonfat",
+      "ids": {
+        "US": "usda:1256"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:ground-beef-85-percent-cooked-patty",
+      "name": "Ground beef 85%, cooked patty",
+      "ids": {
+        "US": "usda:23568"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:ham-sliced-regular",
+      "name": "Ham, sliced, regular (approximately 11% fat)",
+      "ids": {
+        "US": "usda:7029"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:hamburger",
+      "name": "Hamburger (fast food)",
+      "ids": {
+        "US": "usda:21107"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:hard-boiled-egg",
+      "name": "Hard-boiled egg",
+      "ids": {
+        "US": "usda:1129"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:honey",
+      "name": "Honey",
+      "ids": {
+        "US": "usda:19296"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:hummus",
+      "name": "Hummus",
+      "ids": {
+        "US": "usda:16158"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:ketchup",
+      "name": "Ketchup",
+      "ids": {
+        "US": "usda:11935"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:lamb-ground-cooked-broiled",
+      "name": "Lamb, ground, cooked, broiled",
+      "ids": {
+        "US": "usda:17225"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:lentils-cooked",
+      "name": "Lentils, cooked",
+      "ids": {
+        "US": "usda:16070"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:lettuce-iceberg-raw",
+      "name": "Lettuce, iceberg (includes crisphead types), raw",
+      "ids": {
+        "US": "usda:11252"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:lime-juice-raw",
+      "name": "Lime juice, raw",
+      "ids": {
+        "US": "usda:9160"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:mango",
+      "name": "Mango",
+      "ids": {
+        "US": "usda:9176"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:mayonnaise",
+      "name": "Mayonnaise",
+      "ids": {
+        "US": "usda:4025"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:milk-2-percent",
+      "name": "Milk, 2%",
+      "ids": {
+        "US": "usda:1079"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:milk-whole",
+      "name": "Milk, whole",
+      "ids": {
+        "US": "usda:1077"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:miso",
+      "name": "Miso",
+      "ids": {
+        "US": "usda:16112"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:mozzarella",
+      "name": "Mozzarella",
+      "ids": {
+        "US": "usda:1026"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:mushrooms-white-cooked-boiled-drained-without-salt",
+      "name": "Mushrooms, white, cooked, boiled, drained, without salt",
+      "ids": {
+        "US": "usda:11261"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:mustard-prepared-yellow",
+      "name": "Mustard, prepared, yellow",
+      "ids": {
+        "US": "usda:2046"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:naan",
+      "name": "Naan",
+      "ids": {
+        "US": "usda:28307"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:nachos-with-cheese",
+      "name": "Nachos with cheese",
+      "ids": {
+        "US": "usda:21078"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:noodles-egg-cooked-enriched-with-added-salt",
+      "name": "Noodles, egg, cooked, enriched, with added salt",
+      "ids": {
+        "US": "usda:20310"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:noodles-japanese-soba-cooked",
+      "name": "Noodles, japanese, soba, cooked",
+      "ids": {
+        "US": "usda:20115"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:nuts-coconut-milk-canned",
+      "name": "Nuts, coconut milk, canned (liquid expressed from grated meat and water)",
+      "ids": {
+        "US": "usda:12118"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:oats",
+      "name": "Oats (dry)",
+      "ids": {
+        "US": "usda:20038"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:oil-canola",
+      "name": "Oil, canola",
+      "ids": {
+        "US": "usda:4582"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:olive-oil",
+      "name": "Olive oil",
+      "ids": {
+        "US": "usda:4053"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:onions-raw",
+      "name": "Onions, raw",
+      "ids": {
+        "US": "usda:11282"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:orange-juice",
+      "name": "Orange juice",
+      "ids": {
+        "US": "usda:9206"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:oranges-raw-all-commercial-varieties",
+      "name": "Oranges, raw, all commercial varieties",
+      "ids": {
+        "US": "usda:9200"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pancakes-plain-prepared-from-recipe",
+      "name": "Pancakes, plain, prepared from recipe",
+      "ids": {
+        "US": "usda:18293"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:papayas-raw",
+      "name": "Papayas, raw",
+      "ids": {
+        "US": "usda:9226"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pasta-cooked",
+      "name": "Pasta, cooked",
+      "ids": {
+        "US": "usda:20121"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:peanut-butter",
+      "name": "Peanut butter",
+      "ids": {
+        "US": "usda:16098"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:peanut-butter-chunk-style-with-salt",
+      "name": "Peanut butter, chunk style, with salt",
+      "ids": {
+        "US": "usda:16097"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:peanuts-all-types-dry-roasted-without-salt",
+      "name": "Peanuts, all types, dry-roasted, without salt",
+      "ids": {
+        "US": "usda:16390"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:peas-green-frozen-cooked-boiled-drained-without-salt",
+      "name": "Peas, green, frozen, cooked, boiled, drained, without salt",
+      "ids": {
+        "US": "usda:11313"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pepperoni-pizza-pan",
+      "name": "Pepperoni pizza, pan (12\")",
+      "ids": {
+        "US": "usda:21275"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:peppers-sweet-red-raw",
+      "name": "Peppers, sweet, red, raw",
+      "ids": {
+        "US": "usda:11821"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pineapple-raw-all-varieties",
+      "name": "Pineapple, raw, all varieties",
+      "ids": {
+        "US": "usda:9266"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:popcorn-air-popped",
+      "name": "Popcorn, air-popped",
+      "ids": {
+        "US": "usda:19034"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pork-cured-bacon-pre-sliced-cooked-pan-fried",
+      "name": "Pork, cured, bacon, pre-sliced, cooked, pan-fried",
+      "ids": {
+        "US": "usda:10862"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pork-fresh-loin-sirloin-boneless-separable-lean-only-cooked-broiled",
+      "name": "Pork, fresh, loin, sirloin (chops), boneless, separable lean only, cooked, broiled",
+      "ids": {
+        "US": "usda:10216"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pork-fresh-shoulder-whole-separable-lean-only-cooked-roasted",
+      "name": "Pork, fresh, shoulder, whole, separable lean only, cooked, roasted",
+      "ids": {
+        "US": "usda:10073"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pork-sausage-link-patty-cooked-pan-fried",
+      "name": "Pork sausage, link/patty, cooked, pan-fried",
+      "ids": {
+        "US": "usda:7064"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:potato-chips",
+      "name": "Potato chips",
+      "ids": {
+        "US": "usda:19411"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:potatoes-boiled-cooked-without-skin-flesh-without-salt",
+      "name": "Potatoes, boiled, cooked without skin, flesh, without salt",
+      "ids": {
+        "US": "usda:11367"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:potatoes-mashed-home-prepared-whole-milk-added",
+      "name": "Potatoes, mashed, home-prepared, whole milk added",
+      "ids": {
+        "US": "usda:11657"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:potatoes-white-flesh-and-skin-baked",
+      "name": "Potatoes, white, flesh and skin, baked",
+      "ids": {
+        "US": "usda:11357"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pretzels-soft",
+      "name": "Pretzels, soft",
+      "ids": {
+        "US": "usda:43109"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:pulled-pork-in-barbecue-sauce",
+      "name": "Pulled pork in barbecue sauce",
+      "ids": {
+        "US": "usda:22972"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:quinoa-cooked",
+      "name": "Quinoa, cooked",
+      "ids": {
+        "US": "usda:20137"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:restaurant-family-style-chili-with-meat-and-beans",
+      "name": "Restaurant, family style, chili with meat and beans",
+      "ids": {
+        "US": "usda:36037"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:rice-noodles-cooked",
+      "name": "Rice noodles, cooked",
+      "ids": {
+        "US": "usda:20134"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:rice-white-short-grain-cooked-unenriched",
+      "name": "Rice, white, short-grain, cooked, unenriched",
+      "ids": {
+        "US": "usda:20453"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:rolls-hamburger-or-hotdog-plain",
+      "name": "Rolls, hamburger or hotdog, plain",
+      "ids": {
+        "US": "usda:18350"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:romaine-lettuce",
+      "name": "Romaine lettuce",
+      "ids": {
+        "US": "usda:11251"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:roti-chapati",
+      "name": "Roti / chapati",
+      "ids": {
+        "US": "usda:28306"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:salad-dressing-caesar-dressing-regular",
+      "name": "Salad dressing, caesar dressing, regular",
+      "ids": {
+        "US": "usda:43015"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:salmon-cooked",
+      "name": "Salmon, cooked",
+      "ids": {
+        "US": "usda:15237"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:salsa",
+      "name": "Salsa",
+      "ids": {
+        "US": "usda:6164"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:sauce-pasta-spaghetti-marinara-ready-to-serve",
+      "name": "Sauce, pasta, spaghetti/marinara, ready-to-serve",
+      "ids": {
+        "US": "usda:6931"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:sauerkraut-canned-solids-and-liquids",
+      "name": "Sauerkraut, canned, solids and liquids",
+      "ids": {
+        "US": "usda:11439"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:scrambled-eggs",
+      "name": "Scrambled eggs",
+      "ids": {
+        "US": "usda:1132"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:seaweed-wakame-raw",
+      "name": "Seaweed, wakame, raw",
+      "ids": {
+        "US": "usda:11669"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:sour-cream",
+      "name": "Sour cream",
+      "ids": {
+        "US": "usda:1056"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:sour-cream-light",
+      "name": "Sour cream, light",
+      "ids": {
+        "US": "usda:1179"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:soy-sauce-made-from-soy-and-wheat",
+      "name": "Soy sauce made from soy and wheat (shoyu)",
+      "ids": {
+        "US": "usda:16123"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:spinach-cooked-boiled-drained-without-salt",
+      "name": "Spinach, cooked, boiled, drained, without salt",
+      "ids": {
+        "US": "usda:11458"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:spinach-raw",
+      "name": "Spinach, raw",
+      "ids": {
+        "US": "usda:11457"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:strawberries",
+      "name": "Strawberries",
+      "ids": {
+        "US": "usda:9316"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:sugar",
+      "name": "Sugar",
+      "ids": {
+        "US": "usda:19335"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:sweet-potato-baked",
+      "name": "Sweet potato, baked",
+      "ids": {
+        "US": "usda:11508"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:syrups-maple",
+      "name": "Syrups, maple",
+      "ids": {
+        "US": "usda:19353"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:tofu-firm",
+      "name": "Tofu, firm",
+      "ids": {
+        "US": "usda:16126"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:tomato",
+      "name": "Tomato",
+      "ids": {
+        "US": "usda:11529"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:tomato-products-canned-sauce",
+      "name": "Tomato products, canned, sauce",
+      "ids": {
+        "US": "usda:11549"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:tomatoes-red-ripe-cooked",
+      "name": "Tomatoes, red, ripe, cooked",
+      "ids": {
+        "US": "usda:11530"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:tuna-canned-in-water",
+      "name": "Tuna, canned in water",
+      "ids": {
+        "US": "usda:15121"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:turkey-breast-sliced-prepackaged",
+      "name": "Turkey breast, sliced, prepackaged",
+      "ids": {
+        "US": "usda:7081"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:usda-commodity-salsa",
+      "name": "USDA Commodity, salsa",
+      "ids": {
+        "US": "usda:6178"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:vanilla-ice-cream",
+      "name": "Vanilla ice cream",
+      "ids": {
+        "US": "usda:19095"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:watermelon",
+      "name": "Watermelon",
+      "ids": {
+        "US": "usda:9326"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:wheat-flour-white-all-purpose-enriched-bleached",
+      "name": "Wheat flour, white, all-purpose, enriched, bleached",
+      "ids": {
+        "US": "usda:20081"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:whey-protein-powder",
+      "name": "Whey protein powder",
+      "ids": {
+        "US": "usda:14066"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:white-bread",
+      "name": "White bread",
+      "ids": {
+        "US": "usda:18069"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:white-rice-cooked",
+      "name": "White rice, cooked",
+      "ids": {
+        "US": "usda:20045"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:whole-wheat-bread",
+      "name": "Whole-wheat bread",
+      "ids": {
+        "US": "usda:18075"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    },
+    {
+      "key": "ingredient:yogurt-plain-whole-milk-8-grams-protein-per-8-ounce",
+      "name": "Yogurt, plain, whole milk, 8 grams protein per 8 ounce",
+      "ids": {
+        "US": "usda:1116"
+      },
+      "reviewed": {
+        "US": "2026-10-22"
+      }
+    }
+  ],
+  "not_approved": [
+    {
+      "id": "cnf:5224",
+      "reason": "The source marks this food's energy value as an assumed zero and publishes a non-zero amount beside it. The record contradicts itself, so nutritional equivalence is not approved."
+    },
+    {
+      "id": "cnf:7529",
+      "reason": "The source marks this food's cholesterol value as an assumed zero and publishes a non-zero amount beside it. The record contradicts itself, so nutritional equivalence is not approved."
+    }
+  ]
+}
