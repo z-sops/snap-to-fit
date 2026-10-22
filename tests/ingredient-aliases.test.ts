@@ -9,6 +9,8 @@ import {
   resolveIngredient,
   sourceOf,
   validateRegistry,
+  registryProblems,
+  MARKET_SOURCES,
   type AliasRegistry,
 } from "../src/core/ingredient-aliases";
 import {
@@ -282,6 +284,7 @@ test("a reviewed Canadian mapping resolves in Canada, with its own source", () =
         name: "Apple",
         ids: { US: "usda:9003", CA: "cnf:13552" },
         reviewed: { US: "2026-10-22", CA: "2026-10-22" },
+        evidence: { CA: "a synthetic review, for the test only" },
       },
     ],
   };
@@ -312,12 +315,12 @@ test("C1: a mapping that was reviewed and refused never resolves", () => {
       {
         key: "ingredient:goose",
         name: "Goose",
-        ids: { US: "cnf:5224", CA: "cnf:5224" },
-        reviewed: { US: "2026-10-22", CA: "2026-10-22" },
+        ids: { CA: "cnf:5224" },
+        reviewed: { CA: "2026-10-22" },
       },
     ],
   };
-  const direct = resolveIngredient("ingredient:goose", "US", registry);
+  const direct = resolveIngredient("ingredient:goose", "CA", registry);
   assert.equal(direct.outcome, "unavailable");
   assert.equal(direct.id, undefined);
   assert.match(direct.reason ?? "", /not approved/i);
@@ -505,7 +508,7 @@ test("C2: a reviewed Canadian mapping in the baseline is preserved", () => {
     ...baseline,
     ingredients: baseline.ingredients.map((entry) =>
       entry.ids.US === "usda:9003"
-        ? { ...entry, markets: { CA: { id: "cnf:13552", reviewed: "2026-10-22" } } }
+        ? { ...entry, markets: { CA: { id: "cnf:13552", reviewed: "2026-10-22", evidence: "a synthetic review, for the test only" } } }
         : entry,
     ),
   };
@@ -623,6 +626,7 @@ test("C3: a composition with one direct and one fallback is a fallback", () => {
         name: "Apple",
         ids: { US: "usda:9003", CA: "cnf:13552" },
         reviewed: { US: "2026-10-22", CA: "2026-10-22" },
+        evidence: { CA: "a synthetic review, for the test only" },
       },
       {
         key: "ingredient:banana",
@@ -648,4 +652,302 @@ test("C3: a composition with one direct and one fallback is a fallback", () => {
   // The one that resolved directly is not listed as a fallback.
   assert.equal(result.parts[0].result.outcome, "resolved");
   assert.equal(result.parts[1].result.outcome, "fallback");
+});
+
+/**
+ * C4: the whole registry is checked, not only the entry that was asked for.
+ */
+test("C4: a registry with a duplicate key resolves to nothing", () => {
+  const registry: AliasRegistry = {
+    ...aliasRegistry(),
+    ingredients: [
+      {
+        key: "ingredient:apple",
+        name: "Apple",
+        ids: { US: "usda:9003" },
+        reviewed: { US: "2026-10-22" },
+      },
+      {
+        // The same key, claiming a different record.
+        key: "ingredient:apple",
+        name: "Apple again",
+        ids: { US: "usda:9040" },
+        reviewed: { US: "2026-10-22" },
+      },
+    ],
+  };
+  const result = resolveIngredient("ingredient:apple", "US", registry);
+  assert.equal(result.outcome, "unavailable");
+  assert.equal(result.id, undefined);
+  assert.match(result.reason ?? "", /invalid/i);
+  assert.match(result.reason ?? "", /twice/i);
+});
+
+test("C4: a registry with a conflicting identifier claim resolves to nothing", () => {
+  const registry: AliasRegistry = {
+    ...aliasRegistry(),
+    ingredients: [
+      {
+        key: "ingredient:apple",
+        name: "Apple",
+        ids: { US: "usda:9003" },
+        reviewed: { US: "2026-10-22" },
+      },
+      {
+        // Two ingredients claiming one identifier.
+        key: "ingredient:banana",
+        name: "Banana",
+        ids: { US: "usda:9003" },
+        reviewed: { US: "2026-10-22" },
+      },
+    ],
+  };
+  const result = resolveIngredient("ingredient:apple", "US", registry);
+  assert.equal(result.outcome, "unavailable");
+  assert.equal(result.id, undefined);
+  assert.match(result.reason ?? "", /also claimed/i);
+});
+
+test("C4: a registry with a malformed entry resolves to nothing", () => {
+  const registry: AliasRegistry = {
+    ...aliasRegistry(),
+    ingredients: [
+      { key: "not-a-key", name: "", ids: {} } as never,
+      {
+        key: "ingredient:apple",
+        name: "Apple",
+        ids: { US: "usda:9003" },
+        reviewed: { US: "2026-10-22" },
+      },
+    ],
+  };
+  const result = resolveIngredient("ingredient:apple", "US", registry);
+  assert.equal(result.outcome, "unavailable");
+  assert.equal(result.id, undefined);
+  assert.match(result.reason ?? "", /invalid/i);
+});
+
+test("C4: a registry with a broken alias relationship resolves to nothing", () => {
+  const cyclic: AliasRegistry = {
+    ...aliasRegistry(),
+    ingredients: [
+      {
+        key: "ingredient:x",
+        name: "X",
+        ids: { US: "usda:1" },
+        reviewed: { US: "2026-10-22" },
+        alias_of: "ingredient:y",
+      },
+      {
+        key: "ingredient:y",
+        name: "Y",
+        ids: { US: "usda:2" },
+        reviewed: { US: "2026-10-22" },
+        alias_of: "ingredient:x",
+      },
+    ],
+  };
+  const looped = resolveIngredient("ingredient:x", "US", cyclic);
+  assert.equal(looped.outcome, "unavailable");
+  assert.match(looped.reason ?? "", /invalid/i);
+
+  const broken: AliasRegistry = {
+    ...aliasRegistry(),
+    ingredients: [
+      {
+        key: "ingredient:x",
+        name: "X",
+        ids: { US: "usda:1" },
+        reviewed: { US: "2026-10-22" },
+        alias_of: "ingredient:nothing",
+      },
+    ],
+  };
+  const dangling = resolveIngredient("ingredient:x", "US", broken);
+  assert.equal(dangling.outcome, "unavailable");
+  assert.match(dangling.reason ?? "", /invalid/i);
+});
+
+test("C4: the generator refuses conflicting reviewed Canadian mappings", () => {
+  const baseline = readBaseline();
+  const withMarket: AliasBaseline = {
+    ...baseline,
+    ingredients: baseline.ingredients.map((entry) =>
+      entry.ids.US === "usda:9003"
+        ? {
+            ...entry,
+            markets: { CA: { id: "cnf:13552", reviewed: "2026-10-22", evidence: "a synthetic review" } },
+          }
+        : entry,
+    ),
+  };
+  // A second ingredient claiming the same Canadian record.
+  const conflicting: AliasBaseline = {
+    ...withMarket,
+    ingredients: withMarket.ingredients.map((entry) =>
+      entry.ids.US === "usda:9040"
+        ? {
+            ...entry,
+            markets: { CA: { id: "cnf:13552", reviewed: "2026-10-22", evidence: "a synthetic review" } },
+          }
+        : entry,
+    ),
+  };
+  assert.throws(() => buildRegistry(conflicting), /in CA to both/);
+});
+
+test("C4: the static registry is validated once, and an injected one every time", () => {
+  // The registry the app ships does not change while it runs, so its
+  // validation is cached.
+  const first = registryProblems(aliasRegistry());
+  const second = registryProblems(aliasRegistry());
+  assert.equal(first, second);
+  assert.deepEqual(first, []);
+
+  // A registry that was handed in is checked on every call, so a fixture that
+  // is changed between two calls is seen as it is now.
+  const injected: AliasRegistry = {
+    ...aliasRegistry(),
+    ingredients: [
+      {
+        key: "ingredient:apple",
+        name: "Apple",
+        ids: { US: "usda:9003" },
+        reviewed: { US: "2026-10-22" },
+      },
+    ],
+  };
+  assert.deepEqual(registryProblems(injected), []);
+  injected.ingredients.push({
+    key: "ingredient:apple",
+    name: "Apple again",
+    ids: { US: "usda:9040" },
+    reviewed: { US: "2026-10-22" },
+  });
+  assert.equal(registryProblems(injected).length > 0, true);
+});
+
+/**
+ * C5: a market's numbers come from that market's own source.
+ */
+test("C5: a United States identifier under a Canadian market is refused", () => {
+  const registry: AliasRegistry = {
+    ...aliasRegistry(),
+    ingredients: [
+      {
+        key: "ingredient:apple",
+        name: "Apple",
+        // A United States record presented as a Canadian one.
+        ids: { US: "usda:9003", CA: "usda:9003" },
+        reviewed: { US: "2026-10-22", CA: "2026-10-22" },
+        evidence: { CA: "a synthetic review, for the test only" },
+      },
+    ],
+  };
+  const result = resolveIngredient("ingredient:apple", "CA", registry);
+  assert.equal(result.outcome, "unavailable");
+  assert.equal(result.id, undefined);
+  assert.match(result.reason ?? "", /invalid/i);
+  // The United States record is still reachable in its own market.
+  const us = resolveIngredient("ingredient:apple", "US", registry);
+  assert.equal(us.outcome, "unavailable");
+  assert.equal(us.id, undefined);
+});
+
+test("C5: a malformed numeric identifier is refused", () => {
+  for (const id of ["usda:abc", "usda:12a", "usda:", "usda:-1", "cnf:1.5", "cnf:x"]) {
+    const registry: AliasRegistry = {
+      ...aliasRegistry(),
+      ingredients: [
+        {
+          key: "ingredient:x",
+          name: "X",
+          ids: { US: id },
+          reviewed: { US: "2026-10-22" },
+        },
+      ],
+    };
+    const result = resolveIngredient("ingredient:x", "US", registry);
+    assert.equal(result.outcome, "unavailable", `${id} resolved`);
+    assert.equal(result.id, undefined);
+  }
+});
+
+test("C5: a Canadian claim on one record by two ingredients is refused", () => {
+  const registry: AliasRegistry = {
+    ...aliasRegistry(),
+    ingredients: [
+      {
+        key: "ingredient:apple",
+        name: "Apple",
+        ids: { US: "usda:9003" },
+        reviewed: { US: "2026-10-22" },
+        evidence: { CA: "a synthetic review, for the test only" },
+        markets: undefined,
+      } as never,
+      {
+        key: "ingredient:banana",
+        name: "Banana",
+        ids: { US: "usda:9040" },
+        reviewed: { US: "2026-10-22" },
+      },
+    ],
+  };
+  // Two entries with the same Canadian identifier.
+  const conflicting: AliasRegistry = {
+    ...registry,
+    ingredients: [
+      {
+        key: "ingredient:apple",
+        name: "Apple",
+        ids: { US: "usda:9003", CA: "cnf:13552" },
+        reviewed: { US: "2026-10-22", CA: "2026-10-22" },
+        evidence: { CA: "a synthetic review, for the test only" },
+      },
+      {
+        key: "ingredient:banana",
+        name: "Banana",
+        ids: { US: "usda:9040", CA: "cnf:13552" },
+        reviewed: { US: "2026-10-22", CA: "2026-10-22" },
+        evidence: { CA: "a synthetic review, for the test only" },
+      },
+    ],
+  };
+  const result = resolveIngredient("ingredient:apple", "CA", conflicting);
+  assert.equal(result.outcome, "unavailable");
+  assert.match(result.reason ?? "", /also claimed/i);
+});
+
+test("C5: the legitimate United States fallback is unchanged", () => {
+  const registry = aliasRegistry();
+  const result = resolveIngredient("ingredient:apple", "CA", registry);
+  assert.equal(result.outcome, "fallback");
+  assert.equal(result.id, "usda:9003");
+  assert.equal(result.source, "usda");
+  assert.equal(result.source_market, "US");
+  assert.equal(result.cross_market, true);
+});
+
+test("C5: the allowed market table can be extended, deliberately", () => {
+  // The table is the whole of what is allowed, and extending it is a
+  // separate, reviewed decision. A market that is not in it has no allowed
+  // source, and a mapping into it is refused.
+  assert.equal(MARKET_SOURCES.US, "usda");
+  assert.equal(MARKET_SOURCES.CA, "cnf");
+  assert.equal(MARKET_SOURCES.GB, undefined);
+
+  const registry: AliasRegistry = {
+    ...aliasRegistry(),
+    ingredients: [
+      {
+        key: "ingredient:apple",
+        name: "Apple",
+        ids: { GB: "usda:9003" },
+        reviewed: { GB: "2026-10-22" },
+      },
+    ],
+  };
+  const refused = resolveIngredient("ingredient:apple", "GB", registry);
+  assert.equal(refused.outcome, "unavailable");
+  assert.match(refused.reason ?? "", /not one the app maps|invalid/i);
 });

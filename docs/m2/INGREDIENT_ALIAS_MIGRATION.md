@@ -154,8 +154,45 @@ recipe library, so it cannot fall behind the app.
 - **`reviewed` is what makes a mapping a mapping.** A mapping without a
   review date is an arbitrary string, and the resolution refuses it. This is
   what separates a reviewed mapping from something typed into a registry by
-  hand.
+  hand. **A review date is a marker that a review happened; it is not by
+  itself evidence of nutritional equivalence, and nothing may describe it
+  as such.**
+- **`evidence` is what the reviewer read.** A mapping to a market other than
+  the default one needs it, and it is refused without it.
 - The order is deterministic: the ingredients are sorted by key.
+
+### A market's numbers come from that market's own source
+
+| Market | Allowed source | Identifier |
+|---|---|---|
+| US | `usda` | `usda:<ndb>` |
+| CA | `cnf` | `cnf:<Food_Code>` |
+
+- A United States identifier under a Canadian market is **not** a Canadian
+  mapping. It is a United States record that has not been labelled as one,
+  so it is refused. A United States record used for a Canadian request has
+  to be an **explicitly labelled cross-market fallback**.
+- The identifier has to be well formed: the namespace has to be one the app
+  knows, and the number has to be a number. `usda:`, `usda:12a` and `ca:1`
+  are not identifiers.
+- A market that is not in the table has no allowed source, and a mapping
+  into it is refused. **Extending the table is a separate, reviewed
+  decision**: a new row says that a market's numbers may come from a new
+  source, and it is made deliberately, not by a data change.
+
+### The evidence a Canadian mapping needs
+
+No Canadian mapping exists today, and none may be added without a review
+that recorded the following. A review date alone is **not** that evidence.
+
+| What the review has to record | Why |
+|---|---|
+| the Canadian record's food code and its published name | the two records have to be identifiable |
+| the United States record's identifier and its published name | and so has the other one |
+| the basis they are compared on - the edible portion, the measure, the preparation | the two catalogues measure differently, so the comparison needs a basis |
+| which of the mapped nutrients agree, and which differ materially | the app shows the numbers, so the differences have to be known |
+| the Canadian record's own provenance, including whether its source contradicts itself | `cnf:5224` and `cnf:7529` are refused for exactly this reason |
+| the date and the reviewer | so the decision is attributable |
 
 ### Validation
 
@@ -166,29 +203,39 @@ so a reviewer sees the whole list:
 |---|---|
 | `missing-id` | a market mapping that is empty |
 | `unreviewed-mapping` | a mapping with no review date, so not a reviewed mapping |
+| `missing-evidence` | a mapping to another market with no evidence of the review |
 | `duplicate-key` | the same key twice |
 | `conflicting-id` | two ingredients claiming one identifier in one market |
+| `market-source-mismatch` | a United States identifier under a Canadian market, or the other way round |
+| `unsupported-market` | a market that is not in the allowed table |
 | `unknown-alias` | an alias pointing at a key that is not there |
 | `cyclic-alias` | an alias chain that loops |
 | `not-approved` | an identifier that was reviewed and refused |
-| `malformed-entry` | an entry with no key, no name, or an unknown namespace |
+| `malformed-entry` | an entry with no key, no name, or a malformed identifier |
 
 ## The resolution contract
 
 **The resolution is fail-closed.** It does not rely on the caller having run
-the validation: every rule the validation enforces is enforced again at the
-point of use, so a registry that has never been checked still cannot produce
-an identifier the rules forbid.
+the validation: the **whole registry** is checked, and every rule the
+validation enforces is enforced again at the point of use, so a registry that
+has never been checked still cannot produce an identifier the rules forbid.
 
 | Rule | What happens |
 |---|---|
+| the registry has any problem at all - a duplicate key, a conflicting claim, a malformed entry, a broken alias | **nothing resolves**, and the reason names the first problem |
 | a mapping with no review date | **not used** - it is an arbitrary string |
-| an identifier in a namespace the app does not know | **not used** |
+| a mapping to another market with no evidence | **not used** |
+| an identifier in a namespace the app does not know, or a malformed one | **not used** |
+| a market's identifier from the wrong source | **not used** |
 | an identifier that was reviewed and refused | **not used**, in any market |
 | an alias chain that loops | **unavailable**, with the loop named |
 | an alias that points at nothing | **unavailable**, with the target named |
 | a malformed registry | **unavailable**, never an apparently valid result |
 | a Canadian cross-reference | **never proof of equivalence** - only an explicit mapping is used |
+
+The registry the app ships is validated **once** and the result cached,
+because it does not change while the app runs. A registry that was handed in
+is validated on every call, because it may be a test fixture that changed.
 
 `resolveIngredient(key, market)` returns one of four outcomes, and never
 guesses:
@@ -275,3 +322,5 @@ Nothing else may change either:
 | G4.6 | the resolution is fail-closed without the validation | the C1 tests, which call the resolution directly on a registry that was never validated |
 | G4.7 | a canonical key is stable, and a generation is not destructive | the C2 tests: a name change keeps the key, an addition and a removal need a reviewed baseline entry, and a duplicate or a conflict is refused |
 | G4.8 | a composition says exactly what happened | the C3 tests: resolved, fallback, incomplete, unavailable, and an empty composition |
+| G4.9 | the whole registry is checked at the point of use | the C4 tests: a duplicate key, a conflicting claim, a malformed entry and a broken alias all resolve to nothing, without the caller validating first |
+| G4.10 | a market's numbers come from that market's own source | the C5 tests: a United States identifier under a Canadian market, a malformed identifier, a conflicting Canadian claim, and the legitimate United States fallback |

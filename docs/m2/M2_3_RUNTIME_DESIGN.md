@@ -201,6 +201,8 @@ something else.
 | G3.8 | an unresolved ingredient makes the recipe incomplete, and the screen says so |
 | G3.9 | the resolution is fail-closed: a refused identifier, an unreviewed mapping, a broken alias chain and a malformed registry all resolve to nothing |
 | G3.10 | a canonical key never changes because a name changed, and a catalogue refresh cannot silently rename an ingredient |
+| G3.11 | a market's numbers come from that market's own source: a United States record shown to a Canadian user is an explicitly labelled cross-market fallback, never a Canadian one |
+| G3.12 | a Canadian mapping carries the evidence a reviewer read, and not only a date |
 
 ## 10. Exact dependency and licensing blockers
 

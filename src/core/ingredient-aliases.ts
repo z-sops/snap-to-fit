@@ -43,8 +43,22 @@ export interface AliasEntry {
    * **A mapping without a review date is not a mapping.** It is an arbitrary
    * string, and the resolution refuses it. This is what separates a reviewed
    * mapping from a string that was typed into a registry by hand.
+   *
+   * A review date is a **marker that a review happened**. It is not, by
+   * itself, evidence of nutritional equivalence, and nothing in the app may
+   * describe it as such.
    */
   reviewed?: Record<string, string>;
+  /**
+   * The evidence behind each mapping that is not the default market's, by
+   * market.
+   *
+   * **A mapping to another market needs evidence, not just a date.** The
+   * evidence is what a reviewer read: the two records' identity, the basis
+   * they are compared on, and the nutrients that differ. Without it the
+   * mapping is refused, whatever date it carries.
+   */
+  evidence?: Record<string, string>;
   /**
    * An optional alias of another key. The alias resolves to whatever that key
    * resolves to. A chain that loops is a validation error, not a lookup that
@@ -145,11 +159,13 @@ export interface RegistryProblem {
   kind:
     | "missing-id"
     | "unreviewed-mapping"
+    | "missing-evidence"
     | "duplicate-key"
-    | "duplicate-id"
     | "unknown-alias"
     | "cyclic-alias"
     | "conflicting-id"
+    | "market-source-mismatch"
+    | "unsupported-market"
     | "not-approved"
     | "malformed-entry";
   /** The key the problem concerns, when it concerns one. */
@@ -172,14 +188,34 @@ export function aliasRegistry(): AliasRegistry {
  * The source an identifier belongs to, from its namespace.
  *
  * The namespace has to be one the app knows, and the identifier has to be
- * complete: `usda:` with nothing after it is not an identifier, and a
- * namespace the app does not use is not a namespace.
+ * **complete and well formed**: `usda:` with nothing after it is not an
+ * identifier, `usda:12a` is not a number, and a namespace the app does not
+ * use is not a namespace.
  */
 export function sourceOf(id: string): IdentifierSource | null {
-  const match = /^(usda|cnf):([A-Za-z0-9]+)$/.exec(id ?? "");
+  const match = /^(usda|cnf):(\d+)$/.exec(id ?? "");
   if (!match) return null;
   return match[1] as IdentifierSource;
 }
+
+/**
+ * Which source a market's numbers may come from.
+ *
+ * The United States catalogue is a United States catalogue, and the Canadian
+ * Nutrient File is a Canadian one. A mapping that puts a United States
+ * identifier under a Canadian market is not a Canadian mapping: it is a
+ * United States record that has not been labelled as one, so it is refused.
+ * A United States record used for a Canadian request has to be an
+ * explicitly labelled cross-market fallback.
+ *
+ * The table is the whole of what is allowed. **Extending it is a separate,
+ * reviewed decision**: a new row says that a market's numbers may come from a
+ * new source, and it is made deliberately, not by a data change.
+ */
+export const MARKET_SOURCES: Record<string, IdentifierSource> = {
+  US: "usda",
+  CA: "cnf",
+};
 
 /**
  * Check a registry.
@@ -189,11 +225,16 @@ export function sourceOf(id: string): IdentifierSource | null {
  */
 export function validateRegistry(registry: AliasRegistry): RegistryProblem[] {
   const problems: RegistryProblem[] = [];
+  if (!registry || !Array.isArray(registry.ingredients)) {
+    problems.push({ kind: "malformed-entry", detail: "the registry is malformed: it has no list of ingredients" });
+    return problems;
+  }
   const byKey = new Map<string, AliasEntry>();
   const claimed = new Map<string, string>();
   const notApproved = new Set((registry.not_approved ?? []).map((entry) => entry.id));
+  const defaultMarket = registry.default_market;
 
-  for (const entry of registry.ingredients ?? []) {
+  for (const entry of registry.ingredients) {
     if (!entry || typeof entry.key !== "string" || !entry.key.startsWith("ingredient:"))
       problems.push({ kind: "malformed-entry", detail: `an entry has no canonical key: ${JSON.stringify(entry)}` });
     if (!entry?.name?.trim())
@@ -215,8 +256,24 @@ export function validateRegistry(registry: AliasRegistry): RegistryProblem[] {
         problems.push({
           kind: "malformed-entry",
           key: entry?.key,
-          detail: `the ${market} identifier ${id} is not in a known namespace`,
+          detail: `the ${market} identifier ${id} is not a well-formed identifier in a known namespace`,
         });
+      else {
+        // The market's numbers have to come from that market's own source.
+        const allowed = MARKET_SOURCES[market];
+        if (!allowed)
+          problems.push({
+            kind: "unsupported-market",
+            key: entry?.key,
+            detail: `the market ${market} is not one the app maps, so it has no allowed source`,
+          });
+        else if (allowed !== source)
+          problems.push({
+            kind: "market-source-mismatch",
+            key: entry?.key,
+            detail: `the ${market} identifier ${id} is a ${source} identifier, but the ${market} market uses ${allowed} identifiers`,
+          });
+      }
       if (notApproved.has(id))
         problems.push({
           kind: "not-approved",
@@ -229,7 +286,15 @@ export function validateRegistry(registry: AliasRegistry): RegistryProblem[] {
         problems.push({
           kind: "unreviewed-mapping",
           key: entry?.key,
-          detail: `the ${market} mapping has no review date, so it is not a reviewed mapping`,
+          detail: `the ${market} mapping has not been reviewed, so it is not a reviewed mapping`,
+        });
+      // A mapping to another market needs the evidence a reviewer read, not
+      // only a date.
+      if (market !== defaultMarket && !entry?.evidence?.[market]?.trim())
+        problems.push({
+          kind: "missing-evidence",
+          key: entry?.key,
+          detail: `the ${market} mapping has no evidence of the review, so it is not a reviewed mapping`,
         });
       // One identifier may not serve two different ingredients in one market.
       const claim = `${market}:${id}`;
@@ -276,15 +341,39 @@ export function validateRegistry(registry: AliasRegistry): RegistryProblem[] {
 }
 
 /**
+ * The problems in a registry, validated once for the registry the app ships
+ * and on every call for a registry that was passed in.
+ *
+ * The static registry is a file that does not change while the app is
+ * running, so its validation is cached. A registry that was handed in is
+ * validated every time, because it may be a test fixture, and a fixture that
+ * is changed between two calls must be seen as it is now.
+ */
+let staticProblems: RegistryProblem[] | null = null;
+
+export function registryProblems(registry: AliasRegistry): RegistryProblem[] {
+  if (registry === aliasRegistry()) {
+    if (!staticProblems) staticProblems = validateRegistry(registry);
+    return staticProblems;
+  }
+  return validateRegistry(registry);
+}
+
+/**
  * Resolve one ingredient in one market.
  *
  * **The resolution is fail-closed.** It does not rely on the caller having
- * run the validation: every check the validation makes is made here too, and
- * a registry that has not been validated still cannot produce an identifier
- * that the rules forbid.
+ * run the validation: the registry is checked here, and every rule the
+ * validation makes is made again at the point of use, so a registry that has
+ * not been validated still cannot produce an identifier the rules forbid.
  *
+ *   - an invalid registry resolves to nothing at all, and says why;
  *   - a mapping that has not been reviewed is not used;
+ *   - a mapping to another market needs the evidence a reviewer read;
  *   - an identifier in a namespace the app does not know is not used;
+ *   - a market's numbers have to come from that market's own source, so a
+ *     United States identifier under a Canadian market is refused rather
+ *     than passed off as a Canadian one;
  *   - an identifier that was reviewed and refused is not used;
  *   - an alias chain that loops, or that points at nothing, resolves to
  *     nothing;
@@ -307,8 +396,11 @@ export function resolveIngredient(key: string, market: Market, registry = aliasR
     reason,
   });
 
-  if (!registry || !Array.isArray(registry.ingredients))
-    return failed("the registry is malformed, so nothing can be resolved");
+  // The whole registry is checked, not only the entry that was asked for: a
+  // registry that is invalid cannot produce an apparently valid result.
+  const problems = registryProblems(registry);
+  if (problems.length)
+    return failed(`the registry is invalid, so nothing resolves: ${problems[0].detail}`);
 
   const byKey = new Map<string, AliasEntry>();
   for (const entry of registry.ingredients) {
@@ -335,18 +427,25 @@ export function resolveIngredient(key: string, market: Market, registry = aliasR
   }
 
   const notApproved = new Set((registry.not_approved ?? []).map((entry) => entry.id));
-  const check = (id: string, reviewDate: string | undefined): string | null => {
+  const check = (id: string, reviewDate: string | undefined, marketCode: string): string | null => {
     if (!id) return "the mapping has no identifier";
     if (!reviewDate) return "the mapping has not been reviewed, so it is not used";
-    if (!sourceOf(id)) return `the identifier ${id} is not in a namespace the app knows`;
+    const source = sourceOf(id);
+    if (!source) return `the identifier ${id} is not a well-formed identifier in a known namespace`;
+    const allowed = MARKET_SOURCES[marketCode];
+    if (!allowed) return `the market ${marketCode} is not one the app maps`;
+    if (allowed !== source)
+      return `the identifier ${id} is a ${source} identifier, but the ${marketCode} market uses ${allowed} identifiers`;
     if (notApproved.has(id)) return `the identifier ${id} was reviewed and is not approved for use`;
+    if (marketCode !== registry.default_market && !target.evidence?.[marketCode]?.trim())
+      return `the ${marketCode} mapping has no evidence of the review, so it is not used`;
     return null;
   };
 
   const direct = target.ids?.[market];
   if (direct !== undefined) {
     attempted.push(direct);
-    const problem = check(direct, target.reviewed?.[market]);
+    const problem = check(direct, target.reviewed?.[market], market);
     if (problem) return failed(problem, attempted);
     return {
       outcome: "resolved",
@@ -364,7 +463,7 @@ export function resolveIngredient(key: string, market: Market, registry = aliasR
   const fallback = target.ids?.[registry.default_market];
   if (fallback !== undefined) {
     attempted.push(fallback);
-    const problem = check(fallback, target.reviewed?.[registry.default_market]);
+    const problem = check(fallback, target.reviewed?.[registry.default_market], registry.default_market);
     if (problem) return failed(problem, attempted);
     return {
       outcome: "fallback",

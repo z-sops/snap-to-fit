@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { popular, recipes } from "../src/core/foods";
-import type { AliasRegistry } from "../src/core/ingredient-aliases";
+import { MARKET_SOURCES, sourceOf, type AliasRegistry } from "../src/core/ingredient-aliases";
 
 /**
  * Builds the ingredient alias registry.
@@ -33,7 +33,11 @@ export interface AliasBaseline {
   reviewed_on: string;
   note?: string;
   /** The pinned assignment of key to identifier. */
-  ingredients: { key: string; ids: Record<string, string>; markets?: Record<string, { id: string; reviewed: string }> }[];
+  ingredients: {
+    key: string;
+    ids: Record<string, string>;
+    markets?: Record<string, { id: string; reviewed: string; evidence: string }>;
+  }[];
   /** Identifiers that were reviewed and are not approved for use. */
   not_approved: { id: string; reason: string }[];
 }
@@ -111,12 +115,24 @@ export function buildRegistry(baseline: AliasBaseline = readBaseline()): AliasRe
     byKey.set(entry.key, entry);
   }
   const owners = new Map<string, string>();
-  for (const entry of baseline.ingredients ?? [])
-    for (const id of Object.values(entry.ids ?? {})) {
+  const claims = new Map<string, string>();
+  for (const entry of baseline.ingredients ?? []) {
+    for (const [market, id] of Object.entries(entry.ids ?? {})) {
       const owner = owners.get(id);
       if (owner) throw new Error(`the baseline gives ${id} to both ${owner} and ${entry.key}`);
       owners.set(id, entry.key);
+      claims.set(`${market}:${id}`, entry.key);
     }
+    // A reviewed mapping to another market is a claim like any other, and it
+    // may not collide with another ingredient's claim in that market.
+    for (const [market, mapping] of Object.entries(entry.markets ?? {})) {
+      const claim = `${market}:${mapping?.id}`;
+      const owner = claims.get(claim);
+      if (owner && owner !== entry.key)
+        throw new Error(`the baseline gives ${mapping.id} in ${market} to both ${owner} and ${entry.key}`);
+      claims.set(claim, entry.key);
+    }
+  }
 
   // An identifier that the app no longer refers to is a removal, and a
   // removal has to be a decision rather than a side effect.
@@ -150,6 +166,7 @@ export function buildRegistry(baseline: AliasBaseline = readBaseline()): AliasRe
 
     const ids: Record<string, string> = { ...entry.ids };
     const reviewed: Record<string, string> = {};
+    const evidence: Record<string, string> = {};
     for (const [market, mapped] of Object.entries(entry.ids ?? {})) reviewed[market] = baseline.reviewed_on;
     for (const [market, mapping] of Object.entries(entry.markets ?? {})) {
       if (!mapping?.id) throw new Error(`the ${market} mapping of ${entry.key} has no identifier`);
@@ -157,10 +174,32 @@ export function buildRegistry(baseline: AliasBaseline = readBaseline()): AliasRe
         throw new Error(`${mapping.id} is not approved and must not be mapped`);
       if (!mapping.reviewed)
         throw new Error(`the ${market} mapping of ${entry.key} has no review date, so it is not reviewed`);
+      // A review date is a marker that a review happened. The evidence is
+      // what the reviewer read, and a mapping without it is refused.
+      if (!mapping.evidence?.trim())
+        throw new Error(
+          `the ${market} mapping of ${entry.key} has no evidence of the review, so it is not a reviewed mapping`,
+        );
+      // A market's numbers have to come from that market's own source.
+      const source = sourceOf(mapping.id);
+      const allowed = MARKET_SOURCES[market];
+      if (!allowed) throw new Error(`the market ${market} is not one the app maps`);
+      if (!source) throw new Error(`the ${market} identifier ${mapping.id} is not a well-formed identifier`);
+      if (source !== allowed)
+        throw new Error(
+          `the ${market} identifier ${mapping.id} is a ${source} identifier, but the ${market} market uses ${allowed} identifiers`,
+        );
       ids[market] = mapping.id;
       reviewed[market] = mapping.reviewed;
+      evidence[market] = mapping.evidence;
     }
-    ingredients.push({ key: entry.key, name: info.name, ids, reviewed });
+    ingredients.push({
+      key: entry.key,
+      name: info.name,
+      ids,
+      reviewed,
+      ...(Object.keys(evidence).length ? { evidence } : {}),
+    });
   }
   ingredients.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 
@@ -187,3 +226,4 @@ function main() {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]).endsWith("build-ingredient-aliases.ts")) main();
+
