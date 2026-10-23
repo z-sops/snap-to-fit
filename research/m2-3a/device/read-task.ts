@@ -1,31 +1,49 @@
 import { fetch } from "expo/fetch";
+import {
+  type BenchmarkTaskContract,
+  validateTaskContract,
+} from "../runtime/contract";
 
 /**
- * Reads the benchmark task from the asset server.
+ * Reads and strictly validates the immutable benchmark task contract from the asset server.
  *
- * The server returns a JSON object like:
- *   { "architecture": "B-bundle", "iterations": 30 }
- *
- * If the server is unreachable or the response is malformed, the app
- * falls back to a single B-bundle run so that manual testing still works.
+ * If the server is unreachable, returns an error status, or returns a malformed
+ * or mismatched contract, this function throws immediately. It NEVER silently falls
+ * back to B-bundle x 1 or any default.
  */
-export interface Task {
-  architecture: "B-bundle" | "C-split";
-  iterations: number;
-}
+export async function readTask(): Promise<BenchmarkTaskContract> {
+  const source = process.env.EXPO_PUBLIC_CATALOGUE_SOURCE ?? "http://127.0.0.1:8082";
+  const url = `${source}/task`;
 
-export async function readTask(): Promise<{ architecture: "B-bundle" | "C-split"; iterations: number }> {
-  const base = process.env.EXPO_PUBLIC_CATALOGUE_SOURCE ?? "http://127.0.0.1:8082";
+  console.log(`M2-3A step: requesting benchmark task contract from ${url}`);
+  let response: Response;
   try {
-    const response = await fetch(`${SOURCE}/task`);
-    if (!response.ok) throw new Error(`task fetch failed with ${response.status}`);
-    const task = await response.json() as Task;
-    if (!task.architecture || !task.iterations) throw new Error("malformed task response");
-    return { architecture: task.architecture, iterations: Math.max(1, Math.floor(task.iterations)) };
-  } catch (error) {
-    console.log(`M2-3A step: task fetch failed (${error instanceof Error ? error.message : String(error)}), using fallback B-bundle x 1`);
-    return { architecture: "B-bundle", iterations: 1 };
+    response = await fetch(url, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+      },
+    });
+  } catch (netErr) {
+    const msg = netErr instanceof Error ? netErr.message : String(netErr);
+    throw new Error(`M2-3A task fetch failed: cannot reach asset server at ${url}: ${msg}`);
   }
-}
 
-const SOURCE = process.env.EXPO_PUBLIC_CATALOGUE_SOURCE ?? "http://127.0.0.1:8082";
+  if (!response.ok) {
+    throw new Error(`M2-3A task fetch failed: server returned HTTP ${response.status} ${response.statusText}`);
+  }
+
+  let data: unknown;
+  try {
+    data = await response.json();
+  } catch (jsonErr) {
+    const msg = jsonErr instanceof Error ? jsonErr.message : String(jsonErr);
+    throw new Error(`M2-3A task fetch failed: malformed JSON response from ${url}: ${msg}`);
+  }
+
+  const contract = validateTaskContract(data);
+  console.log(
+    `M2-3A step: benchmark task contract validated: runId=${contract.runId}, arch=${contract.architecture}, iter=${contract.iterations}`,
+  );
+  return contract;
+}
