@@ -7,35 +7,32 @@ import type { AssetReader } from "../runtime/assets";
  * It is the same interface the Node harness uses, so the runtime code that is
  * measured is the same code. Only the file system underneath is different.
  *
- * The catalogue is **not** bundled. It is pushed onto the device and read
- * from the app's own storage, which is what the shipping app would do, and
- * what keeps a research build from carrying a licence-encumbered dataset
+ * The catalogue is **not** bundled. It is imported once into the app's own
+ * directory and read from there, which is what the shipping app would do,
+ * and what keeps a research build from carrying a licence-encumbered dataset
  * inside it.
  *
- * The base folder is found by looking: the app's own document directory
- * first, then the app's external files directory, which is where a pushed
- * catalogue lands.
+ * **The folder is the app's own, and nothing else.** Expo Go gives an
+ * experience a project-scoped directory, and `expo-file-system` will not
+ * address a path outside it: constructing a `Directory` for
+ * `/sdcard/Android/data/<package>/files` throws from the native module, and
+ * the app's external files directory is not readable through this API. So
+ * the assets are imported into `Paths.document` and read from there.
  */
-const BASE_FOLDERS = [
-  () => new Directory(Paths.document, "catalogue"),
-  // The app-specific external directory: `/sdcard/Android/data/<package>/files`.
-  () => new Directory("/sdcard/Android/data/host.exp.exponent/files", "catalogue"),
-];
+const CATALOGUE_FOLDER = "catalogue";
 
 export function expoReader(): AssetReader {
   let base: Directory | null = null;
   const findBase = (): Directory => {
     if (base) return base;
-    for (const make of BASE_FOLDERS) {
-      const candidate = make();
-      console.log(`M2-3A step: looking for the catalogue in ${candidate.uri} (exists: ${candidate.exists})`);
-      if (candidate.exists) {
-        base = candidate;
-        console.log(`M2-3A step: the catalogue is at ${candidate.uri}`);
-        return candidate;
-      }
-    }
-    throw new Error("the catalogue is not on the device: no folder holds it");
+    const candidate = new Directory(Paths.document, CATALOGUE_FOLDER);
+    console.log(`M2-3A step: the catalogue folder is ${candidate.uri} (exists: ${candidate.exists})`);
+    if (!candidate.exists)
+      throw new Error(
+        `the catalogue is not on the device: ${candidate.uri} does not exist, so the assets were never imported`,
+      );
+    base = candidate;
+    return candidate;
   };
   const at = (name: string) => new File(findBase(), name);
   return {
@@ -51,7 +48,7 @@ export function expoReader(): AssetReader {
         return bytes;
       }
       // A random read: the keyed detail store is read one record at a time.
-      const handle = file.open("r");
+      const handle = file.open("r" as any);
       try {
         handle.offset = offset;
         const size = length ?? Math.max(0, file.size - offset);

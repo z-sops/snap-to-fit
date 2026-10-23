@@ -245,7 +245,7 @@ export class CatalogueRuntime {
         key,
         id: result.id,
         outcome: result.outcome,
-        source_market: result.source_market,
+        source_market: result.source_market as "US" | "CA" | undefined,
         cross_market: result.cross_market,
       });
       void record;

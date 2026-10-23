@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { buildDataset, toBuildInput } from "../../../pipeline/build/build";
@@ -131,6 +132,24 @@ export function buildAssets(): { files: { name: string; bytes: number }[]; recor
     files.push({ name: packName, bytes: fs.statSync(path.join(out, packName)).size });
   }
 
+  // The manifest the device checks the assets against. It is committed, so
+  // the device is told what to expect, and the host is told what it built.
+  const manifest = {
+    generated_by: "research/m2-3a/bench/build-assets.ts",
+    records: records.length,
+    files: files.map((file) => {
+      const full = path.join(out, file.name);
+      return {
+        name: file.name,
+        bytes: file.bytes,
+        sha256: crypto.createHash("sha256").update(fs.readFileSync(full)).digest("hex"),
+      };
+    }),
+  };
+  fs.writeFileSync(path.join(out, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+  const deviceManifest = path.join(root, "research", "m2-3a", "device", "app", "catalogue-manifest.json");
+  fs.writeFileSync(deviceManifest, JSON.stringify(manifest, null, 2) + "\n");
+
   return { files, records: records.length };
 }
 
@@ -139,3 +158,4 @@ if (process.argv[1] && path.resolve(process.argv[1]).endsWith("build-assets.ts")
   console.log(`records: ${built.records}`);
   for (const file of built.files) console.log(`${file.name.padEnd(28)} ${file.bytes.toLocaleString()} B`);
 }
+

@@ -5,6 +5,8 @@ import { aliasRegistry } from "../../../../src/core/ingredient-aliases";
 import { popular, recipes } from "../../../../src/core/foods";
 import { Instrument, deviceDescription, type DeviceReport } from "../instrumentation";
 import { expoReader } from "../expo-reader";
+import { importCatalogue } from "../import-assets";
+import { readTask } from "../read-task";
 
 /**
  * The device benchmark screen.
@@ -33,7 +35,10 @@ function recipeKeys(): string[] {
   return [...keys].sort();
 }
 
-async function measure(architecture: Architecture): Promise<{ marks: DeviceReport["marks"]; counts: Record<string, number> }> {
+async function measureOnce(
+  architecture: Architecture,
+  iteration: number,
+): Promise<{ iteration: number; marks: DeviceReport["marks"]; counts: Record<string, number> }> {
   const instrument = new Instrument();
   const reader = expoReader();
   const stores = new Map<
@@ -56,39 +61,56 @@ async function measure(architecture: Architecture): Promise<{ marks: DeviceRepor
           ),
     );
   }
+  // A runtime of its own for every iteration, so one iteration's data is not
+  // still held while the next one starts.
   const runtime = new CatalogueRuntime(stores, aliasRegistry(), CACHE_BUDGET_BYTES);
 
-  const openUs = await instrument.time("open_us", () => runtime.open("US"));
-  const openCa = await instrument.time("open_ca", () => runtime.open("CA"));
-  const cold = await instrument.time("search_cold", () => runtime.search("chicken", "CA", 20));
-  await instrument.time("search_warm", () => runtime.search("chicken", "CA", 20));
-  const fallback = await instrument.time("search_fallback", () => runtime.search("waffle", "CA", 20));
-  const first = cold.value[0];
+  const step = async <T,>(name: string, work: () => Promise<T> | T): Promise<T> => {
+    const value = await work();
+    return value;
+  };
+  const timed = async <T,>(name: string, work: () => Promise<T> | T): Promise<T> =>
+    instrument.time(name, work);
+
+  const openUs = await timed("open_us", () => runtime.open("US"));
+  const openCa = await timed("open_ca", () => runtime.open("CA"));
+  const cold = await timed("search_cold", () => runtime.search("chicken", "CA", 20));
+  const warm = await timed("search_warm", () => runtime.search("chicken", "CA", 20));
+  const fallback = await timed("search_fallback", () => runtime.search("waffle", "CA", 20));
+  const first = cold[0];
+  let detailCold = 0;
+  let detailWarm = 0;
   if (first) {
-    await instrument.time("detail_cold", () => runtime.detail(first.id));
-    await instrument.time("detail_warm", () => runtime.detail(first.id));
+    const coldDetail = await timed("detail_cold", () => runtime.detail(first.id));
+    const warmDetail = await timed("detail_warm", () => runtime.detail(first.id));
+    detailCold = coldDetail === undefined ? 0 : 1;
+    detailWarm = warmDetail === undefined ? 0 : 1;
   }
-  const keys = recipeKeys();
-  const resolution = await instrument.time("recipe_resolution", () => runtime.ingredients(keys, "US"));
+  const keys = await step("recipe_keys", () => recipeKeys());
+  const resolution = await timed("recipe_resolution", () => runtime.ingredients(keys, "US"));
   await instrument.repeat("repeated_search", 50, (i) => runtime.search(i % 2 ? "rice" : "chicken", "CA", 20));
   await instrument.repeat("market_switch", 10, (i) => runtime.search("chicken", i % 2 ? "US" : "CA", 20));
-  await instrument.time("cache_pass", async () => {
+  await timed("cache_pass", async () => {
     for (const entry of aliasRegistry().ingredients) await runtime.detail(entry.ids.US);
   });
 
   return {
-    marks: instrument.marks,
+    iteration,
+    marks: instrument.marks.filter((mark) => mark.ms > 0 || mark.iterations !== undefined),
     counts: {
-      architecture: architecture === "B-bundle" ? "B" : "C",
-      open_us_records: openUs.value.records,
-      open_ca_records: openCa.value.records,
-      search_results: cold.value.length,
-      fallback_results: fallback.value.length,
-      fallback_cross_market: fallback.value.filter((r) => r.cross_market).length,
+      iteration,
+      architecture: architecture === "B-bundle" ? 1 : 2,
+      open_us_records: openUs.records,
+      open_ca_records: openCa.records,
+      search_results: cold.length,
+      fallback_results: fallback.length,
+      fallback_cross_market: fallback.filter((r) => r.cross_market).length,
       recipe_keys: keys.length,
-      recipe_resolved: resolution.value.filter((r) => r.outcome === "resolved").length,
+      recipe_resolved: resolution.filter((r) => r.outcome === "resolved").length,
       cache_entries: runtime.cache.size,
       cache_bytes: runtime.cache.bytes,
+      detail_found_cold: detailCold,
+      detail_found_warm: detailWarm,
     },
   };
 }
@@ -102,28 +124,62 @@ export default function App() {
     (async () => {
       try {
         console.log("M2-3A step: the benchmark screen has started");
+        // The registry's shape, because a bundled JSON module can arrive
+        // wrapped in an interop object.
+        const registry = aliasRegistry() as unknown as Record<string, unknown>;
+        console.log(
+          `M2-3A step: the registry has the keys [${Object.keys(registry ?? {}).join(", ")}] and ${
+            Array.isArray(registry?.ingredients) ? `${(registry.ingredients as unknown[]).length} ingredients` : "NO ingredients array"
+          }`,
+        );
+        // The catalogue is brought in once, and checked against the manifest
+        // the build produced. A partial import never reaches the benchmark.
+        const imported = await importCatalogue();
+        if (!imported.ok) {
+          throw new Error(
+            `the catalogue was not imported completely: ${imported.imported
+              .filter((entry) => !entry.ok)
+              .map((entry) => `${entry.name}: ${entry.reason}`)
+              .join("; ")}`,
+          );
+        }
+        // Which architecture to measure, and how many times. The development
+        // machine says so, so one architecture is measured in one process:
+        // holding two architectures' data at once is what the device could
+        // not survive.
+        const task = await readTask();
+        console.log(`M2-3A step: the task is ${task.architecture} x ${task.iterations}`);
         const device = deviceDescription({
           platform: Platform.OS,
           engine: "Hermes",
           model: "see the device log",
         });
-        console.log("M2-3A step: measuring architecture B");
-        const b = await measure("B-bundle");
-        console.log("M2-3A step: architecture B is done");
-        console.log("M2-3A step: measuring architecture C");
-        const c = await measure("C-split");
-        console.log("M2-3A step: architecture C is done");
-        const full: DeviceReport = {
-          device,
-          marks: [
-            ...b.marks.map((mark) => ({ ...mark, name: `B/${mark.name}` })),
-            ...c.marks.map((mark) => ({ ...mark, name: `C/${mark.name}` })),
-          ],
-          memory: {
-            platform_required: true,
-            note: "Hermes does not expose a JavaScript heap size; the memory figure has to come from the platform.",
-          },
-          counts: { ...b.counts, c_open_us_records: c.counts.open_us_records },
+
+const samples: { iteration: number; marks: DeviceReport["marks"]; counts: Record<string, number> }[] = [];
+  for (let iteration = 0; iteration < task.iterations; iteration++) {
+    console.log(`M2-3A step: iteration ${iteration + 1} of ${task.iterations}`);
+    const one = await measureOnce(task.architecture, iteration);
+    samples.push(one);
+    console.log(
+      `M2-3A iteration ${iteration} ${JSON.stringify(one.counts)} ${JSON.stringify(one.marks.map((m) => [m.name, m.ms]))}`,
+    );
+  }
+
+  const full: DeviceReport = {
+    device,
+    marks: samples.flatMap((sample) =>
+      sample.marks.map((mark) => ({ ...mark, name: `#${sample.counts.iteration}/${mark.name}` })),
+    ),
+    memory: {
+      platform_required: true,
+      note: "Hermes does not expose a JavaScript heap size; the memory figure has to come from the platform.",
+    },
+    counts: {
+      architecture: task.architecture === "B-bundle" ? 1 : 2,
+      iterations: task.iterations,
+      samples: samples.length,
+      ...samples[samples.length - 1]?.counts,
+    },
           note: "A physical device run of the M2-3A harness.",
         };
         console.log(`M2-3A_DEVICE_REPORT ${JSON.stringify(full)}`);
