@@ -138,7 +138,9 @@ export default function App() {
         const registry = aliasRegistry() as unknown as Record<string, unknown>;
         console.log(
           `M2-3A step: the registry has the keys [${Object.keys(registry ?? {}).join(", ")}] and ${
-            Array.isArray(registry?.ingredients) ? `${(registry.ingredients as unknown[]).length} ingredients` : "NO ingredients array"
+            (registry.ingredients as unknown[])?.length ?? 0
+          } ingredients; first key is ${
+            ((registry.ingredients as unknown[])?.[0] as { key?: string })?.key ?? "none"
           }`,
         );
         // The catalogue is brought in once, and checked against the manifest
@@ -191,14 +193,14 @@ export default function App() {
 
         const completedTime = Date.now();
 
-        // 3. Construct the full BenchmarkEvidenceReport
+        // 3. Construct the immutable BenchmarkEvidenceReport payload
         const full: BenchmarkEvidenceReport = {
           contract: task,
           runId: task.runId,
           startTime,
           completedTime,
           completed: true,
-          runState: "WORKLOAD_COMPLETED",
+          runState: "DEVICE_EVIDENCE_PERSISTED",
           device,
           marks: samples.flatMap((sample) =>
             sample.marks.map((mark) => ({ ...mark, name: `#${sample.counts.iteration}/${mark.name}` })),
@@ -219,11 +221,18 @@ export default function App() {
 
         // 4. SDK 57-compatible local evidence persistence
         try {
-          const evidenceDir = new Directory(Paths.document, "research", "evidence");
+          const researchDir = new Directory(Paths.document, "research");
+          if (!researchDir.exists) {
+            researchDir.create({ idempotent: true });
+          }
+          const evidenceDir = new Directory(researchDir, "evidence");
           if (!evidenceDir.exists) {
             evidenceDir.create({ idempotent: true });
           }
           const reportFile = new File(evidenceDir, `${task.runId}.json`);
+          if (!reportFile.exists) {
+            reportFile.create({ overwrite: true });
+          }
           reportFile.write(JSON.stringify(full, null, 2));
 
           // Read back to verify integrity
@@ -232,11 +241,9 @@ export default function App() {
             throw new Error("Local evidence read-back verification failed: empty file");
           }
 
-          full.runState = "DEVICE_EVIDENCE_PERSISTED";
           if (!cancelled) setRunState("DEVICE_EVIDENCE_PERSISTED");
           console.log(`M2-3A step: evidence persisted locally to ${reportFile.uri} (${readBack.length} bytes)`);
         } catch (persistErr) {
-          full.runState = "FAILED";
           if (!cancelled) setRunState("FAILED");
           throw new Error(
             `Device evidence persistence failed: ${persistErr instanceof Error ? persistErr.message : String(persistErr)}`,
@@ -261,18 +268,28 @@ export default function App() {
 
           const receipt = (await exportResponse.json()) as EvidenceReceipt;
           console.log(`M2-3A step: evidence exported to Windows collector. Receipt: ${JSON.stringify(receipt)}`);
-          full.runState = "WINDOWS_EVIDENCE_EXPORTED";
           if (!cancelled) setRunState("WINDOWS_EVIDENCE_EXPORTED");
 
-          // Status read-back check
+          // Status read-back check with full integrity and checksum verification
           const statusResponse = await fetch(`${source}/evidence/status?runId=${encodeURIComponent(task.runId)}`);
           if (statusResponse.ok) {
             const statusData = (await statusResponse.json()) as EvidenceStatus;
-            if (statusData.persisted && statusData.verified && statusData.sha256 === receipt.sha256) {
+            if (
+              statusData.persisted === true &&
+              statusData.verified === true &&
+              !statusData.corrupt &&
+              statusData.sha256 === receipt.sha256 &&
+              statusData.runId === task.runId
+            ) {
               console.log(`M2-3A step: evidence verified on Windows collector (SHA: ${statusData.sha256})`);
-              full.runState = "WINDOWS_EVIDENCE_VERIFIED";
               if (!cancelled) setRunState("WINDOWS_EVIDENCE_VERIFIED");
+            } else {
+              console.warn(
+                `M2-3A warning: Windows export verification failed: receipt sha ${receipt.sha256} vs status sha ${statusData.sha256}, corrupt=${String(statusData.corrupt)}`,
+              );
             }
+          } else {
+            console.warn(`M2-3A warning: Windows collector status check failed with HTTP ${statusResponse.status}`);
           }
         } catch (exportErr) {
           const msg = exportErr instanceof Error ? exportErr.message : String(exportErr);

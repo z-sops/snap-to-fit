@@ -47,6 +47,8 @@ export interface EvidenceStatus {
   bytes?: number;
   sha256?: string;
   acceptedAt?: string;
+  corrupt?: boolean;
+  reason?: string;
 }
 
 export interface DeviceReportMark {
@@ -91,6 +93,31 @@ export interface BenchmarkEvidenceReport {
   samples: IterationSample[];
   note: string;
 }
+
+export const REQUIRED_BENCHMARK_MARKS = [
+  "open_us",
+  "open_ca",
+  "search_cold",
+  "search_warm",
+  "search_fallback",
+  "recipe_resolution",
+  "repeated_search",
+  "market_switch",
+  "cache_pass",
+] as const;
+
+export const REQUIRED_BENCHMARK_COUNTS = [
+  "iteration",
+  "architecture",
+  "open_us_records",
+  "open_ca_records",
+  "search_results",
+  "fallback_results",
+  "recipe_keys",
+  "recipe_resolved",
+  "cache_entries",
+  "cache_bytes",
+] as const;
 
 /**
  * Validates a task contract retrieved from the research server.
@@ -159,7 +186,7 @@ export function validateTaskContract(data: unknown): BenchmarkTaskContract {
 }
 
 /**
- * Validates a benchmark evidence report against the authoritative contract.
+ * Validates a benchmark evidence report against the authoritative contract and strict measurement schema.
  */
 export function validateEvidenceReport(data: unknown, contract: BenchmarkTaskContract): BenchmarkEvidenceReport {
   if (!data || typeof data !== "object") {
@@ -180,6 +207,11 @@ export function validateEvidenceReport(data: unknown, contract: BenchmarkTaskCon
     throw new Error("Evidence report missing embedded contract object");
   }
   const embeddedContract = validateTaskContract(report.contract);
+
+  // Authoritative provenance verification across all contract fields (Correction B)
+  if (embeddedContract.contractVersion !== contract.contractVersion) {
+    throw new Error(`Embedded contractVersion mismatch: expected ${contract.contractVersion}, got ${embeddedContract.contractVersion}`);
+  }
   if (embeddedContract.runId !== contract.runId) {
     throw new Error(`Embedded contract runId mismatch: expected '${contract.runId}', got '${embeddedContract.runId}'`);
   }
@@ -189,6 +221,33 @@ export function validateEvidenceReport(data: unknown, contract: BenchmarkTaskCon
   if (embeddedContract.iterations !== contract.iterations) {
     throw new Error(`Embedded contract iterations mismatch: expected ${contract.iterations}, got ${embeddedContract.iterations}`);
   }
+  if (embeddedContract.createdAt !== contract.createdAt) {
+    throw new Error(`Embedded contract createdAt mismatch: expected '${contract.createdAt}', got '${embeddedContract.createdAt}'`);
+  }
+  if (embeddedContract.gitSha !== contract.gitSha) {
+    throw new Error(`Embedded contract gitSha mismatch: expected '${contract.gitSha}', got '${embeddedContract.gitSha}'`);
+  }
+  if (embeddedContract.dirtyWorktree !== contract.dirtyWorktree) {
+    throw new Error(`Embedded contract dirtyWorktree mismatch: expected ${contract.dirtyWorktree}, got ${embeddedContract.dirtyWorktree}`);
+  }
+  if (embeddedContract.instrumentationRevision !== contract.instrumentationRevision) {
+    throw new Error(`Embedded contract instrumentationRevision mismatch: expected '${contract.instrumentationRevision}', got '${embeddedContract.instrumentationRevision}'`);
+  }
+  if (embeddedContract.catalogueManifestSha256 !== contract.catalogueManifestSha256) {
+    throw new Error(`Embedded contract catalogueManifestSha256 mismatch: expected '${contract.catalogueManifestSha256}', got '${embeddedContract.catalogueManifestSha256}'`);
+  }
+
+  if (typeof report.startTime !== "number" || isNaN(report.startTime) || report.startTime <= 0) {
+    throw new Error(`Evidence report has invalid startTime: ${String(report.startTime)}`);
+  }
+
+  if (
+    typeof report.completedTime !== "number" ||
+    isNaN(report.completedTime) ||
+    report.completedTime < report.startTime
+  ) {
+    throw new Error(`Evidence report has invalid completedTime: ${String(report.completedTime)}`);
+  }
 
   if (!Array.isArray(report.samples)) {
     throw new Error("Evidence report missing samples array");
@@ -197,6 +256,8 @@ export function validateEvidenceReport(data: unknown, contract: BenchmarkTaskCon
   if (report.samples.length !== contract.iterations) {
     throw new Error(`Evidence report sample count mismatch: expected ${contract.iterations}, got ${report.samples.length}`);
   }
+
+  const expectedArchCode = contract.architecture === "B-bundle" ? 1 : 2;
 
   for (let i = 0; i < report.samples.length; i++) {
     const sample = report.samples[i];
@@ -209,13 +270,39 @@ export function validateEvidenceReport(data: unknown, contract: BenchmarkTaskCon
     if (!Array.isArray(sample.marks) || sample.marks.length === 0) {
       throw new Error(`Sample at iteration ${i} has empty or missing marks`);
     }
+
+    const markNames = new Set<string>();
     for (const m of sample.marks) {
-      if (!m || typeof m.name !== "string" || typeof m.ms !== "number" || isNaN(m.ms) || m.ms < 0) {
+      if (!m || typeof m.name !== "string" || typeof m.ms !== "number" || isNaN(m.ms) || !isFinite(m.ms) || m.ms < 0) {
         throw new Error(`Sample at iteration ${i} contains invalid mark: ${JSON.stringify(m)}`);
       }
+      markNames.add(m.name);
     }
+
+    for (const reqMark of REQUIRED_BENCHMARK_MARKS) {
+      if (!markNames.has(reqMark)) {
+        throw new Error(`Sample at iteration ${i} missing required benchmark mark '${reqMark}'`);
+      }
+    }
+
     if (!sample.counts || typeof sample.counts !== "object") {
       throw new Error(`Sample at iteration ${i} missing counts object`);
+    }
+
+    const counts = sample.counts as Record<string, unknown>;
+    for (const reqCount of REQUIRED_BENCHMARK_COUNTS) {
+      const val = counts[reqCount];
+      if (typeof val !== "number" || !Number.isInteger(val) || val < 0) {
+        throw new Error(`Sample at iteration ${i} has invalid or missing count for '${reqCount}': ${String(val)}`);
+      }
+    }
+
+    if (counts.iteration !== i) {
+      throw new Error(`Sample at iteration ${i} counts.iteration mismatch: expected ${i}, got ${String(counts.iteration)}`);
+    }
+
+    if (counts.architecture !== expectedArchCode) {
+      throw new Error(`Sample at iteration ${i} counts.architecture mismatch: expected ${expectedArchCode}, got ${String(counts.architecture)}`);
     }
   }
 
@@ -223,8 +310,21 @@ export function validateEvidenceReport(data: unknown, contract: BenchmarkTaskCon
     throw new Error("Evidence report missing aggregated marks array");
   }
 
+  for (const agg of report.marks) {
+    if (!agg || typeof agg.name !== "string" || typeof agg.ms !== "number" || isNaN(agg.ms) || !isFinite(agg.ms) || agg.ms < 0) {
+      throw new Error(`Aggregated marks contain invalid mark: ${JSON.stringify(agg)}`);
+    }
+  }
+
   if (!report.device || typeof report.device !== "object") {
     throw new Error("Evidence report missing device description");
+  }
+  const device = report.device as Record<string, unknown>;
+  if (typeof device.platform !== "string" || device.platform.trim().length === 0) {
+    throw new Error("Evidence report device description missing platform");
+  }
+  if (typeof device.engine !== "string" || device.engine.trim().length === 0) {
+    throw new Error("Evidence report device description missing engine");
   }
 
   return data as BenchmarkEvidenceReport;

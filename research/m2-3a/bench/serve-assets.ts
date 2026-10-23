@@ -160,7 +160,7 @@ export function createTaskContract(
     createdAt: new Date().toISOString(),
     gitSha,
     dirtyWorktree,
-    instrumentationRevision: "M2-3A-C1-HARDENED-v1",
+    instrumentationRevision: "M2-3A-C1-R1-HARDENED-v2",
     catalogueManifestSha256,
   };
 }
@@ -172,28 +172,64 @@ export function createTaskContract(
 export function createAssetServer(config: ServerConfig): http.Server {
   const { contract, folder, evidenceDir } = config;
 
-  fs.mkdirSync(evidenceDir, { recursive: true });
+  // Ensure evidence directory exists
+  if (!fs.existsSync(evidenceDir)) {
+    fs.mkdirSync(evidenceDir, { recursive: true });
+  }
 
+  // Clean up any orphaned temporary files (.tmp-*) from previous crashes
+  try {
+    const entries = fs.readdirSync(evidenceDir);
+    for (const entry of entries) {
+      if (entry.startsWith(".tmp-") && entry.endsWith(".tmp")) {
+        try {
+          fs.unlinkSync(path.join(evidenceDir, entry));
+        } catch {
+          // ignore
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  // Pre-populate accepted run IDs from existing persisted evidence files
   const acceptedRunIds = new Set<string>();
+  try {
+    const entries = fs.readdirSync(evidenceDir);
+    for (const entry of entries) {
+      if (entry.endsWith(".json") && !entry.startsWith(".")) {
+        const runId = entry.slice(0, -".json".length);
+        acceptedRunIds.add(runId);
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  // Active in-flight submission lock to prevent concurrent races
+  const inFlightRunIds = new Set<string>();
 
   const server = http.createServer((request, response) => {
-    const parsedUrl = new URL(request.url ?? "/", "http://127.0.0.1");
-    const pathname = parsedUrl.pathname.replace(/^\/+/, "");
-
-    // Path traversal check
-    if (pathname.includes("..") || path.isAbsolute(pathname)) {
-      response.writeHead(400, { "content-type": "text/plain" }).end("bad request: invalid path");
+    // Bind to localhost requests only
+    const clientIp = request.socket.remoteAddress;
+    if (clientIp !== "127.0.0.1" && clientIp !== "::1" && clientIp !== "::ffff:127.0.0.1") {
+      response.writeHead(403, { "content-type": "text/plain" }).end("forbidden: localhost only");
       return;
     }
 
-    // 1. Task Contract endpoint (GET /task)
+    const host = request.headers.host ?? "127.0.0.1";
+    const parsedUrl = new URL(request.url ?? "/", `http://${host}`);
+    const pathname = parsedUrl.pathname.replace(/^\/+/, "");
+
+    // 1. Task contract endpoint (GET /task)
     if (pathname === "task") {
       if (request.method !== "GET") {
         response.writeHead(405, { "content-type": "text/plain" }).end("method not allowed");
         return;
       }
-      const payload = JSON.stringify(contract);
       console.log(`[serve-assets] GET /task: returning contract for run ${contract.runId}`);
+      const payload = JSON.stringify(contract, null, 2);
       response.writeHead(200, {
         "content-type": "application/json",
         "cache-control": "no-store",
@@ -211,8 +247,13 @@ export function createAssetServer(config: ServerConfig): http.Server {
       }
 
       const contentLengthHeader = request.headers["content-length"];
+      let declaredLength: number | undefined;
       if (contentLengthHeader) {
-        const declaredLength = parseInt(contentLengthHeader, 10);
+        declaredLength = parseInt(contentLengthHeader, 10);
+        if (isNaN(declaredLength) || declaredLength < 0) {
+          response.writeHead(400, { "content-type": "text/plain" }).end("invalid content-length header");
+          return;
+        }
         if (declaredLength > MAX_EVIDENCE_BODY_BYTES) {
           response.writeHead(413, { "content-type": "text/plain" }).end("payload too large");
           return;
@@ -220,18 +261,51 @@ export function createAssetServer(config: ServerConfig): http.Server {
       }
 
       let receivedBytes = 0;
+      let aborted = false;
       const chunks: Buffer[] = [];
 
       request.on("data", (chunk: Buffer) => {
         receivedBytes += chunk.length;
         if (receivedBytes > MAX_EVIDENCE_BODY_BYTES) {
+          aborted = true;
+          if (!response.headersSent) {
+            response.writeHead(413, { "content-type": "text/plain" }).end("payload too large");
+          }
           request.destroy(new Error("Request body exceeded maximum allowed size"));
           return;
         }
         chunks.push(chunk);
       });
 
+      request.on("aborted", () => {
+        aborted = true;
+      });
+
+      request.on("close", () => {
+        if (!request.complete) {
+          aborted = true;
+        }
+      });
+
       request.on("end", () => {
+        if (aborted || !request.complete) {
+          if (!response.headersSent) {
+            response.writeHead(400, { "content-type": "text/plain" }).end("incomplete upload: request was aborted or incomplete");
+          }
+          return;
+        }
+
+        // Detect incomplete uploads
+        if (declaredLength !== undefined && receivedBytes !== declaredLength) {
+          response.writeHead(400, { "content-type": "text/plain" }).end(
+            `incomplete upload: received ${receivedBytes} bytes, expected ${declaredLength} bytes`,
+          );
+          return;
+        }
+
+        let tempFilePath: string | null = null;
+        let runIdToRelease: string | null = null;
+
         try {
           const bodyBuffer = Buffer.concat(chunks);
           const rawText = bodyBuffer.toString("utf8");
@@ -245,9 +319,11 @@ export function createAssetServer(config: ServerConfig): http.Server {
 
           const report = validateEvidenceReport(parsed, contract);
 
-          // Check for duplicate submission
-          if (acceptedRunIds.has(report.runId)) {
-            response.writeHead(409, { "content-type": "text/plain" }).end("duplicate evidence: report already accepted for this run");
+          // Atomic check: reject duplicate or concurrent submissions
+          if (acceptedRunIds.has(report.runId) || inFlightRunIds.has(report.runId)) {
+            response.writeHead(409, { "content-type": "text/plain" }).end(
+              "duplicate evidence: report already accepted or in flight for this run",
+            );
             return;
           }
 
@@ -255,22 +331,59 @@ export function createAssetServer(config: ServerConfig): http.Server {
           const targetFilePath = path.join(evidenceDir, targetFileName);
 
           if (fs.existsSync(targetFilePath)) {
-            response.writeHead(409, { "content-type": "text/plain" }).end("duplicate evidence: target file already exists");
+            acceptedRunIds.add(report.runId);
+            response.writeHead(409, { "content-type": "text/plain" }).end(
+              "duplicate evidence: target file already exists",
+            );
             return;
           }
 
-          // Write atomically with fs.writeFileSync
-          fs.writeFileSync(targetFilePath, JSON.stringify(report, null, 2), "utf8");
+          // Acquire in-flight lock
+          inFlightRunIds.add(report.runId);
+          runIdToRelease = report.runId;
 
-          // Read back and compute SHA-256 for verification
-          const persistedBytes = fs.readFileSync(targetFilePath);
+          // Exclusive publication on Windows (Correction A):
+          // Write to a temporary file on the same volume with exclusive flag 'wx'
+          const tempFileName = `.tmp-${report.runId}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.tmp`;
+          tempFilePath = path.join(evidenceDir, tempFileName);
+
+          const serialized = JSON.stringify(report, null, 2);
+          fs.writeFileSync(tempFilePath, serialized, { encoding: "utf8", flag: "wx" });
+
+          // Read back and compute SHA-256 for verification before publication
+          const persistedBytes = fs.readFileSync(tempFilePath);
           if (persistedBytes.length === 0) {
-            fs.unlinkSync(targetFilePath);
-            throw new Error("Persisted evidence verification failed: file is empty");
+            throw new Error("Temporary evidence file verification failed: file is empty");
           }
           const computedSha = crypto.createHash("sha256").update(persistedBytes).digest("hex");
 
+          // Genuine exclusive atomic publication: hard-link temp file to final destination
+          // On Windows NTFS, fs.linkSync throws EEXIST if targetFilePath already exists.
+          try {
+            fs.linkSync(tempFilePath, targetFilePath);
+          } catch (linkErr: any) {
+            if (linkErr.code === "EEXIST") {
+              acceptedRunIds.add(report.runId);
+              response.writeHead(409, { "content-type": "text/plain" }).end(
+                "duplicate evidence: target file already exists",
+              );
+              return;
+            }
+            throw linkErr;
+          }
+
+          // Clean up temporary file after successful publication
+          try {
+            fs.unlinkSync(tempFilePath);
+            tempFilePath = null;
+          } catch {
+            // ignore
+          }
+
+          // Finalize acceptance
           acceptedRunIds.add(report.runId);
+          inFlightRunIds.delete(report.runId);
+          runIdToRelease = null;
 
           const receipt: EvidenceReceipt = {
             status: "accepted",
@@ -281,7 +394,9 @@ export function createAssetServer(config: ServerConfig): http.Server {
             acceptedAt: new Date().toISOString(),
           };
 
-          console.log(`[serve-assets] POST /evidence: accepted evidence for ${report.runId} (${persistedBytes.length} bytes, SHA: ${computedSha})`);
+          console.log(
+            `[serve-assets] POST /evidence: accepted evidence for ${report.runId} (${persistedBytes.length} bytes, SHA: ${computedSha})`,
+          );
 
           const payload = JSON.stringify(receipt);
           response.writeHead(200, {
@@ -293,7 +408,20 @@ export function createAssetServer(config: ServerConfig): http.Server {
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           console.error(`[serve-assets] POST /evidence error: ${msg}`);
-          response.writeHead(400, { "content-type": "text/plain" }).end(`evidence rejected: ${msg}`);
+          if (!response.headersSent) {
+            response.writeHead(400, { "content-type": "text/plain" }).end(`evidence rejected: ${msg}`);
+          }
+        } finally {
+          if (tempFilePath && fs.existsSync(tempFilePath)) {
+            try {
+              fs.unlinkSync(tempFilePath);
+            } catch {
+              // ignore
+            }
+          }
+          if (runIdToRelease) {
+            inFlightRunIds.delete(runIdToRelease);
+          }
         }
       });
 
@@ -341,16 +469,85 @@ export function createAssetServer(config: ServerConfig): http.Server {
       const fileBytes = fs.readFileSync(targetFilePath);
       const computedSha = crypto.createHash("sha256").update(fileBytes).digest("hex");
 
-      const status: EvidenceStatus = {
+      if (fileBytes.length === 0) {
+        const emptyStatus: EvidenceStatus = {
+          runId,
+          persisted: true,
+          verified: false,
+          corrupt: true,
+          reason: "Evidence file is empty (0 bytes)",
+          filename: targetFileName,
+          bytes: 0,
+          sha256: computedSha,
+        };
+        const payload = JSON.stringify(emptyStatus);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(fileBytes.toString("utf8"));
+      } catch (jsonErr) {
+        const corruptStatus: EvidenceStatus = {
+          runId,
+          persisted: true,
+          verified: false,
+          corrupt: true,
+          reason: "Evidence file contains malformed JSON",
+          filename: targetFileName,
+          bytes: fileBytes.length,
+          sha256: computedSha,
+        };
+        const payload = JSON.stringify(corruptStatus);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      try {
+        validateEvidenceReport(parsed, contract);
+      } catch (valErr) {
+        const invalidStatus: EvidenceStatus = {
+          runId,
+          persisted: true,
+          verified: false,
+          corrupt: true,
+          reason: `Evidence content validation failed: ${valErr instanceof Error ? valErr.message : String(valErr)}`,
+          filename: targetFileName,
+          bytes: fileBytes.length,
+          sha256: computedSha,
+        };
+        const payload = JSON.stringify(invalidStatus);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      const validStatus: EvidenceStatus = {
         runId,
         persisted: true,
         verified: true,
+        corrupt: false,
         filename: targetFileName,
         bytes: fileBytes.length,
         sha256: computedSha,
       };
 
-      const payload = JSON.stringify(status);
+      const payload = JSON.stringify(validStatus);
       response.writeHead(200, {
         "content-type": "application/json",
         "cache-control": "no-store",
@@ -390,6 +587,7 @@ export function createAssetServer(config: ServerConfig): http.Server {
     fs.createReadStream(file).pipe(response);
   });
 
+  server.requestTimeout = 5000;
   return server;
 }
 
