@@ -27,6 +27,13 @@ import {
   validateCollectorReceipt,
   validateCollectorStatus,
   persistDeviceReport,
+  executeDeviceStorageSmokeTest,
+  validateSmokeTestReport,
+  validateSmokeTestReceipt,
+  validateSmokeTestStatus,
+  type SmokeTestReport,
+  type SmokeTestReceipt,
+  type SmokeTestStatus,
 } from "../runtime/contract";
 
 function makeValidContract(overrides?: Partial<BenchmarkTaskContract>): BenchmarkTaskContract {
@@ -1250,6 +1257,182 @@ test("47. Partial acceptance transaction is detected and preserved without overw
       // Confirm partial evidence file was untouched
       const currentBytes = fs.readFileSync(targetFilePath);
       assert.deepEqual(currentBytes, initialBytes);
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+
+// Gate C2 Physical Android Verification & Smoke Test Tests
+
+test("48. Device filesystem smoke test passes with compliant File adapter", () => {
+  let fileContent = "";
+  let exists = false;
+
+  const mockFile: DeviceReportFileAdapter = {
+    get exists() { return exists; },
+    create: () => {
+      if (exists) throw new Error("File already exists");
+      exists = true;
+    },
+    write: (content: string) => { fileContent = content; },
+    textSync: () => fileContent,
+    uri: "file:///documents/research/smoke/smoke-test-1.json",
+  };
+
+  const payload = JSON.stringify({ type: "SMOKE_TEST", status: "ok" });
+  const result = executeDeviceStorageSmokeTest(mockFile, payload);
+  assert.equal(result.persisted, true);
+  assert.equal(result.readBackVerified, true);
+  assert.equal(result.duplicateRejected, true);
+});
+
+test("49. Device filesystem smoke test fails on pre-existing file or read-back mismatch", () => {
+  // Pre-existing file
+  const existingFile: DeviceReportFileAdapter = {
+    exists: true,
+    create: () => {},
+    write: () => {},
+    textSync: () => "pre-existing",
+  };
+  assert.throws(
+    () => executeDeviceStorageSmokeTest(existingFile, "content"),
+    /Smoke test setup error: file already exists/,
+  );
+
+  // Read-back mismatch
+  let exists = false;
+  const mismatchFile: DeviceReportFileAdapter = {
+    get exists() { return exists; },
+    create: () => { exists = true; },
+    write: () => {},
+    textSync: () => "corrupted content",
+  };
+  assert.throws(
+    () => executeDeviceStorageSmokeTest(mismatchFile, "expected content"),
+    /Smoke test read-back mismatch/,
+  );
+});
+
+test("50. Windows collector accepts valid smoke test and issues valid receipt", async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-smoke-accept-"));
+  const contract = makeValidContract();
+  const smokeId = `smoke-${contract.runId}-test-50`;
+
+  try {
+    await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
+      const smokeReport: SmokeTestReport = {
+        type: "SMOKE_TEST",
+        runId: contract.runId,
+        smokeId,
+        createdAt: new Date().toISOString(),
+        device: { platform: "android", engine: "Hermes", model: "Pixel 6a" },
+        payload: "Diagnostic smoke test payload",
+      };
+
+      const res = await fetch(`${baseUrl}/smoke`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(smokeReport),
+      });
+
+      assert.equal(res.status, 200);
+      const rawReceipt = await res.json();
+      const receipt = validateSmokeTestReceipt(rawReceipt, contract.runId, smokeId);
+      assert.equal(receipt.status, "accepted");
+      assert.equal(receipt.type, "SMOKE_TEST");
+      assert.equal(receipt.runId, contract.runId);
+      assert.equal(receipt.smokeId, smokeId);
+      assert.equal(receipt.filename, `${smokeId}.json`);
+      assert.ok(receipt.bytes > 0);
+      assert.match(receipt.sha256, /^[a-f0-9]{64}$/);
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("51. Windows collector verifies smoke status against durable smoke acceptance record", async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-smoke-status-"));
+  const contract = makeValidContract();
+  const smokeId = `smoke-${contract.runId}-test-51`;
+
+  try {
+    await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
+      const smokeReport: SmokeTestReport = {
+        type: "SMOKE_TEST",
+        runId: contract.runId,
+        smokeId,
+        createdAt: new Date().toISOString(),
+        device: { platform: "android", engine: "Hermes", model: "Pixel 6a" },
+        payload: "Diagnostic smoke test payload for status verification",
+      };
+
+      const postRes = await fetch(`${baseUrl}/smoke`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(smokeReport),
+      });
+      assert.equal(postRes.status, 200);
+      const receipt = validateSmokeTestReceipt(await postRes.json(), contract.runId, smokeId);
+
+      const statusRes = await fetch(`${baseUrl}/smoke/status?runId=${encodeURIComponent(contract.runId)}&smokeId=${encodeURIComponent(smokeId)}`);
+      assert.equal(statusRes.status, 200);
+      const status = validateSmokeTestStatus(await statusRes.json(), receipt);
+      assert.equal(status.persisted, true);
+      assert.equal(status.verified, true);
+      assert.equal(status.corrupt, false);
+      assert.equal(status.bytes, receipt.bytes);
+      assert.equal(status.sha256, receipt.sha256);
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("52. Collector rejects duplicate smokeId and detects tampered smoke evidence", async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-smoke-tamper-"));
+  const contract = makeValidContract();
+  const smokeId = `smoke-${contract.runId}-test-52`;
+
+  try {
+    await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
+      const smokeReport: SmokeTestReport = {
+        type: "SMOKE_TEST",
+        runId: contract.runId,
+        smokeId,
+        createdAt: new Date().toISOString(),
+        device: { platform: "android", engine: "Hermes", model: "Pixel 6a" },
+        payload: "Original smoke content",
+      };
+
+      // 1. First submission succeeds
+      const postRes = await fetch(`${baseUrl}/smoke`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(smokeReport),
+      });
+      assert.equal(postRes.status, 200);
+
+      // 2. Duplicate submission rejected with 409 Conflict
+      const dupRes = await fetch(`${baseUrl}/smoke`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(smokeReport),
+      });
+      assert.equal(dupRes.status, 409);
+
+      // 3. Tampering with smoke evidence on disk detected on status query
+      const smokeFilePath = path.join(tmpDir, "smoke", `${smokeId}.json`);
+      fs.writeFileSync(smokeFilePath, JSON.stringify({ ...smokeReport, payload: "TAMPERED PAYLOAD" }), "utf8");
+
+      const statusRes = await fetch(`${baseUrl}/smoke/status?runId=${encodeURIComponent(contract.runId)}&smokeId=${encodeURIComponent(smokeId)}`);
+      assert.equal(statusRes.status, 200);
+      const statusJson = await statusRes.json() as SmokeTestStatus;
+      assert.equal(statusJson.verified, false);
+      assert.equal(statusJson.corrupt, true);
+      assert.match(statusJson.reason ?? "", /altered after acceptance/);
     });
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });

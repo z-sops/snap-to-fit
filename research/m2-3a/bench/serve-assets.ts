@@ -10,9 +10,13 @@ import {
   type EvidenceReceipt,
   type EvidenceStatus,
   type AcceptanceRecord,
+  type SmokeTestReceipt,
+  type SmokeTestStatus,
+  type SmokeAcceptanceRecord,
   CONTRACT_VERSION,
   validateEvidenceReport,
   validateAcceptanceRecord,
+  validateSmokeTestReport,
 } from "../runtime/contract";
 
 /**
@@ -725,6 +729,237 @@ export function createAssetServer(config: ServerConfig): http.Server {
       };
 
       const payload = JSON.stringify(validStatus);
+      response.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "content-length": Buffer.byteLength(payload),
+      });
+      response.end(payload);
+      return;
+    }
+
+    // Smoke Test submission endpoint (POST /smoke)
+    if (pathname === "smoke") {
+      if (request.method !== "POST") {
+        response.writeHead(405, { "content-type": "text/plain" }).end("method not allowed");
+        return;
+      }
+
+      const smokeDir = path.join(evidenceDir, "smoke");
+      if (!fs.existsSync(smokeDir)) {
+        fs.mkdirSync(smokeDir, { recursive: true });
+      }
+
+      let receivedBytes = 0;
+      let aborted = false;
+      const chunks: Buffer[] = [];
+
+      request.on("data", (chunk: Buffer) => {
+        receivedBytes += chunk.length;
+        if (receivedBytes > MAX_EVIDENCE_BODY_BYTES) {
+          aborted = true;
+          if (!response.headersSent) {
+            response.writeHead(413, { "content-type": "text/plain" }).end("payload too large");
+          }
+          request.destroy(new Error("Request body exceeded maximum allowed size"));
+          return;
+        }
+        chunks.push(chunk);
+      });
+
+      request.on("aborted", () => { aborted = true; });
+      request.on("close", () => { if (!request.complete) aborted = true; });
+
+      request.on("end", () => {
+        if (aborted || !request.complete) {
+          if (!response.headersSent) {
+            response.writeHead(400, { "content-type": "text/plain" }).end("incomplete upload: request was aborted");
+          }
+          return;
+        }
+
+        try {
+          const bodyBuffer = Buffer.concat(chunks);
+          const rawText = bodyBuffer.toString("utf8");
+          let parsed: unknown;
+          try {
+            parsed = JSON.parse(rawText);
+          } catch {
+            response.writeHead(400, { "content-type": "text/plain" }).end("malformed JSON in request body");
+            return;
+          }
+
+          const report = validateSmokeTestReport(parsed, contract);
+          const targetFileName = `${report.smokeId}.json`;
+          const targetFilePath = path.join(smokeDir, targetFileName);
+          const acceptanceFileName = `${report.smokeId}.acceptance.json`;
+          const acceptanceFilePath = path.join(smokeDir, acceptanceFileName);
+
+          if (fs.existsSync(targetFilePath) || fs.existsSync(acceptanceFilePath)) {
+            response.writeHead(409, { "content-type": "text/plain" }).end("duplicate smoke test: smokeId already exists");
+            return;
+          }
+
+          const tempSmokeName = `.tmp-smoke-${report.smokeId}-${Date.now()}.tmp`;
+          const tempSmokePath = path.join(smokeDir, tempSmokeName);
+          const tempAccName = `.tmp-smoke-acc-${report.smokeId}-${Date.now()}.tmp`;
+          const tempAccPath = path.join(smokeDir, tempAccName);
+
+          fs.writeFileSync(tempSmokePath, JSON.stringify(report, null, 2), { encoding: "utf8", flag: "wx" });
+          const fileBytes = fs.readFileSync(tempSmokePath);
+          const computedSha = crypto.createHash("sha256").update(fileBytes).digest("hex");
+
+          const accRecord: SmokeAcceptanceRecord = {
+            type: "SMOKE_TEST",
+            runId: report.runId,
+            smokeId: report.smokeId,
+            filename: targetFileName,
+            bytes: fileBytes.length,
+            sha256: computedSha,
+            acceptedAt: new Date().toISOString(),
+          };
+          fs.writeFileSync(tempAccPath, JSON.stringify(accRecord, null, 2), { encoding: "utf8", flag: "wx" });
+
+          fs.linkSync(tempSmokePath, targetFilePath);
+          fs.linkSync(tempAccPath, acceptanceFilePath);
+
+          try { fs.unlinkSync(tempSmokePath); } catch {}
+          try { fs.unlinkSync(tempAccPath); } catch {}
+
+          const receipt: SmokeTestReceipt = {
+            status: "accepted",
+            type: "SMOKE_TEST",
+            runId: report.runId,
+            smokeId: report.smokeId,
+            filename: targetFileName,
+            bytes: fileBytes.length,
+            sha256: computedSha,
+            acceptedAt: accRecord.acceptedAt,
+          };
+
+          console.log(`[serve-assets] POST /smoke: accepted smoke test ${report.smokeId} (${fileBytes.length} bytes, SHA ${computedSha})`);
+          const payload = JSON.stringify(receipt);
+          response.writeHead(200, {
+            "content-type": "application/json",
+            "cache-control": "no-store",
+            "content-length": Buffer.byteLength(payload),
+          });
+          response.end(payload);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error(`[serve-assets] POST /smoke error: ${msg}`);
+          if (!response.headersSent) {
+            response.writeHead(400, { "content-type": "text/plain" }).end(`smoke test rejected: ${msg}`);
+          }
+        }
+      });
+      return;
+    }
+
+    // Smoke Test status endpoint (GET /smoke/status?runId=...&smokeId=...)
+    if (pathname === "smoke/status") {
+      if (request.method !== "GET") {
+        response.writeHead(405, { "content-type": "text/plain" }).end("method not allowed");
+        return;
+      }
+
+      const runId = parsedUrl.searchParams.get("runId");
+      const smokeId = parsedUrl.searchParams.get("smokeId");
+      if (!runId || !smokeId) {
+        response.writeHead(400, { "content-type": "text/plain" }).end("bad request: missing runId or smokeId parameter");
+        return;
+      }
+
+      const smokeDir = path.join(evidenceDir, "smoke");
+      const targetFileName = `${smokeId}.json`;
+      const targetFilePath = path.join(smokeDir, targetFileName);
+      const acceptanceFileName = `${smokeId}.acceptance.json`;
+      const acceptanceFilePath = path.join(smokeDir, acceptanceFileName);
+
+      const evExists = fs.existsSync(targetFilePath);
+      const accExists = fs.existsSync(acceptanceFilePath);
+
+      if (!evExists || !accExists) {
+        const notFound: SmokeTestStatus = {
+          type: "SMOKE_TEST",
+          runId,
+          smokeId,
+          persisted: false,
+          verified: false,
+          corrupt: true,
+          reason: "Smoke evidence or acceptance record missing",
+        };
+        const payload = JSON.stringify(notFound);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      let accRecord: SmokeAcceptanceRecord;
+      try {
+        accRecord = JSON.parse(fs.readFileSync(acceptanceFilePath, "utf8"));
+      } catch {
+        const corrupt: SmokeTestStatus = {
+          type: "SMOKE_TEST",
+          runId,
+          smokeId,
+          persisted: true,
+          verified: false,
+          corrupt: true,
+          reason: "Corrupted smoke acceptance record",
+        };
+        const payload = JSON.stringify(corrupt);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      const fileBytes = fs.readFileSync(targetFilePath);
+      const computedSha = crypto.createHash("sha256").update(fileBytes).digest("hex");
+
+      if (fileBytes.length !== accRecord.bytes || computedSha.toLowerCase() !== accRecord.sha256.toLowerCase()) {
+        const tampered: SmokeTestStatus = {
+          type: "SMOKE_TEST",
+          runId,
+          smokeId,
+          persisted: true,
+          verified: false,
+          corrupt: true,
+          reason: "Smoke evidence altered after acceptance",
+          bytes: fileBytes.length,
+          sha256: computedSha,
+        };
+        const payload = JSON.stringify(tampered);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      const okStatus: SmokeTestStatus = {
+        type: "SMOKE_TEST",
+        runId,
+        smokeId,
+        persisted: true,
+        verified: true,
+        corrupt: false,
+        filename: targetFileName,
+        bytes: fileBytes.length,
+        sha256: computedSha,
+        acceptedAt: accRecord.acceptedAt,
+      };
+      const payload = JSON.stringify(okStatus);
       response.writeHead(200, {
         "content-type": "application/json",
         "cache-control": "no-store",

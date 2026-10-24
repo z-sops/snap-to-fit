@@ -18,6 +18,9 @@ import {
   persistDeviceReport,
   validateCollectorReceipt,
   validateCollectorStatus,
+  executeDeviceStorageSmokeTest,
+  validateSmokeTestReceipt,
+  validateSmokeTestStatus,
 } from "../../runtime/contract";
 
 /**
@@ -124,6 +127,98 @@ async function measureOnce(
   };
 }
 
+/**
+ * Mandatory Gate C2 Diagnostic: verifies Expo SDK 57 filesystem APIs and
+ * Windows evidence collector transport on the physical device BEFORE benchmark execution.
+ *
+ * Checks:
+ * - Directory creation under document storage
+ * - Exclusive file creation
+ * - Exact read-back of persisted content
+ * - Detection of existing file names
+ * - HTTP connectivity to Windows collector
+ * - Receipt and status validation
+ * - Durable acceptance-record verification
+ *
+ * Throws immediately if any check fails, aborting the benchmark before iteration 0.
+ */
+async function runNativeSmokeTest(
+  task: BenchmarkTaskContract,
+  device: ReturnType<typeof deviceDescription>,
+  source: string,
+): Promise<void> {
+  console.log("M2-3A step: SMOKE_TEST: initiating native filesystem and Windows collector smoke test");
+
+  // 1. Directory creation under document storage (safely ensuring intermediate directories exist)
+  try {
+    const researchDir = new Directory(Paths.document, "research");
+    if (!researchDir.exists) {
+      researchDir.create({ idempotent: true, intermediates: true });
+    }
+  } catch {
+    // Directory already exists or created by parent
+  }
+
+  try {
+    const smokeDir = new Directory(Paths.document, "research", "smoke");
+    if (!smokeDir.exists) {
+      smokeDir.create({ idempotent: true, intermediates: true });
+    }
+  } catch {
+    // Directory already exists
+  }
+
+  const smokeDir = new Directory(Paths.document, "research", "smoke");
+  if (!smokeDir.exists) {
+    throw new Error("Smoke test failed: smokeDir does not exist after creation");
+  }
+
+  // 2. Exclusive file creation, exact read-back verification, and duplicate rejection
+  const smokeId = `smoke-${task.runId}-${Date.now()}`;
+  const smokeFile = new File(smokeDir, `${smokeId}.json`);
+  const samplePayload = JSON.stringify({
+    type: "SMOKE_TEST",
+    runId: task.runId,
+    smokeId,
+    createdAt: new Date().toISOString(),
+    device,
+    payload: `Diagnostic smoke test on ${Platform.OS} for run ${task.runId}`,
+  });
+
+  const storageResult = executeDeviceStorageSmokeTest(smokeFile, samplePayload);
+  if (!storageResult.persisted || !storageResult.readBackVerified || !storageResult.duplicateRejected) {
+    throw new Error("Smoke test failed: device filesystem storage verification failed");
+  }
+  console.log(`M2-3A step: SMOKE_TEST: native storage verified at ${smokeFile.uri} (${samplePayload.length} bytes)`);
+
+  // 3. HTTP connectivity to Windows collector (POST /smoke)
+  const exportResponse = await fetch(`${source}/smoke`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: samplePayload,
+  });
+
+  if (!exportResponse.ok) {
+    const errText = await exportResponse.text();
+    throw new Error(`Smoke test failed: collector rejected with HTTP ${exportResponse.status}: ${errText}`);
+  }
+
+  const rawReceipt = await exportResponse.json();
+  const receipt = validateSmokeTestReceipt(rawReceipt, task.runId, smokeId);
+  console.log(`M2-3A step: SMOKE_TEST: collector receipt accepted (SHA: ${receipt.sha256})`);
+
+  // 4. Status read-back and durable acceptance-record validation (GET /smoke/status)
+  const statusResponse = await fetch(`${source}/smoke/status?runId=${encodeURIComponent(task.runId)}&smokeId=${encodeURIComponent(smokeId)}`);
+  if (!statusResponse.ok) {
+    throw new Error(`Smoke test failed: collector status returned HTTP ${statusResponse.status}`);
+  }
+
+  const rawStatus = await statusResponse.json();
+  const verifiedStatus = validateSmokeTestStatus(rawStatus, receipt);
+  console.log(`M2-3A step: SMOKE_TEST: durable acceptance record verified on collector (SHA: ${verifiedStatus.sha256})`);
+  console.log("M2-3A_SMOKE_TEST_PASSED: Native filesystem and Windows collector bridge verified successfully on device.");
+}
+
 export default function App() {
   const [report, setReport] = useState<BenchmarkEvidenceReport | null>(null);
   const [runState, setRunState] = useState<RunState>("TASK_VALIDATED");
@@ -168,6 +263,10 @@ export default function App() {
           engine: "Hermes",
           model: "see the device log",
         });
+
+        // Gate C2 Mandatory Non-Benchmark Smoke Test (Section 8)
+        const sourceUrl = process.env.EXPO_PUBLIC_CATALOGUE_SOURCE ?? "http://127.0.0.1:8082";
+        await runNativeSmokeTest(task, device, sourceUrl);
 
         // 2. Execute benchmark iterations
         const samples: {
@@ -225,14 +324,19 @@ export default function App() {
         // 4. SDK 57-compatible local evidence persistence with no-overwrite semantics and exact read-back verification
         let serializedPayload = "";
         try {
-          const researchDir = new Directory(Paths.document, "research");
-          if (!researchDir.exists) {
-            researchDir.create({ idempotent: true });
-          }
-          const evidenceDir = new Directory(researchDir, "evidence");
-          if (!evidenceDir.exists) {
-            evidenceDir.create({ idempotent: true });
-          }
+          try {
+            const researchDir = new Directory(Paths.document, "research");
+            if (!researchDir.exists) {
+              researchDir.create({ idempotent: true, intermediates: true });
+            }
+          } catch {}
+          try {
+            const evidenceDir = new Directory(Paths.document, "research", "evidence");
+            if (!evidenceDir.exists) {
+              evidenceDir.create({ idempotent: true, intermediates: true });
+            }
+          } catch {}
+          const evidenceDir = new Directory(Paths.document, "research", "evidence");
           const reportFile = new File(evidenceDir, `${task.runId}.json`);
           const persistenceResult = persistDeviceReport(reportFile, full);
           serializedPayload = persistenceResult.payload;

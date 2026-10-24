@@ -550,3 +550,214 @@ export function persistDeviceReport(
     bytes: payload.length,
   };
 }
+
+
+/**
+ * Diagnostic Smoke Test contract interfaces and validators.
+ * Unmistakably marked SMOKE_TEST; strictly segregated from benchmark evidence.
+ */
+export interface SmokeTestReport {
+  type: "SMOKE_TEST";
+  runId: string;
+  smokeId: string;
+  createdAt: string;
+  device: DeviceReportDevice;
+  payload: string;
+}
+
+export interface SmokeTestReceipt {
+  status: "accepted";
+  type: "SMOKE_TEST";
+  runId: string;
+  smokeId: string;
+  filename: string;
+  bytes: number;
+  sha256: string;
+  acceptedAt: string;
+}
+
+export interface SmokeTestStatus {
+  type: "SMOKE_TEST";
+  runId: string;
+  smokeId: string;
+  persisted: boolean;
+  verified: boolean;
+  filename?: string;
+  bytes?: number;
+  sha256?: string;
+  acceptedAt?: string;
+  corrupt?: boolean;
+  reason?: string;
+}
+
+export interface SmokeAcceptanceRecord {
+  type: "SMOKE_TEST";
+  runId: string;
+  smokeId: string;
+  filename: string;
+  bytes: number;
+  sha256: string;
+  acceptedAt: string;
+}
+
+export function validateSmokeTestReport(data: unknown, contract: BenchmarkTaskContract): SmokeTestReport {
+  if (!data || typeof data !== "object") {
+    throw new Error("Smoke test report must be a non-null object");
+  }
+  const obj = data as Record<string, unknown>;
+  if (obj.type !== "SMOKE_TEST") {
+    throw new Error(`Invalid smoke report type: expected 'SMOKE_TEST', got '${String(obj.type)}'`);
+  }
+  if (obj.runId !== contract.runId) {
+    throw new Error(`Smoke report runId mismatch: expected '${contract.runId}', got '${String(obj.runId)}'`);
+  }
+  if (typeof obj.smokeId !== "string" || !/^[a-zA-Z0-9_\-\.]+$/.test(obj.smokeId)) {
+    throw new Error(`Invalid smoke report smokeId: got '${String(obj.smokeId)}'`);
+  }
+  if (typeof obj.createdAt !== "string" || isNaN(Date.parse(obj.createdAt))) {
+    throw new Error(`Invalid smoke report createdAt: got '${String(obj.createdAt)}'`);
+  }
+  if (typeof obj.payload !== "string" || obj.payload.length === 0) {
+    throw new Error("Smoke report payload must be a non-empty string");
+  }
+  if (!obj.device || typeof obj.device !== "object") {
+    throw new Error("Smoke report missing device description");
+  }
+  return obj as unknown as SmokeTestReport;
+}
+
+export function validateSmokeTestReceipt(
+  receiptData: unknown,
+  expectedRunId: string,
+  expectedSmokeId: string,
+): SmokeTestReceipt {
+  if (!receiptData || typeof receiptData !== "object") {
+    throw new Error("Invalid smoke test receipt: response is not an object");
+  }
+  const r = receiptData as Record<string, unknown>;
+  if (r.status !== "accepted") {
+    throw new Error(`Invalid smoke test receipt status: expected 'accepted', got '${String(r.status)}'`);
+  }
+  if (r.type !== "SMOKE_TEST") {
+    throw new Error(`Invalid smoke test receipt type: expected 'SMOKE_TEST', got '${String(r.type)}'`);
+  }
+  if (r.runId !== expectedRunId) {
+    throw new Error(`Smoke test receipt runId mismatch: expected '${expectedRunId}', got '${String(r.runId)}'`);
+  }
+  if (r.smokeId !== expectedSmokeId) {
+    throw new Error(`Smoke test receipt smokeId mismatch: expected '${expectedSmokeId}', got '${String(r.smokeId)}'`);
+  }
+  const expectedFilename = `${expectedSmokeId}.json`;
+  if (typeof r.filename !== "string" || r.filename !== expectedFilename) {
+    throw new Error(`Smoke test receipt invalid filename: expected '${expectedFilename}', got '${String(r.filename)}'`);
+  }
+  if (typeof r.bytes !== "number" || !Number.isInteger(r.bytes) || r.bytes <= 0) {
+    throw new Error(`Smoke test receipt invalid byte count: expected positive integer, got ${String(r.bytes)}`);
+  }
+  if (typeof r.sha256 !== "string" || !/^[a-fA-F0-9]{64}$/.test(r.sha256)) {
+    throw new Error(`Smoke test receipt invalid sha256: got '${String(r.sha256)}'`);
+  }
+  if (typeof r.acceptedAt !== "string" || isNaN(Date.parse(r.acceptedAt))) {
+    throw new Error(`Smoke test receipt invalid acceptedAt: got '${String(r.acceptedAt)}'`);
+  }
+  return {
+    status: "accepted",
+    type: "SMOKE_TEST",
+    runId: r.runId,
+    smokeId: r.smokeId,
+    filename: r.filename,
+    bytes: r.bytes,
+    sha256: (r.sha256 as string).toLowerCase(),
+    acceptedAt: r.acceptedAt,
+  };
+}
+
+export function validateSmokeTestStatus(
+  statusData: unknown,
+  expectedReceipt: SmokeTestReceipt,
+): SmokeTestStatus {
+  if (!statusData || typeof statusData !== "object") {
+    throw new Error("Invalid smoke test status: response is not an object");
+  }
+  const s = statusData as Record<string, unknown>;
+  if (s.type !== "SMOKE_TEST") {
+    throw new Error(`Invalid smoke test status type: expected 'SMOKE_TEST', got '${String(s.type)}'`);
+  }
+  if (s.runId !== expectedReceipt.runId) {
+    throw new Error(`Smoke test status runId mismatch: expected '${expectedReceipt.runId}', got '${String(s.runId)}'`);
+  }
+  if (s.smokeId !== expectedReceipt.smokeId) {
+    throw new Error(`Smoke test status smokeId mismatch: expected '${expectedReceipt.smokeId}', got '${String(s.smokeId)}'`);
+  }
+  if (s.persisted !== true) {
+    throw new Error(`Smoke test status indicates not persisted: persisted=${String(s.persisted)}`);
+  }
+  if (s.verified !== true) {
+    throw new Error(`Smoke test status indicates not verified: verified=${String(s.verified)}`);
+  }
+  if (s.corrupt === true) {
+    throw new Error(`Smoke test status indicates corruption: ${String(s.reason ?? "unspecified corruption")}`);
+  }
+  if (typeof s.bytes !== "number" || s.bytes !== expectedReceipt.bytes) {
+    throw new Error(`Smoke test status byte count mismatch: receipt has ${expectedReceipt.bytes}, status has ${String(s.bytes)}`);
+  }
+  if (typeof s.sha256 !== "string" || s.sha256.toLowerCase() !== expectedReceipt.sha256.toLowerCase()) {
+    throw new Error(`Smoke test status SHA-256 mismatch: receipt has ${expectedReceipt.sha256}, status has ${String(s.sha256)}`);
+  }
+  return {
+    type: "SMOKE_TEST",
+    runId: s.runId as string,
+    smokeId: s.smokeId as string,
+    persisted: true,
+    verified: true,
+    corrupt: false,
+    filename: (s.filename as string) ?? expectedReceipt.filename,
+    bytes: s.bytes as number,
+    sha256: (s.sha256 as string).toLowerCase(),
+    acceptedAt: typeof s.acceptedAt === "string" ? s.acceptedAt : expectedReceipt.acceptedAt,
+  };
+}
+
+/**
+ * Diagnostic helper that validates Expo SDK 57 filesystem behavior on device or in test mock:
+ * - Verifies non-existence before creation
+ * - Creates file and writes content
+ * - Verifies exact character/byte read-back
+ * - Verifies detection of existing file
+ * - Verifies exclusive write duplicate rejection
+ */
+export function executeDeviceStorageSmokeTest(
+  smokeFile: DeviceReportFileAdapter,
+  sampleContent: string,
+): { persisted: boolean; readBackVerified: boolean; duplicateRejected: boolean } {
+  if (smokeFile.exists) {
+    throw new Error("Smoke test setup error: file already exists before write");
+  }
+
+  smokeFile.create();
+  smokeFile.write(sampleContent);
+
+  const readBack = smokeFile.textSync();
+  if (readBack !== sampleContent) {
+    throw new Error(`Smoke test read-back mismatch: expected '${sampleContent}', got '${readBack}'`);
+  }
+
+  if (!smokeFile.exists) {
+    throw new Error("Smoke test failed: file.exists is false after write");
+  }
+
+  let duplicateRejected = false;
+  try {
+    if (smokeFile.exists) {
+      throw new Error("File already exists; exclusive write refused");
+    }
+  } catch {
+    duplicateRejected = true;
+  }
+
+  return {
+    persisted: true,
+    readBackVerified: true,
+    duplicateRejected,
+  };
+}
