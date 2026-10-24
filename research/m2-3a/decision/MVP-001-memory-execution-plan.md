@@ -1,13 +1,13 @@
-# MVP-001: Physical Android Memory Validation Execution Plan
+# MVP-001: Physical Android Memory Validation Execution Plan (MVE-001A Revised)
 
-**Document ID:** MVP-001-MEP  
-**Directive Reference:** SNAP2FIT — CHIEF ARCHITECT DIRECTIVE MVP-001  
+**Document ID:** MVP-001-MEP-REV1  
+**Directive Reference:** SNAP2FIT — CHIEF ARCHITECT DIRECTIVES MVP-001 & MVE-001A  
 **Project:** Snap2Fit Mobile Application (ZuniTech)  
 **Author:** Antigravity / ARGON  
 **Chief Architect:** ChatGPT / ZuniTech Architecture Board  
 **Target Milestone:** M2-3A — Architecture Decision Validation  
 **Date:** 24 October 2026  
-**Status:** READY FOR AUTHORIZATION (PLANNING ONLY — PHYSICAL EXECUTION NOT AUTHORIZED)  
+**Status:** READY FOR AUTHORIZATION (OFFLINE READINESS COMPLETE — PHYSICAL TESTING LOCKED)  
 
 ---
 
@@ -15,14 +15,19 @@
 
 In Milestone M2-3A, physical benchmark Gate C2 demonstrated that **Architecture C (C-split)** provides an **approximately 90% to 92% reduction in catalogue opening latency** (138ms vs 1,416ms) compared to **Architecture B (B-bundle)** on a physical Google Pixel 6a. However, physical memory consumption was classified under Directive ADR-001 as **UNVERIFIED** due to Hermes JavaScript engine and Expo Go sandbox limitations.
 
-This document establishes an **evidence-based, non-intrusive, host-driven memory validation protocol**. It specifies the exact physical setup, multi-session alternating sequence, sampling lifecycle gates, external ADB commands, and risk controls required to quantify real-world Android process memory before final architecture ratification.
+This revised document establishes an **evidence-based, non-destructive, host-driven memory validation protocol** incorporating the safety and methodology corrections mandated by Directive MVE-001A:
+1. **Safe App-Scoped Lifecycle:** Removal of dangerous blanket `am kill-all` commands; strict adoption of app-scoped process management (`am force-stop host.exp.exponent`) with zero storage wipes.
+2. **Robust Process Attribution:** Mandatory PID validation, package identity verification, duplicate detection, and post-restart re-validation.
+3. **Synchronized Lifecycle Gates:** A deterministic checkpoint synchronization protocol between device and host with explicit observer uncertainty accounting ($\pm 15\text{ms}$).
+4. **Experimental Independence & Repeated Measures:** Clear statistical distinction between independent experimental sessions ($N=4$) and within-session repeated lifecycle phases.
+5. **Provisional Decision Criteria:** Reclassification of decision thresholds as provisional engineering guidelines requiring holistic trade-off review rather than automated approval.
 
-> [!IMPORTANT]
-> **AUTHORIZATION BOUNDARY:** This document is an execution plan only. **No physical memory measurements, ADB profiling commands, or device runs are authorized under Directive MVP-001.** Physical testing requires a subsequent, explicitly authorized Owner directive.
+> [!WARNING]
+> **AUTHORIZATION BOUNDARY:** This document is an execution plan only. **No physical memory measurements, ADB profiling commands, or device runs are authorized under Directive MVE-001A.** Physical testing requires a subsequent, explicitly authorized Owner directive (MVE-001B).
 
 ---
 
-## 2. Experimental Comparability & Hardware Controls
+## 2. Experimental Comparability & Controlled Parameters
 
 To ensure strict scientific comparability with the historical B30 and C30 benchmark evidence, the memory validation harness enforces identical environmental invariants:
 
@@ -36,49 +41,53 @@ To ensure strict scientific comparability with the historical B30 and C30 benchm
 | **Catalogue Records** | US: 8,257 records; CA: 5,993 records | Exactly identical data records. |
 | **Workload Scope** | 11 core benchmark operations | Search, recipe (138 keys), and LRU cache (166 items). |
 
-### Environmental Pre-Flight Conditions
-Before initiating memory sampling, the physical device must satisfy:
-1. **Thermal Equilibrium:** Battery temperature must be $\le 34^\circ\text{C}$ (verified via `adb shell dumpsys battery`). If temperature exceeds $34^\circ\text{C}$, a mandatory 5-minute cooling cycle must elapse.
-2. **Battery State of Charge:** Connected to high-speed host USB-C port with battery between 80% and 95% to prevent OS low-power throttling or aggressive zRAM compression.
+### Controlled Experimental Parameters (Not Universal Guarantees)
+The test protocol enforces the following controlled parameters to minimize environmental noise:
+1. **Thermal Baseline Threshold:** Handset battery temperature must be $\le 34^\circ\text{C}$ prior to each session start (verified via `adb shell dumpsys battery`). If temperature exceeds $34^\circ\text{C}$, a mandatory 5-minute cooling interlock must elapse.
+2. **State of Charge Control:** Handset connected via high-speed host USB-C port with battery maintained between 80% and 95% to prevent OS low-power throttling or aggressive zRAM compression.
 3. **Radio & Network Isolation:** Android **Airplane Mode ENABLED**; Wi-Fi, Bluetooth, NFC, and Mobile Data disabled. Traffic routed strictly through host reverse sockets (`tcp:8081` Metro, `tcp:8082` Collector).
-4. **Display & Wakelock:** Screen fixed at 20% brightness; `stay_on_while_plugged_in` enabled (`adb shell settings put global stay_on_while_plugged_in 3`).
-5. **Background Quenching:** All non-essential Android tasks terminated via `adb shell am kill-all` to ensure zero CPU/memory competition.
+4. **Display Consistency:** Screen fixed at 20% brightness; `stay_on_while_plugged_in` enabled (`adb shell settings put global stay_on_while_plugged_in 3`).
+5. **App-Scoped Lifecycle Safety:** Only the target application is stopped via `adb shell am force-stop host.exp.exponent`. **Blanket `am kill-all` commands are strictly forbidden** to avoid disrupting underlying Android system services.
+6. **Zero Storage Destruction:** The device storage directory (`Paths.document`) and Expo Go internal data must **never be cleared**. All historical evidence is preserved.
 
 ---
 
-## 3. Multi-Session Alternating Block Protocol
+## 3. Experimental Independence & Multi-Session Alternating Block Protocol
 
-To eliminate confounding biases caused by thermal drift, progressive memory fragmentation, or OS page cache retention, the experiment employs an **Alternating Block Design (AB / BA)** across 4 independent sessions:
+### A. Repeated Measures vs Independent Sessions
+It is scientifically invalid to treat 64 memory snapshots as 64 independent experimental subjects. The experiment is properly structured as a **Repeated-Measures Factorial Design**:
+- **Between-Subjects Factor (Session Independence):** $N=4$ independent test sessions separated by device cool-down, container restart, and re-attestation of baseline conditions.
+- **Within-Subjects Factor (Architecture Order):** Balanced alternating block sequence (AB / BA / AB / BA) to eliminate order-of-testing bias.
+- **Within-Subjects Factor (Lifecycle Phase):** 8 stationary checkpoints tracking the progression from baseline to post-GC settle.
 
 ```mermaid
 flowchart TD
     subgraph S1["Session 1: Order B -> C"]
-        S1_B["Architecture B (30 iters)<br/>8 Memory Checkpoints"] --> S1_Cool["Cooling & Reset (60s)"]
-        S1_Cool --> S1_C["Architecture C (30 iters)<br/>8 Memory Checkpoints"]
+        S1_B["Architecture B (Run 1)<br/>8 Phase Checkpoints"] --> S1_Cool["Cooling & App Restart (60s)"]
+        S1_Cool --> S1_C["Architecture C (Run 1)<br/>8 Phase Checkpoints"]
     end
     subgraph S2["Session 2: Order C -> B"]
-        S2_C["Architecture C (30 iters)<br/>8 Memory Checkpoints"] --> S2_Cool["Cooling & Reset (60s)"]
-        S2_Cool --> S2_B["Architecture B (30 iters)<br/>8 Memory Checkpoints"]
+        S2_C["Architecture C (Run 2)<br/>8 Phase Checkpoints"] --> S2_Cool["Cooling & App Restart (60s)"]
+        S2_Cool --> S2_B["Architecture B (Run 2)<br/>8 Phase Checkpoints"]
     end
     subgraph S3["Session 3: Order B -> C"]
-        S3_B["Architecture B (30 iters)<br/>8 Memory Checkpoints"] --> S3_Cool["Cooling & Reset (60s)"]
-        S3_Cool --> S3_C["Architecture C (30 iters)<br/>8 Memory Checkpoints"]
+        S3_B["Architecture B (Run 3)<br/>8 Phase Checkpoints"] --> S3_Cool["Cooling & App Restart (60s)"]
+        S3_Cool --> S3_C["Architecture C (Run 3)<br/>8 Phase Checkpoints"]
     end
     subgraph S4["Session 4: Order C -> B"]
-        S4_C["Architecture C (30 iters)<br/>8 Memory Checkpoints"] --> S4_Cool["Cooling & Reset (60s)"]
-        S4_Cool --> S4_B["Architecture B (30 iters)<br/>8 Memory Checkpoints"]
+        S4_C["Architecture C (Run 4)<br/>8 Phase Checkpoints"] --> S4_Cool["Cooling & App Restart (60s)"]
+        S4_Cool --> S4_B["Architecture B (Run 4)<br/>8 Phase Checkpoints"]
     end
     S1 --> S2 --> S3 --> S4
 ```
 
-- **Session Sample Size:** 4 sessions $\times$ 2 architectures $\times$ 8 phase checkpoints = **64 discrete physical memory snapshots**.
-- **Container Lifecycle:** Between architecture transitions, Expo Go is cleanly restarted (`am force-stop host.exp.exponent` followed by `am start`) to ensure a pristine JVM/Hermes heap baseline.
+- **Container Re-Attestation:** After stopping and restarting Expo Go between architecture runs, the host orchestrator must execute `validateProcessAttribution` to re-attest the newly assigned PID and verify that no secondary rogue processes exist.
 
 ---
 
 ## 4. Phase Sampling Checkpoints (Lifecycle Gates)
 
-Memory sampling occurs at 8 stationary checkpoints during the execution of each architecture's benchmark run:
+Memory sampling occurs at 8 stationary checkpoints during each architecture run:
 
 | Phase Gate | Trigger Point in Workload | Architectural Subsystem Evaluated | Target Questions |
 | :--- | :--- | :--- | :--- |
@@ -93,88 +102,66 @@ Memory sampling occurs at 8 stationary checkpoints during the execution of each 
 
 ---
 
-## 5. Host-Driven Sampling Architecture (Non-Intrusive)
+## 5. Checkpoint Synchronization Protocol & Observer Accounting
 
-To avoid introducing measurement artifacts inside the JavaScript runtime, sampling is orchestrated externally from the Windows host machine over ADB:
+### A. Non-Interfering Synchronization Architecture
+To avoid perturbing execution, **memory sampling is strictly segregated from timed benchmark operations**:
+1. Checkpoint notification occurs *between* workload steps (e.g. after `runtime.open("US")` has completely returned its promise, but before `runtime.open("CA")` commences).
+2. The device emits a lightweight HTTP sync notification:
+   `POST /memory/checkpoint` with `{ sessionId, architecture, sessionIndex, checkpointIndex, phase, pid, deviceTimestampMs }`.
+3. The host collector validates the event against `MemorySessionState` (enforcing sequence order, PID consistency, and non-duplication).
+4. Upon receiving the valid event, the host triggers `adb shell dumpsys meminfo <PID> -d` and returns a `MemorySyncReceipt`.
+5. The device pauses briefly during snapshot collection so that ADB memory capture does not contend for CPU with benchmark code.
 
-```mermaid
-sequenceDiagram
-    participant Host as Windows Host (PowerShell Orchestrator)
-    participant Device as Pixel 6a (host.exp.exponent)
-    participant Collector as Research Asset Server (:8082)
+### B. Observer Overhead & Uncertainty Reporting
+- Observer overhead is **not zero**. The execution plan explicitly accounts for:
+  - Loopback network transit: $\sim 3\text{ to } 8\text{ ms}$ round-trip over ADB reverse socket.
+  - ADB dumpsys execution duration: $\sim 150\text{ to } 250\text{ ms}$ kernel inspection latency.
+  - Memory snapshot jitter: $\pm 15\text{ ms}$ between device phase completion and OS kernel page table read.
+- Because memory sampling occurs during stationary pauses between benchmark operations, **observer overhead has zero impact on reported operation latencies**.
 
-    Note over Host,Device: Pre-flight Verification & Thermal Check
-    Host->>Device: adb shell dumpsys battery
-    Host->>Device: adb shell pidof host.exp.exponent
-    Device-->>Host: PID 14285
+---
 
-    Note over Host,Device: Phase M0: Baseline
-    Host->>Device: adb shell dumpsys meminfo 14285 -d
-    Device-->>Host: M0 Meminfo Snapshot
+## 6. Process Selection & Re-Validation Commands
 
-    Note over Device,Collector: Benchmark Executes Workload Phases
-    Device->>Collector: POST /memory/sync { phase: "M1_POST_OPEN_US" }
-    Collector-->>Host: Phase M1 Event Notification
-    Host->>Device: adb shell dumpsys meminfo 14285 -d
-    Device-->>Host: M1 Meminfo Snapshot
-
-    Note over Host: Repeat for M2 through M7
-```
-
-### Exact Sampling Commands (PowerShell / ADB)
-
-#### 1. PID Identification
 ```powershell
-$targetPid = (adb -s 19301FDEE003AS shell pidof host.exp.exponent).Trim()
-if (-not $targetPid) { throw "Expo Go process (host.exp.exponent) is not running on device." }
-Write-Output "Tracking Expo Go PID: $targetPid"
-```
+# 1. App-Scoped Lifecycle Restart
+adb -s 19301FDEE003AS shell am force-stop host.exp.exponent
+Start-Sleep -Seconds 2
+adb -s 19301FDEE003AS shell am start -n host.exp.exponent/.LauncherActivity
+Start-Sleep -Seconds 5
 
-#### 2. Detailed Memory Capture
-```powershell
-# Capture full structured dumpsys meminfo with detailed breakdown (-d)
-$snapshotTimestamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-$meminfoRaw = adb -s 19301FDEE003AS shell dumpsys meminfo $targetPid -d
-$meminfoRaw | Out-File -FilePath "research/m2-3a/evidence/memory/raw/$runId-$phase-$snapshotTimestamp.txt" -Encoding utf8
-```
-
-#### 3. Battery & Thermal Probe
-```powershell
-$batteryRaw = adb -s 19301FDEE003AS shell dumpsys battery
-$batteryTemp = ($batteryRaw | Select-String "temperature:\s*(\d+)").Matches.Groups[1].Value / 10.0
-Write-Output "Current Handset Battery Temperature: $batteryTemp C"
-if ($batteryTemp -gt 35.0) {
-    Write-Warning "Handset thermal limit exceeded ($batteryTemp C). Pausing for cool-down..."
-}
+# 2. Strict Process Attribution & Multi-Instance Detection
+$psRaw = adb -s 19301FDEE003AS shell "ps -A -o USER,PID,PPID,VSZ,RSS,WCHAN,ADDR,S,NAME | grep host.exp.exponent"
+# Evaluated via validateProcessAttribution() in research/m2-3a/runtime/memory-protocol.ts
 ```
 
 ---
 
-## 6. Risk Controls, Safety Gates & Abort Conditions
+## 7. Explicit Abort Criteria & Risk Controls
 
-The execution harness must immediately abort if any of the following conditions occur:
+The test run must be halted immediately under any of the following conditions:
 
-| Risk Condition | Detection Mechanism | Abort Action |
+| Anomaly Condition | Detection Threshold | Abort & Recovery Action |
 | :--- | :--- | :--- |
-| **Process Crash / OOM Kill** | `pidof host.exp.exponent` changes mid-session or returns empty. | Halt session immediately; record crash stack in logcat; mark session invalid. |
-| **Thermal Throttling** | Battery temperature exceeds $38^\circ\text{C}$. | Pause benchmark; cool handset with external fan; reject affected session data. |
-| **Baseline PSS Drift** | M0 baseline PSS drifts $> 20\text{ MB}$ from Session 1 baseline. | Invalidate container state; perform clean container restart. |
-| **Network Bridge Drop** | ADB reverse socket ping fails (`curl http://127.0.0.1:8082/health`). | Abort run; restart ADB daemon (`adb reverse tcp:8082 tcp:8082`). |
-| **Catalogue Invariant Mismatch** | Correctness records (e.g. 8,257 US records) mismatch. | Invalidate run; catalogue payload corrupted. |
+| **Process Crash / OOM** | PID changes mid-session or disappears from `ps -A`. | Abort session; preserve logcat crash stack; mark session failed. |
+| **Thermal Violation** | Battery temperature $> 38^\circ\text{C}$. | Abort session; cool handset with external fan; reject affected data. |
+| **Baseline Drift** | M0 baseline PSS drifts $> 20\text{ MB}$ from Session 1 baseline. | Invalidate container state; perform clean container restart. |
+| **Dropped Checkpoint** | Checkpoint index arrives out of sequence or is skipped. | Reject out-of-order event; abort architecture run. |
+| **Bridge Disconnection**| ADB reverse socket connectivity lost (`GET /health` fails). | Abort run; re-establish ADB reverse bridge. |
 
 ---
 
-## 7. Decision Triggers & Acceptance Criteria
+## 8. Provisional Decision Thresholds
 
-Upon completion of authorized testing, results will be evaluated against predefined architectural acceptance criteria:
+The following decision criteria are **provisional engineering guidelines**, not automatic approval mandates. Final architecture selection requires holistic review by the Chief Architect and Project Owner:
 
-1. **Decisive Architecture C Advantage (Recommendation Confirmed):**
-   - **Peak PSS Reduction:** Architecture C demonstrates $\ge 25\%$ reduction in Peak Ingestion Delta ($\Delta \text{PSS}_{M1} = \text{PSS}_{M1} - \text{PSS}_{M0}$) compared to Architecture B.
-   - **Sustained PSS Parity/Advantage:** Architecture C post-workload PSS ($\text{PSS}_{M6}$) is $\le \text{PSS}_{M6}$ of Architecture B.
-   - **Zero Growth Gradient:** PSS slope across repeated iterations $\approx 0$ (no memory leaks).
-2. **Inconsequential Memory Outcome (Latency Primary):**
-   - Peak PSS reduction is $< 10\%$ (e.g., if native FileSystem slice buffers in C offset JavaScript heap savings).
-   - *Result:* Architecture decision rests strictly on CPU/startup latency (90% startup speedup in C justifies selection regardless of neutral memory).
-3. **Architecture C Rejection Trigger:**
-   - Architecture C demonstrates unbounded memory growth across iterations ($\Delta \text{PSS} > 2\text{ MB/iteration}$), indicating native handle leaks in `readSlice`.
-   - *Result:* Architecture C must be blocked from production until leaks are resolved.
+1. **Provisional Architecture C Advantage:**
+   - $\ge 25\%$ reduction in Peak Ingestion Delta ($\Delta \text{PSS}_{M1} = \text{PSS}_{M1} - \text{PSS}_{M0}$).
+   - Sustained post-workload PSS ($\text{PSS}_{M6}$) $\le \text{PSS}_{M6}$ of Architecture B.
+   - Growth slope across iterations $\le 100\text{ KB/iteration}$.
+2. **Provisional Neutrality (Latency Decisive):**
+   - Peak PSS delta reduction is between $0\%$ and $15\%$.
+   - *Interpretation:* If memory is neutral, the verified 90% latency reduction in C justifies adopting Architecture C.
+3. **Provisional Rejection Trigger:**
+   - Sustained PSS expansion $> 25\%$ in Architecture C, or unbounded memory growth ($> 2\text{ MB/iteration}$), indicating native handle leaks in `readSlice`.

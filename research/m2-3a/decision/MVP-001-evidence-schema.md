@@ -1,7 +1,7 @@
-# MVP-001: Physical Memory Evidence Schema & Validation Specification
+# MVP-001: Physical Memory Evidence Schema & Validation Specification (MVE-001A Revised)
 
-**Document ID:** MVP-001-EVS  
-**Directive Reference:** SNAP2FIT — CHIEF ARCHITECT DIRECTIVE MVP-001 (Section 7)  
+**Document ID:** MVP-001-EVS-REV1  
+**Directive Reference:** SNAP2FIT — CHIEF ARCHITECT DIRECTIVES MVP-001 & MVE-001A (Section 4)  
 **Project:** Snap2Fit Mobile Application (ZuniTech)  
 **Author:** Antigravity / ARGON  
 **Chief Architect:** ChatGPT / ZuniTech Architecture Board  
@@ -20,11 +20,13 @@ research/m2-3a/evidence/memory/mvp-001-memory-evidence.json
 
 All host-collected memory evidence captured during the future execution phase must conform to this schema. It integrates:
 1. Complete device and platform metadata.
-2. Multi-session alternating block structure (4 independent sessions).
+2. Multi-session repeated-measures alternating block structure (4 independent sessions).
 3. 8 standardized lifecycle phase checkpoints per run.
-4. Raw operating system subsystem breakdown from `adb shell dumpsys meminfo -d`.
-5. Normalized Differential Attribution values ($\Delta \text{PSS}$, $\Delta \text{PrivateDirty}$).
-6. Statistical aggregation and pre-defined acceptance criteria validation.
+4. Checkpoint synchronization metadata (deviceTimestampMs, hostTimestampMs, observedDeltaMs, receiptId).
+5. Raw operating system subsystem breakdown from `adb shell dumpsys meminfo -d`.
+6. Normalized Differential Attribution values ($\Delta \text{PSS}$, $\Delta \text{PrivateDirty}$).
+7. Explicit documentation that Hermes JS heap is NOT directly measured (`hermesJsHeapMeasured: false`).
+8. Statistical aggregation and provisional decision criteria evaluation.
 
 ---
 
@@ -43,7 +45,7 @@ All host-collected memory evidence captured during the future execution phase mu
     "contract",
     "sessions",
     "statisticalSummary",
-    "acceptanceEvaluation"
+    "provisionalEvaluation"
   ],
   "properties": {
     "schemaVersion": {
@@ -52,7 +54,7 @@ All host-collected memory evidence captured during the future execution phase mu
     },
     "directive": {
       "type": "string",
-      "enum": ["MVP-001"]
+      "enum": ["MVE-001B", "MVP-001"]
     },
     "date": {
       "type": "string",
@@ -133,26 +135,28 @@ All host-collected memory evidence captured during the future execution phase mu
         }
       }
     },
-    "acceptanceEvaluation": {
+    "provisionalEvaluation": {
       "type": "object",
       "required": [
         "peakIngestionReductionGe25Pct",
         "sustainedExpansionLe15Pct",
         "leakRateLe100KbPerIter",
-        "verdict"
+        "provisionalVerdict",
+        "notes"
       ],
       "properties": {
         "peakIngestionReductionGe25Pct": { "type": "boolean" },
         "sustainedExpansionLe15Pct": { "type": "boolean" },
         "leakRateLe100KbPerIter": { "type": "boolean" },
-        "verdict": {
+        "provisionalVerdict": {
           "type": "string",
           "enum": [
-            "PASSED_CONFIRMED_C_ADVANTAGE",
-            "NEUTRAL_LATENCY_PRIMARY",
-            "REJECTED_MEMORY_REGRESSION"
+            "PROVISIONAL_CONFIRMED_C_ADVANTAGE",
+            "PROVISIONAL_NEUTRAL_LATENCY_PRIMARY",
+            "PROVISIONAL_REJECTED_MEMORY_REGRESSION"
           ]
-        }
+        },
+        "notes": { "type": "string" }
       }
     }
   },
@@ -175,8 +179,11 @@ All host-collected memory evidence captured during the future execution phase mu
       "type": "object",
       "required": [
         "phase",
-        "timestamp",
+        "checkpointIndex",
         "pid",
+        "deviceTimestampMs",
+        "hostTimestampMs",
+        "observedDeltaMs",
         "rawMetrics",
         "differential"
       ],
@@ -194,8 +201,11 @@ All host-collected memory evidence captured during the future execution phase mu
             "M7_POST_GC"
           ]
         },
-        "timestamp": { "type": "string", "format": "date-time" },
+        "checkpointIndex": { "type": "integer", "minimum": 0, "maximum": 7 },
         "pid": { "type": "integer" },
+        "deviceTimestampMs": { "type": "number" },
+        "hostTimestampMs": { "type": "number" },
+        "observedDeltaMs": { "type": "number" },
         "rawMetrics": {
           "type": "object",
           "required": [
@@ -205,7 +215,8 @@ All host-collected memory evidence captured during the future execution phase mu
             "swapPssKb",
             "nativeHeapPssKb",
             "dalvikHeapPssKb",
-            "unknownPssKb"
+            "unknownPssKb",
+            "hermesJsHeapMeasured"
           ],
           "properties": {
             "totalPssKb": { "type": "integer" },
@@ -216,7 +227,9 @@ All host-collected memory evidence captured during the future execution phase mu
             "dalvikHeapPssKb": { "type": "integer" },
             "unknownPssKb": { "type": "integer" },
             "gfxPssKb": { "type": "integer" },
-            "glPssKb": { "type": "integer" }
+            "glPssKb": { "type": "integer" },
+            "hermesJsHeapMeasured": { "type": "boolean", "enum": [false] },
+            "hermesJsHeapNote": { "type": "string" }
           }
         },
         "differential": {
@@ -225,7 +238,8 @@ All host-collected memory evidence captured during the future execution phase mu
           "properties": {
             "deltaPssKb": { "type": "integer" },
             "deltaPrivateDirtyKb": { "type": "integer" },
-            "deltaNativeHeapKb": { "type": "integer" }
+            "deltaNativeHeapKb": { "type": "integer" },
+            "deltaUnknownKb": { "type": "integer" }
           }
         }
       }
@@ -253,56 +267,4 @@ All host-collected memory evidence captured during the future execution phase mu
     }
   }
 }
-```
-
----
-
-## 3. Offline Python Schema Validator
-
-The following read-only Python validator verifies compliance without installing external dependencies:
-
-```python
-import json
-import re
-
-REQUIRED_ROOT = [
-    "schemaVersion", "directive", "date", "device", "contract",
-    "sessions", "statisticalSummary", "acceptanceEvaluation"
-]
-
-PHASES = [
-    "M0_BASELINE", "M1_POST_OPEN_US", "M2_POST_OPEN_CA", "M3_POST_SEARCH",
-    "M4_POST_RECIPE", "M5_POST_REPEAT", "M6_POST_CACHE", "M7_POST_GC"
-]
-
-def validate_evidence(filepath):
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    for k in REQUIRED_ROOT:
-        if k not in data:
-            raise ValueError(f"Missing required root key: {k}")
-
-    if data["schemaVersion"] != "m2-3a-memory-evidence-1.0":
-        raise ValueError(f"Invalid schemaVersion: {data['schemaVersion']}")
-
-    sessions = data["sessions"]
-    if len(sessions) != 4:
-        raise ValueError(f"Expected exactly 4 sessions, got {len(sessions)}")
-
-    for sess in sessions:
-        for arch in ["B-bundle", "C-split"]:
-            checkpoints = sess["runs"][arch]["checkpoints"]
-            if len(checkpoints) != 8:
-                raise ValueError(f"Expected 8 checkpoints for {arch}, got {len(checkpoints)}")
-            for i, cp in enumerate(checkpoints):
-                if cp["phase"] != PHASES[i]:
-                    raise ValueError(f"Phase mismatch at index {i}: expected {PHASES[i]}, got {cp['phase']}")
-
-    print("PASS: Memory validation evidence matches schema specification perfectly.")
-
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) > 1:
-        validate_evidence(sys.argv[1])
 ```

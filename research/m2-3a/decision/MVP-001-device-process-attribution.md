@@ -1,7 +1,7 @@
-# MVP-001: Android Process Memory Attribution & Hermes Subsystem Analysis
+# MVP-001: Android Process Memory Attribution & Hermes Subsystem Analysis (MVE-001A Revised)
 
-**Document ID:** MVP-001-DPA  
-**Directive Reference:** SNAP2FIT — CHIEF ARCHITECT DIRECTIVE MVP-001 (Section 5)  
+**Document ID:** MVP-001-DPA-REV1  
+**Directive Reference:** SNAP2FIT — CHIEF ARCHITECT DIRECTIVES MVP-001 & MVE-001A (Section 4)  
 **Project:** Snap2Fit Mobile Application (ZuniTech)  
 **Author:** Antigravity / ARGON  
 **Chief Architect:** ChatGPT / ZuniTech Architecture Board  
@@ -11,45 +11,37 @@
 
 ---
 
-## 1. Executive Summary & Problem Formulation
+## 1. Executive Summary & Attribution Principles
 
-Accurate memory measurement on mobile devices requires a precise understanding of the host operating system's memory model. On Android, naive memory reporting often leads to severe attribution fallacies:
-1. **Container Conflation:** Attributing the entire baseline footprint of the Expo Go development container (including the Metro bundler client, React DevTools, and preloaded native modules) to the application catalogue workload.
+Accurate memory profiling on mobile devices requires a rigorous understanding of the operating system's memory model. On Android, naive memory reporting frequently succumbs to three major attribution fallacies:
+1. **Container Baseline Conflation:** Attributing the ~120–150 MB baseline memory of the Expo Go development container (including the Metro bundler client, React DevTools, and preloaded native modules) to the application catalogue workload.
 2. **Runtime Misattribution:** Conflating operating-system-level process memory (`dumpsys meminfo`) with JavaScript heap object sizes.
 3. **Subsystem Confusion:** Failing to distinguish between C++ Native allocations (where Hermes bytecode and JSI buffers reside) and Java Dalvik allocations.
 
-This document formalizes the **Android Process Memory Attribution Model** for Snap2Fit on Google Pixel 6a (Android 17 / API Level 37). It details how to select the target process, isolate container overhead via **Differential Attribution**, and dissect the memory subsystems of the Hermes JavaScript engine.
+This document formalizes the **Android Process Memory Attribution Model** on Google Pixel 6a (Android 17 / API Level 37). It details the strict multi-step process selection pipeline, the **Differential Attribution Model**, and the anatomical dissection of Hermes runtime memory subsystems.
 
 ---
 
-## 2. Process Identification & Hierarchy on Pixel 6a
+## 2. Multi-Step Process Selection & Re-Attestation Pipeline
 
-### A. The Target Process: `host.exp.exponent`
+> [!CAUTION]
+> **DO NOT ASSUME A SINGLE PROCESS BLINDLY:**  
+> It is an error to assume that `host.exp.exponent` always resolves to a single unique process or that the PID remains constant across sessions. The harness must validate process identity before every checkpoint and re-validate after every container restart.
+
+### A. The Target Package: `host.exp.exponent`
 In the Expo Go environment on Android, the entire React Native runtime, Hermes virtual machine, and benchmark application run inside the Android application sandbox named:
 ```text
 Package Name: host.exp.exponent
 User ID (UID): u0_aXXX (assigned dynamically by Android OS)
 ```
 
-### B. Process Selection Pipeline
-To prevent accidentally querying unrelated zygote templates or background helper daemons, the host orchestrator identifies the process ID (PID) using exact package matching:
-
-```powershell
-# 1. Query running processes matching host.exp.exponent
-$procOutput = adb -s 19301FDEE003AS shell "ps -A -o PID,NAME,USER | grep 'host.exp.exponent$'"
-
-# 2. Extract single authoritative PID
-$targetPid = ($procOutput -split '\s+')[0].Trim()
-if (-not $targetPid -or -not ($targetPid -match '^\d+$')) {
-    throw "Failed to isolate exact host.exp.exponent process. Output: '$procOutput'"
-}
-Write-Output "Authoritative Target PID isolated: $targetPid"
-```
-
-### C. Multi-Process Verification
-Expo Go runs as a single monolithic Android process for the main experience in standard development mode:
-- The main UI thread, React Native JavaScript thread (`mqt_js`), Hermes bytecode interpreter, and native TurboModules all execute within the single PID `host.exp.exponent`.
-- There are no separate experience child processes (`:experience`) active in modern Expo Go SDK 57 for single-app sessions.
+### B. Process Attribution Verification Algorithm
+The host orchestrator implements `validateProcessAttribution()` in `research/m2-3a/runtime/memory-protocol.ts`:
+1. **Full Process Inspection:** Executes `adb shell ps -A -o USER,PID,PPID,VSZ,RSS,WCHAN,ADDR,S,NAME | grep host.exp.exponent`.
+2. **Missing Process Rejection:** If no line matches the expected PID, the harness rejects attribution and aborts the session (indicating app crash or OOM termination).
+3. **Duplicate Process Rejection:** If multiple processes share or claim the PID, or if multiple rogue Expo instances are detected, attribution is rejected.
+4. **Package Identity Mismatch:** If the PID resolves to a different process (e.g. `com.android.systemui` or a rogue background task), the harness detects PID reuse and halts.
+5. **Post-Restart Re-Validation:** Whenever Expo Go is restarted between Architecture B and Architecture C blocks, the PID must be re-discovered and re-attested from scratch.
 
 ---
 
@@ -65,7 +57,7 @@ When Expo Go boots on Android, it initializes:
 As a result, an empty Expo Go container on Pixel 6a typically exhibits a baseline Total PSS of **120 MB to 150 MB** *before a single line of catalogue data is loaded*.
 
 ### B. Differential Attribution Equations
-Reporting raw Total PSS would obscure whether Architecture C saves 50MB of catalogue memory or merely 5MB, because the 140MB container baseline dominates the figure. Therefore, the memory validation harness mandates **Differential Attribution**:
+Reporting raw Total PSS alone would obscure whether Architecture C saves 50MB of catalogue memory or merely 5MB, because the 140MB container baseline dominates the figure. Therefore, the memory validation harness mandates **Differential Attribution**:
 
 $$\Delta \text{PSS}_{phase} = \text{PSS}_{phase} - \text{PSS}_{M0\_baseline}$$
 
@@ -76,14 +68,7 @@ $$\Delta \text{NativeHeap}_{phase} = \text{NativeHeap}_{phase} - \text{NativeHea
 - **$\text{PSS}_{M0\_baseline}$**: Captured at checkpoint `M0_BASELINE` (app rendered, idle 5 seconds, zero catalogue data loaded).
 - **$\Delta \text{PSS}_{phase}$**: Represents the true marginal physical RAM consumed specifically by catalogue ingestion, in-memory search indices, and detail caching.
 
-```mermaid
-flowchart LR
-    subgraph Raw_PSS["Raw Process PSS (190 MB)"]
-        Base["Container Baseline (M0)<br/><b>140 MB</b><br/>(Expo Go, ART, RN Core, Metro)"]
-        Marginal["Marginal Catalogue Delta<br/><b>50 MB</b><br/>(Parsed Index / Cache / Buffers)"]
-    end
-    Marginal --> Isolated["True Workload Footprint<br/><b>50 MB</b><br/>(Used for Architecture Comparison)"]
-```
+Both the raw absolute readings and the baseline-adjusted deltas are reported side-by-side in all evidence outputs.
 
 ---
 
@@ -93,7 +78,6 @@ The primary diagnostic tool used by the host orchestrator is:
 ```bash
 adb shell dumpsys meminfo <PID> -d
 ```
-The `-d` flag instructs Android's ActivityManager to produce a detailed breakdown across memory categories and sub-heaps.
 
 ### A. Primary Operating System Metrics
 
@@ -106,8 +90,6 @@ The `-d` flag instructs Android's ActivityManager to produce a detailed breakdow
 | **RSS (Resident Set Size)** | Total physical pages referenced by the process, without accounting for shared libraries. | Reported for completeness, but secondary to PSS because RSS double-counts shared memory. |
 
 ### B. Subsystem Breakdown and Hermes Heap Placement
-
-In standard Android applications, memory is distributed across distinct subsystems:
 
 ```text
                        dumpsys meminfo Breakdown
@@ -141,6 +123,7 @@ In standard Android applications, memory is distributed across distinct subsyste
 > [!CAUTION]
 > **CRITICAL ARCHITECTURAL DISTINCTION:**  
 > `adb shell dumpsys meminfo` measures virtual and physical memory at the **operating system kernel page level**. It **does NOT** directly measure individual JavaScript object sizes, AST structures, or closure counts.
+> **NEVER describe an OS-level PSS measurement as a direct measurement of JavaScript heap size.**
 
 ### Key Behaviors of the Hermes Runtime Allocator:
 1. **Chunked Allocation:** Hermes requests memory from the OS kernel in multi-megabyte page blocks (typically 4MB or 8MB segments).
