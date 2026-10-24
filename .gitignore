@@ -50,3 +50,13 @@ server/data/
 # the offline build pipeline: downloaded sources and built catalogues
 pipeline/.cache/
 pipeline/out/
+
+# the M2-3A research harness: built assets, device builds and logs
+research/m2-3a/.cache/
+research/m2-3a/device/app/node_modules/
+research/m2-3a/device/*.apk
+research/m2-3a/device/*.html
+research/m2-3a/device/*.log
+research/m2-3a/device/*.err
+research/m2-3a/device/app/*.log
+research/m2-3a/device/app/*.err

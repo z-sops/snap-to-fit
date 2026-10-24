@@ -1,0 +1,3529 @@
+{
+  "contract": {
+    "contractVersion": 1,
+    "runId": "m2-3a-C-split-30x-1792837216010-598758a3",
+    "architecture": "C-split",
+    "iterations": 30,
+    "createdAt": "2026-10-24T10:20:16.010Z",
+    "gitSha": "e7a763770066a10e96d33a7e9470f7d176cb439f",
+    "dirtyWorktree": true,
+    "instrumentationRevision": "M2-3A-C1-R2-VERIFIED-v1",
+    "catalogueManifestSha256": "30c0cbf18d47f6e00bab337fac47b2be6ea8dfe89dfb838eb12d415a3c9f22d6"
+  },
+  "runId": "m2-3a-C-split-30x-1792837216010-598758a3",
+  "startTime": 1792838156170,
+  "completedTime": 1792838308988,
+  "completed": true,
+  "runState": "DEVICE_EVIDENCE_PERSISTED",
+  "device": {
+    "platform": "android",
+    "engine": "Hermes",
+    "model": "see the device log"
+  },
+  "marks": [
+    {
+      "name": "#0/open_us",
+      "ms": 131.857
+    },
+    {
+      "name": "#0/open_ca",
+      "ms": 90.687
+    },
+    {
+      "name": "#0/search_cold",
+      "ms": 73.22
+    },
+    {
+      "name": "#0/search_warm",
+      "ms": 61.615
+    },
+    {
+      "name": "#0/search_fallback",
+      "ms": 60.747
+    },
+    {
+      "name": "#0/detail_cold",
+      "ms": 8.337
+    },
+    {
+      "name": "#0/detail_warm",
+      "ms": 0.011
+    },
+    {
+      "name": "#0/recipe_resolution",
+      "ms": 202.766
+    },
+    {
+      "name": "#0/repeated_search",
+      "ms": 66.008,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#0/market_switch",
+      "ms": 67.742,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#0/cache_pass",
+      "ms": 41.017
+    },
+    {
+      "name": "#1/open_us",
+      "ms": 103.929
+    },
+    {
+      "name": "#1/open_ca",
+      "ms": 81.628
+    },
+    {
+      "name": "#1/search_cold",
+      "ms": 84.114
+    },
+    {
+      "name": "#1/search_warm",
+      "ms": 66.488
+    },
+    {
+      "name": "#1/search_fallback",
+      "ms": 64.071
+    },
+    {
+      "name": "#1/detail_cold",
+      "ms": 1.832
+    },
+    {
+      "name": "#1/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#1/recipe_resolution",
+      "ms": 175.766
+    },
+    {
+      "name": "#1/repeated_search",
+      "ms": 66.731,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#1/market_switch",
+      "ms": 67.697,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#1/cache_pass",
+      "ms": 34.408
+    },
+    {
+      "name": "#2/open_us",
+      "ms": 102.835
+    },
+    {
+      "name": "#2/open_ca",
+      "ms": 91.399
+    },
+    {
+      "name": "#2/search_cold",
+      "ms": 70.584
+    },
+    {
+      "name": "#2/search_warm",
+      "ms": 67.746
+    },
+    {
+      "name": "#2/search_fallback",
+      "ms": 67.985
+    },
+    {
+      "name": "#2/detail_cold",
+      "ms": 1.694
+    },
+    {
+      "name": "#2/detail_warm",
+      "ms": 0.008
+    },
+    {
+      "name": "#2/recipe_resolution",
+      "ms": 173.556
+    },
+    {
+      "name": "#2/repeated_search",
+      "ms": 68.41,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#2/market_switch",
+      "ms": 69.003,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#2/cache_pass",
+      "ms": 34.466
+    },
+    {
+      "name": "#3/open_us",
+      "ms": 149.959
+    },
+    {
+      "name": "#3/open_ca",
+      "ms": 65.631
+    },
+    {
+      "name": "#3/search_cold",
+      "ms": 67.433
+    },
+    {
+      "name": "#3/search_warm",
+      "ms": 67.558
+    },
+    {
+      "name": "#3/search_fallback",
+      "ms": 68.002
+    },
+    {
+      "name": "#3/detail_cold",
+      "ms": 1.737
+    },
+    {
+      "name": "#3/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#3/recipe_resolution",
+      "ms": 193.969
+    },
+    {
+      "name": "#3/repeated_search",
+      "ms": 68.532,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#3/market_switch",
+      "ms": 69.435,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#3/cache_pass",
+      "ms": 35.235
+    },
+    {
+      "name": "#4/open_us",
+      "ms": 141.532
+    },
+    {
+      "name": "#4/open_ca",
+      "ms": 173.961
+    },
+    {
+      "name": "#4/search_cold",
+      "ms": 66.255
+    },
+    {
+      "name": "#4/search_warm",
+      "ms": 67.686
+    },
+    {
+      "name": "#4/search_fallback",
+      "ms": 64.912
+    },
+    {
+      "name": "#4/detail_cold",
+      "ms": 1.777
+    },
+    {
+      "name": "#4/detail_warm",
+      "ms": 0.008
+    },
+    {
+      "name": "#4/recipe_resolution",
+      "ms": 177.164
+    },
+    {
+      "name": "#4/repeated_search",
+      "ms": 69.46,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#4/market_switch",
+      "ms": 69.909,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#4/cache_pass",
+      "ms": 35.945
+    },
+    {
+      "name": "#5/open_us",
+      "ms": 140.071
+    },
+    {
+      "name": "#5/open_ca",
+      "ms": 67.248
+    },
+    {
+      "name": "#5/search_cold",
+      "ms": 69.767
+    },
+    {
+      "name": "#5/search_warm",
+      "ms": 71.03
+    },
+    {
+      "name": "#5/search_fallback",
+      "ms": 69.138
+    },
+    {
+      "name": "#5/detail_cold",
+      "ms": 1.748
+    },
+    {
+      "name": "#5/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#5/recipe_resolution",
+      "ms": 177.245
+    },
+    {
+      "name": "#5/repeated_search",
+      "ms": 70.155,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#5/market_switch",
+      "ms": 70.648,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#5/cache_pass",
+      "ms": 34.744
+    },
+    {
+      "name": "#6/open_us",
+      "ms": 194.563
+    },
+    {
+      "name": "#6/open_ca",
+      "ms": 67.103
+    },
+    {
+      "name": "#6/search_cold",
+      "ms": 68.412
+    },
+    {
+      "name": "#6/search_warm",
+      "ms": 70.391
+    },
+    {
+      "name": "#6/search_fallback",
+      "ms": 68.501
+    },
+    {
+      "name": "#6/detail_cold",
+      "ms": 1.757
+    },
+    {
+      "name": "#6/detail_warm",
+      "ms": 0.008
+    },
+    {
+      "name": "#6/recipe_resolution",
+      "ms": 177.461
+    },
+    {
+      "name": "#6/repeated_search",
+      "ms": 70.269,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#6/market_switch",
+      "ms": 72.479,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#6/cache_pass",
+      "ms": 38.959
+    },
+    {
+      "name": "#7/open_us",
+      "ms": 109.04
+    },
+    {
+      "name": "#7/open_ca",
+      "ms": 67.728
+    },
+    {
+      "name": "#7/search_cold",
+      "ms": 87.033
+    },
+    {
+      "name": "#7/search_warm",
+      "ms": 72.497
+    },
+    {
+      "name": "#7/search_fallback",
+      "ms": 68.625
+    },
+    {
+      "name": "#7/detail_cold",
+      "ms": 1.803
+    },
+    {
+      "name": "#7/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#7/recipe_resolution",
+      "ms": 179.323
+    },
+    {
+      "name": "#7/repeated_search",
+      "ms": 70.544,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#7/market_switch",
+      "ms": 70.822,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#7/cache_pass",
+      "ms": 35.972
+    },
+    {
+      "name": "#8/open_us",
+      "ms": 110.544
+    },
+    {
+      "name": "#8/open_ca",
+      "ms": 158.636
+    },
+    {
+      "name": "#8/search_cold",
+      "ms": 72.404
+    },
+    {
+      "name": "#8/search_warm",
+      "ms": 69.518
+    },
+    {
+      "name": "#8/search_fallback",
+      "ms": 68.158
+    },
+    {
+      "name": "#8/detail_cold",
+      "ms": 1.709
+    },
+    {
+      "name": "#8/detail_warm",
+      "ms": 0.008
+    },
+    {
+      "name": "#8/recipe_resolution",
+      "ms": 176.888
+    },
+    {
+      "name": "#8/repeated_search",
+      "ms": 70.939,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#8/market_switch",
+      "ms": 71.291,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#8/cache_pass",
+      "ms": 35.958
+    },
+    {
+      "name": "#9/open_us",
+      "ms": 170.137
+    },
+    {
+      "name": "#9/open_ca",
+      "ms": 67.397
+    },
+    {
+      "name": "#9/search_cold",
+      "ms": 69.235
+    },
+    {
+      "name": "#9/search_warm",
+      "ms": 76.341
+    },
+    {
+      "name": "#9/search_fallback",
+      "ms": 68.967
+    },
+    {
+      "name": "#9/detail_cold",
+      "ms": 1.799
+    },
+    {
+      "name": "#9/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#9/recipe_resolution",
+      "ms": 180.789
+    },
+    {
+      "name": "#9/repeated_search",
+      "ms": 73.116,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#9/market_switch",
+      "ms": 73.286,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#9/cache_pass",
+      "ms": 35.912
+    },
+    {
+      "name": "#10/open_us",
+      "ms": 144.474
+    },
+    {
+      "name": "#10/open_ca",
+      "ms": 65.853
+    },
+    {
+      "name": "#10/search_cold",
+      "ms": 78.089
+    },
+    {
+      "name": "#10/search_warm",
+      "ms": 71.317
+    },
+    {
+      "name": "#10/search_fallback",
+      "ms": 74.2
+    },
+    {
+      "name": "#10/detail_cold",
+      "ms": 1.874
+    },
+    {
+      "name": "#10/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#10/recipe_resolution",
+      "ms": 181.894
+    },
+    {
+      "name": "#10/repeated_search",
+      "ms": 73.596,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#10/market_switch",
+      "ms": 76.955,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#10/cache_pass",
+      "ms": 39.406
+    },
+    {
+      "name": "#11/open_us",
+      "ms": 116.802
+    },
+    {
+      "name": "#11/open_ca",
+      "ms": 72.323
+    },
+    {
+      "name": "#11/search_cold",
+      "ms": 81.682
+    },
+    {
+      "name": "#11/search_warm",
+      "ms": 73.11
+    },
+    {
+      "name": "#11/search_fallback",
+      "ms": 72.593
+    },
+    {
+      "name": "#11/detail_cold",
+      "ms": 1.773
+    },
+    {
+      "name": "#11/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#11/recipe_resolution",
+      "ms": 184.94
+    },
+    {
+      "name": "#11/repeated_search",
+      "ms": 73.928,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#11/market_switch",
+      "ms": 73.685,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#11/cache_pass",
+      "ms": 37.623
+    },
+    {
+      "name": "#12/open_us",
+      "ms": 111.649
+    },
+    {
+      "name": "#12/open_ca",
+      "ms": 99.636
+    },
+    {
+      "name": "#12/search_cold",
+      "ms": 72.008
+    },
+    {
+      "name": "#12/search_warm",
+      "ms": 73.709
+    },
+    {
+      "name": "#12/search_fallback",
+      "ms": 71.164
+    },
+    {
+      "name": "#12/detail_cold",
+      "ms": 1.737
+    },
+    {
+      "name": "#12/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#12/recipe_resolution",
+      "ms": 182.298
+    },
+    {
+      "name": "#12/repeated_search",
+      "ms": 73.91,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#12/market_switch",
+      "ms": 74.072,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#12/cache_pass",
+      "ms": 38.174
+    },
+    {
+      "name": "#13/open_us",
+      "ms": 218.743
+    },
+    {
+      "name": "#13/open_ca",
+      "ms": 66.636
+    },
+    {
+      "name": "#13/search_cold",
+      "ms": 72.77
+    },
+    {
+      "name": "#13/search_warm",
+      "ms": 72.51
+    },
+    {
+      "name": "#13/search_fallback",
+      "ms": 69.678
+    },
+    {
+      "name": "#13/detail_cold",
+      "ms": 1.781
+    },
+    {
+      "name": "#13/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#13/recipe_resolution",
+      "ms": 178.149
+    },
+    {
+      "name": "#13/repeated_search",
+      "ms": 72.221,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#13/market_switch",
+      "ms": 71.955,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#13/cache_pass",
+      "ms": 35.636
+    },
+    {
+      "name": "#14/open_us",
+      "ms": 107.348
+    },
+    {
+      "name": "#14/open_ca",
+      "ms": 117.348
+    },
+    {
+      "name": "#14/search_cold",
+      "ms": 71.795
+    },
+    {
+      "name": "#14/search_warm",
+      "ms": 71.526
+    },
+    {
+      "name": "#14/search_fallback",
+      "ms": 71.475
+    },
+    {
+      "name": "#14/detail_cold",
+      "ms": 1.831
+    },
+    {
+      "name": "#14/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#14/recipe_resolution",
+      "ms": 178.849
+    },
+    {
+      "name": "#14/repeated_search",
+      "ms": 71.699,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#14/market_switch",
+      "ms": 71.945,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#14/cache_pass",
+      "ms": 35.578
+    },
+    {
+      "name": "#15/open_us",
+      "ms": 196.225
+    },
+    {
+      "name": "#15/open_ca",
+      "ms": 125.671
+    },
+    {
+      "name": "#15/search_cold",
+      "ms": 100.814
+    },
+    {
+      "name": "#15/search_warm",
+      "ms": 71.175
+    },
+    {
+      "name": "#15/search_fallback",
+      "ms": 71.746
+    },
+    {
+      "name": "#15/detail_cold",
+      "ms": 1.773
+    },
+    {
+      "name": "#15/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#15/recipe_resolution",
+      "ms": 180.955
+    },
+    {
+      "name": "#15/repeated_search",
+      "ms": 71.826,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#15/market_switch",
+      "ms": 71.889,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#15/cache_pass",
+      "ms": 35.672
+    },
+    {
+      "name": "#16/open_us",
+      "ms": 135.718
+    },
+    {
+      "name": "#16/open_ca",
+      "ms": 71.559
+    },
+    {
+      "name": "#16/search_cold",
+      "ms": 72.536
+    },
+    {
+      "name": "#16/search_warm",
+      "ms": 70.994
+    },
+    {
+      "name": "#16/search_fallback",
+      "ms": 71.766
+    },
+    {
+      "name": "#16/detail_cold",
+      "ms": 1.684
+    },
+    {
+      "name": "#16/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#16/recipe_resolution",
+      "ms": 180.547
+    },
+    {
+      "name": "#16/repeated_search",
+      "ms": 72.62,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#16/market_switch",
+      "ms": 72.876,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#16/cache_pass",
+      "ms": 35.848
+    },
+    {
+      "name": "#17/open_us",
+      "ms": 110.932
+    },
+    {
+      "name": "#17/open_ca",
+      "ms": 168.203
+    },
+    {
+      "name": "#17/search_cold",
+      "ms": 70.102
+    },
+    {
+      "name": "#17/search_warm",
+      "ms": 72.146
+    },
+    {
+      "name": "#17/search_fallback",
+      "ms": 70.699
+    },
+    {
+      "name": "#17/detail_cold",
+      "ms": 1.746
+    },
+    {
+      "name": "#17/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#17/recipe_resolution",
+      "ms": 178.529
+    },
+    {
+      "name": "#17/repeated_search",
+      "ms": 72.358,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#17/market_switch",
+      "ms": 73.019,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#17/cache_pass",
+      "ms": 35.697
+    },
+    {
+      "name": "#18/open_us",
+      "ms": 146.018
+    },
+    {
+      "name": "#18/open_ca",
+      "ms": 67.974
+    },
+    {
+      "name": "#18/search_cold",
+      "ms": 70.214
+    },
+    {
+      "name": "#18/search_warm",
+      "ms": 71.991
+    },
+    {
+      "name": "#18/search_fallback",
+      "ms": 70.399
+    },
+    {
+      "name": "#18/detail_cold",
+      "ms": 1.808
+    },
+    {
+      "name": "#18/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#18/recipe_resolution",
+      "ms": 180.386
+    },
+    {
+      "name": "#18/repeated_search",
+      "ms": 73.163,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#18/market_switch",
+      "ms": 72.008,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#18/cache_pass",
+      "ms": 36.118
+    },
+    {
+      "name": "#19/open_us",
+      "ms": 111.064
+    },
+    {
+      "name": "#19/open_ca",
+      "ms": 103.63
+    },
+    {
+      "name": "#19/search_cold",
+      "ms": 70.232
+    },
+    {
+      "name": "#19/search_warm",
+      "ms": 72.543
+    },
+    {
+      "name": "#19/search_fallback",
+      "ms": 70.384
+    },
+    {
+      "name": "#19/detail_cold",
+      "ms": 1.761
+    },
+    {
+      "name": "#19/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#19/recipe_resolution",
+      "ms": 178.366
+    },
+    {
+      "name": "#19/repeated_search",
+      "ms": 72.352,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#19/market_switch",
+      "ms": 72.577,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#19/cache_pass",
+      "ms": 35.758
+    },
+    {
+      "name": "#20/open_us",
+      "ms": 141.649
+    },
+    {
+      "name": "#20/open_ca",
+      "ms": 75.259
+    },
+    {
+      "name": "#20/search_cold",
+      "ms": 71.529
+    },
+    {
+      "name": "#20/search_warm",
+      "ms": 72.282
+    },
+    {
+      "name": "#20/search_fallback",
+      "ms": 70.592
+    },
+    {
+      "name": "#20/detail_cold",
+      "ms": 1.754
+    },
+    {
+      "name": "#20/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#20/recipe_resolution",
+      "ms": 180.568
+    },
+    {
+      "name": "#20/repeated_search",
+      "ms": 73.193,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#20/market_switch",
+      "ms": 72.906,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#20/cache_pass",
+      "ms": 35.672
+    },
+    {
+      "name": "#21/open_us",
+      "ms": 109.269
+    },
+    {
+      "name": "#21/open_ca",
+      "ms": 121.728
+    },
+    {
+      "name": "#21/search_cold",
+      "ms": 70.994
+    },
+    {
+      "name": "#21/search_warm",
+      "ms": 71.841
+    },
+    {
+      "name": "#21/search_fallback",
+      "ms": 69.873
+    },
+    {
+      "name": "#21/detail_cold",
+      "ms": 1.837
+    },
+    {
+      "name": "#21/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#21/recipe_resolution",
+      "ms": 182.619
+    },
+    {
+      "name": "#21/repeated_search",
+      "ms": 74.796,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#21/market_switch",
+      "ms": 74.988,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#21/cache_pass",
+      "ms": 38.236
+    },
+    {
+      "name": "#22/open_us",
+      "ms": 219.216
+    },
+    {
+      "name": "#22/open_ca",
+      "ms": 112.207
+    },
+    {
+      "name": "#22/search_cold",
+      "ms": 93.99
+    },
+    {
+      "name": "#22/search_warm",
+      "ms": 72.134
+    },
+    {
+      "name": "#22/search_fallback",
+      "ms": 70.153
+    },
+    {
+      "name": "#22/detail_cold",
+      "ms": 1.786
+    },
+    {
+      "name": "#22/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#22/recipe_resolution",
+      "ms": 183.261
+    },
+    {
+      "name": "#22/repeated_search",
+      "ms": 72.316,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#22/market_switch",
+      "ms": 75.988,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#22/cache_pass",
+      "ms": 38.114
+    },
+    {
+      "name": "#23/open_us",
+      "ms": 195.202
+    },
+    {
+      "name": "#23/open_ca",
+      "ms": 98.122
+    },
+    {
+      "name": "#23/search_cold",
+      "ms": 78.001
+    },
+    {
+      "name": "#23/search_warm",
+      "ms": 76.436
+    },
+    {
+      "name": "#23/search_fallback",
+      "ms": 74.877
+    },
+    {
+      "name": "#23/detail_cold",
+      "ms": 1.823
+    },
+    {
+      "name": "#23/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#23/recipe_resolution",
+      "ms": 196.369
+    },
+    {
+      "name": "#23/repeated_search",
+      "ms": 76.443,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#23/market_switch",
+      "ms": 76.293,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#23/cache_pass",
+      "ms": 37.944
+    },
+    {
+      "name": "#24/open_us",
+      "ms": 116.113
+    },
+    {
+      "name": "#24/open_ca",
+      "ms": 102.846
+    },
+    {
+      "name": "#24/search_cold",
+      "ms": 77.593
+    },
+    {
+      "name": "#24/search_warm",
+      "ms": 77.361
+    },
+    {
+      "name": "#24/search_fallback",
+      "ms": 74.89
+    },
+    {
+      "name": "#24/detail_cold",
+      "ms": 1.819
+    },
+    {
+      "name": "#24/detail_warm",
+      "ms": 0.01
+    },
+    {
+      "name": "#24/recipe_resolution",
+      "ms": 194.377
+    },
+    {
+      "name": "#24/repeated_search",
+      "ms": 76.041,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#24/market_switch",
+      "ms": 76.468,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#24/cache_pass",
+      "ms": 38.204
+    },
+    {
+      "name": "#25/open_us",
+      "ms": 233.654
+    },
+    {
+      "name": "#25/open_ca",
+      "ms": 75.712
+    },
+    {
+      "name": "#25/search_cold",
+      "ms": 77.814
+    },
+    {
+      "name": "#25/search_warm",
+      "ms": 77.401
+    },
+    {
+      "name": "#25/search_fallback",
+      "ms": 75.35
+    },
+    {
+      "name": "#25/detail_cold",
+      "ms": 1.835
+    },
+    {
+      "name": "#25/detail_warm",
+      "ms": 0.01
+    },
+    {
+      "name": "#25/recipe_resolution",
+      "ms": 194.295
+    },
+    {
+      "name": "#25/repeated_search",
+      "ms": 78.38,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#25/market_switch",
+      "ms": 78.785,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#25/cache_pass",
+      "ms": 39.591
+    },
+    {
+      "name": "#26/open_us",
+      "ms": 120.322
+    },
+    {
+      "name": "#26/open_ca",
+      "ms": 119.817
+    },
+    {
+      "name": "#26/search_cold",
+      "ms": 81
+    },
+    {
+      "name": "#26/search_warm",
+      "ms": 80.957
+    },
+    {
+      "name": "#26/search_fallback",
+      "ms": 77.602
+    },
+    {
+      "name": "#26/detail_cold",
+      "ms": 2.298
+    },
+    {
+      "name": "#26/detail_warm",
+      "ms": 0.009
+    },
+    {
+      "name": "#26/recipe_resolution",
+      "ms": 201.285
+    },
+    {
+      "name": "#26/repeated_search",
+      "ms": 78.675,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#26/market_switch",
+      "ms": 78.962,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#26/cache_pass",
+      "ms": 39.21
+    },
+    {
+      "name": "#27/open_us",
+      "ms": 194.691
+    },
+    {
+      "name": "#27/open_ca",
+      "ms": 79.793
+    },
+    {
+      "name": "#27/search_cold",
+      "ms": 80.86
+    },
+    {
+      "name": "#27/search_warm",
+      "ms": 79.987
+    },
+    {
+      "name": "#27/search_fallback",
+      "ms": 78.29
+    },
+    {
+      "name": "#27/detail_cold",
+      "ms": 1.912
+    },
+    {
+      "name": "#27/detail_warm",
+      "ms": 0.01
+    },
+    {
+      "name": "#27/recipe_resolution",
+      "ms": 200.719
+    },
+    {
+      "name": "#27/repeated_search",
+      "ms": 79.125,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#27/market_switch",
+      "ms": 83.8,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#27/cache_pass",
+      "ms": 41.635
+    },
+    {
+      "name": "#28/open_us",
+      "ms": 126.857
+    },
+    {
+      "name": "#28/open_ca",
+      "ms": 158.94
+    },
+    {
+      "name": "#28/search_cold",
+      "ms": 87.081
+    },
+    {
+      "name": "#28/search_warm",
+      "ms": 85.537
+    },
+    {
+      "name": "#28/search_fallback",
+      "ms": 83.434
+    },
+    {
+      "name": "#28/detail_cold",
+      "ms": 2.105
+    },
+    {
+      "name": "#28/detail_warm",
+      "ms": 0.01
+    },
+    {
+      "name": "#28/recipe_resolution",
+      "ms": 213.998
+    },
+    {
+      "name": "#28/repeated_search",
+      "ms": 83.93,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#28/market_switch",
+      "ms": 84.13,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#28/cache_pass",
+      "ms": 41.687
+    },
+    {
+      "name": "#29/open_us",
+      "ms": 249.907
+    },
+    {
+      "name": "#29/open_ca",
+      "ms": 138.742
+    },
+    {
+      "name": "#29/search_cold",
+      "ms": 104.427
+    },
+    {
+      "name": "#29/search_warm",
+      "ms": 80.296
+    },
+    {
+      "name": "#29/search_fallback",
+      "ms": 78.994
+    },
+    {
+      "name": "#29/detail_cold",
+      "ms": 1.972
+    },
+    {
+      "name": "#29/detail_warm",
+      "ms": 0.01
+    },
+    {
+      "name": "#29/recipe_resolution",
+      "ms": 200.808
+    },
+    {
+      "name": "#29/repeated_search",
+      "ms": 78.533,
+      "iterations": 50,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#29/market_switch",
+      "ms": 78.746,
+      "iterations": 10,
+      "note": "the mean of the iterations"
+    },
+    {
+      "name": "#29/cache_pass",
+      "ms": 39.251
+    }
+  ],
+  "memory": {
+    "platform_required": true,
+    "note": "Hermes does not expose a JavaScript heap size; the memory figure has to come from the platform."
+  },
+  "counts": {
+    "architecture": 2,
+    "iterations": 30,
+    "samples": 30,
+    "iteration": 29,
+    "open_us_records": 8257,
+    "open_ca_records": 5993,
+    "search_results": 20,
+    "fallback_results": 20,
+    "fallback_cross_market": 9,
+    "recipe_keys": 138,
+    "recipe_resolved": 138,
+    "cache_entries": 166,
+    "cache_bytes": 454343,
+    "detail_found_cold": 1,
+    "detail_found_warm": 1
+  },
+  "samples": [
+    {
+      "iteration": 0,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 131.857
+        },
+        {
+          "name": "open_ca",
+          "ms": 90.687
+        },
+        {
+          "name": "search_cold",
+          "ms": 73.22
+        },
+        {
+          "name": "search_warm",
+          "ms": 61.615
+        },
+        {
+          "name": "search_fallback",
+          "ms": 60.747
+        },
+        {
+          "name": "detail_cold",
+          "ms": 8.337
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.011
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 202.766
+        },
+        {
+          "name": "repeated_search",
+          "ms": 66.008,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 67.742,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 41.017
+        }
+      ],
+      "counts": {
+        "iteration": 0,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 1,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 103.929
+        },
+        {
+          "name": "open_ca",
+          "ms": 81.628
+        },
+        {
+          "name": "search_cold",
+          "ms": 84.114
+        },
+        {
+          "name": "search_warm",
+          "ms": 66.488
+        },
+        {
+          "name": "search_fallback",
+          "ms": 64.071
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.832
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 175.766
+        },
+        {
+          "name": "repeated_search",
+          "ms": 66.731,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 67.697,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 34.408
+        }
+      ],
+      "counts": {
+        "iteration": 1,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 2,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 102.835
+        },
+        {
+          "name": "open_ca",
+          "ms": 91.399
+        },
+        {
+          "name": "search_cold",
+          "ms": 70.584
+        },
+        {
+          "name": "search_warm",
+          "ms": 67.746
+        },
+        {
+          "name": "search_fallback",
+          "ms": 67.985
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.694
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.008
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 173.556
+        },
+        {
+          "name": "repeated_search",
+          "ms": 68.41,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 69.003,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 34.466
+        }
+      ],
+      "counts": {
+        "iteration": 2,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 3,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 149.959
+        },
+        {
+          "name": "open_ca",
+          "ms": 65.631
+        },
+        {
+          "name": "search_cold",
+          "ms": 67.433
+        },
+        {
+          "name": "search_warm",
+          "ms": 67.558
+        },
+        {
+          "name": "search_fallback",
+          "ms": 68.002
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.737
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 193.969
+        },
+        {
+          "name": "repeated_search",
+          "ms": 68.532,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 69.435,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.235
+        }
+      ],
+      "counts": {
+        "iteration": 3,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 4,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 141.532
+        },
+        {
+          "name": "open_ca",
+          "ms": 173.961
+        },
+        {
+          "name": "search_cold",
+          "ms": 66.255
+        },
+        {
+          "name": "search_warm",
+          "ms": 67.686
+        },
+        {
+          "name": "search_fallback",
+          "ms": 64.912
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.777
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.008
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 177.164
+        },
+        {
+          "name": "repeated_search",
+          "ms": 69.46,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 69.909,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.945
+        }
+      ],
+      "counts": {
+        "iteration": 4,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 5,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 140.071
+        },
+        {
+          "name": "open_ca",
+          "ms": 67.248
+        },
+        {
+          "name": "search_cold",
+          "ms": 69.767
+        },
+        {
+          "name": "search_warm",
+          "ms": 71.03
+        },
+        {
+          "name": "search_fallback",
+          "ms": 69.138
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.748
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 177.245
+        },
+        {
+          "name": "repeated_search",
+          "ms": 70.155,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 70.648,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 34.744
+        }
+      ],
+      "counts": {
+        "iteration": 5,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 6,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 194.563
+        },
+        {
+          "name": "open_ca",
+          "ms": 67.103
+        },
+        {
+          "name": "search_cold",
+          "ms": 68.412
+        },
+        {
+          "name": "search_warm",
+          "ms": 70.391
+        },
+        {
+          "name": "search_fallback",
+          "ms": 68.501
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.757
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.008
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 177.461
+        },
+        {
+          "name": "repeated_search",
+          "ms": 70.269,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 72.479,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 38.959
+        }
+      ],
+      "counts": {
+        "iteration": 6,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 7,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 109.04
+        },
+        {
+          "name": "open_ca",
+          "ms": 67.728
+        },
+        {
+          "name": "search_cold",
+          "ms": 87.033
+        },
+        {
+          "name": "search_warm",
+          "ms": 72.497
+        },
+        {
+          "name": "search_fallback",
+          "ms": 68.625
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.803
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 179.323
+        },
+        {
+          "name": "repeated_search",
+          "ms": 70.544,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 70.822,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.972
+        }
+      ],
+      "counts": {
+        "iteration": 7,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 8,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 110.544
+        },
+        {
+          "name": "open_ca",
+          "ms": 158.636
+        },
+        {
+          "name": "search_cold",
+          "ms": 72.404
+        },
+        {
+          "name": "search_warm",
+          "ms": 69.518
+        },
+        {
+          "name": "search_fallback",
+          "ms": 68.158
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.709
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.008
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 176.888
+        },
+        {
+          "name": "repeated_search",
+          "ms": 70.939,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 71.291,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.958
+        }
+      ],
+      "counts": {
+        "iteration": 8,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 9,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 170.137
+        },
+        {
+          "name": "open_ca",
+          "ms": 67.397
+        },
+        {
+          "name": "search_cold",
+          "ms": 69.235
+        },
+        {
+          "name": "search_warm",
+          "ms": 76.341
+        },
+        {
+          "name": "search_fallback",
+          "ms": 68.967
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.799
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 180.789
+        },
+        {
+          "name": "repeated_search",
+          "ms": 73.116,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 73.286,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.912
+        }
+      ],
+      "counts": {
+        "iteration": 9,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 10,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 144.474
+        },
+        {
+          "name": "open_ca",
+          "ms": 65.853
+        },
+        {
+          "name": "search_cold",
+          "ms": 78.089
+        },
+        {
+          "name": "search_warm",
+          "ms": 71.317
+        },
+        {
+          "name": "search_fallback",
+          "ms": 74.2
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.874
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 181.894
+        },
+        {
+          "name": "repeated_search",
+          "ms": 73.596,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 76.955,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 39.406
+        }
+      ],
+      "counts": {
+        "iteration": 10,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 11,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 116.802
+        },
+        {
+          "name": "open_ca",
+          "ms": 72.323
+        },
+        {
+          "name": "search_cold",
+          "ms": 81.682
+        },
+        {
+          "name": "search_warm",
+          "ms": 73.11
+        },
+        {
+          "name": "search_fallback",
+          "ms": 72.593
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.773
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 184.94
+        },
+        {
+          "name": "repeated_search",
+          "ms": 73.928,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 73.685,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 37.623
+        }
+      ],
+      "counts": {
+        "iteration": 11,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 12,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 111.649
+        },
+        {
+          "name": "open_ca",
+          "ms": 99.636
+        },
+        {
+          "name": "search_cold",
+          "ms": 72.008
+        },
+        {
+          "name": "search_warm",
+          "ms": 73.709
+        },
+        {
+          "name": "search_fallback",
+          "ms": 71.164
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.737
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 182.298
+        },
+        {
+          "name": "repeated_search",
+          "ms": 73.91,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 74.072,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 38.174
+        }
+      ],
+      "counts": {
+        "iteration": 12,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 13,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 218.743
+        },
+        {
+          "name": "open_ca",
+          "ms": 66.636
+        },
+        {
+          "name": "search_cold",
+          "ms": 72.77
+        },
+        {
+          "name": "search_warm",
+          "ms": 72.51
+        },
+        {
+          "name": "search_fallback",
+          "ms": 69.678
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.781
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 178.149
+        },
+        {
+          "name": "repeated_search",
+          "ms": 72.221,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 71.955,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.636
+        }
+      ],
+      "counts": {
+        "iteration": 13,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 14,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 107.348
+        },
+        {
+          "name": "open_ca",
+          "ms": 117.348
+        },
+        {
+          "name": "search_cold",
+          "ms": 71.795
+        },
+        {
+          "name": "search_warm",
+          "ms": 71.526
+        },
+        {
+          "name": "search_fallback",
+          "ms": 71.475
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.831
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 178.849
+        },
+        {
+          "name": "repeated_search",
+          "ms": 71.699,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 71.945,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.578
+        }
+      ],
+      "counts": {
+        "iteration": 14,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 15,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 196.225
+        },
+        {
+          "name": "open_ca",
+          "ms": 125.671
+        },
+        {
+          "name": "search_cold",
+          "ms": 100.814
+        },
+        {
+          "name": "search_warm",
+          "ms": 71.175
+        },
+        {
+          "name": "search_fallback",
+          "ms": 71.746
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.773
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 180.955
+        },
+        {
+          "name": "repeated_search",
+          "ms": 71.826,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 71.889,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.672
+        }
+      ],
+      "counts": {
+        "iteration": 15,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 16,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 135.718
+        },
+        {
+          "name": "open_ca",
+          "ms": 71.559
+        },
+        {
+          "name": "search_cold",
+          "ms": 72.536
+        },
+        {
+          "name": "search_warm",
+          "ms": 70.994
+        },
+        {
+          "name": "search_fallback",
+          "ms": 71.766
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.684
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 180.547
+        },
+        {
+          "name": "repeated_search",
+          "ms": 72.62,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 72.876,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.848
+        }
+      ],
+      "counts": {
+        "iteration": 16,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 17,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 110.932
+        },
+        {
+          "name": "open_ca",
+          "ms": 168.203
+        },
+        {
+          "name": "search_cold",
+          "ms": 70.102
+        },
+        {
+          "name": "search_warm",
+          "ms": 72.146
+        },
+        {
+          "name": "search_fallback",
+          "ms": 70.699
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.746
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 178.529
+        },
+        {
+          "name": "repeated_search",
+          "ms": 72.358,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 73.019,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.697
+        }
+      ],
+      "counts": {
+        "iteration": 17,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 18,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 146.018
+        },
+        {
+          "name": "open_ca",
+          "ms": 67.974
+        },
+        {
+          "name": "search_cold",
+          "ms": 70.214
+        },
+        {
+          "name": "search_warm",
+          "ms": 71.991
+        },
+        {
+          "name": "search_fallback",
+          "ms": 70.399
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.808
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 180.386
+        },
+        {
+          "name": "repeated_search",
+          "ms": 73.163,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 72.008,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 36.118
+        }
+      ],
+      "counts": {
+        "iteration": 18,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 19,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 111.064
+        },
+        {
+          "name": "open_ca",
+          "ms": 103.63
+        },
+        {
+          "name": "search_cold",
+          "ms": 70.232
+        },
+        {
+          "name": "search_warm",
+          "ms": 72.543
+        },
+        {
+          "name": "search_fallback",
+          "ms": 70.384
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.761
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 178.366
+        },
+        {
+          "name": "repeated_search",
+          "ms": 72.352,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 72.577,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.758
+        }
+      ],
+      "counts": {
+        "iteration": 19,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 20,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 141.649
+        },
+        {
+          "name": "open_ca",
+          "ms": 75.259
+        },
+        {
+          "name": "search_cold",
+          "ms": 71.529
+        },
+        {
+          "name": "search_warm",
+          "ms": 72.282
+        },
+        {
+          "name": "search_fallback",
+          "ms": 70.592
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.754
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 180.568
+        },
+        {
+          "name": "repeated_search",
+          "ms": 73.193,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 72.906,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 35.672
+        }
+      ],
+      "counts": {
+        "iteration": 20,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 21,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 109.269
+        },
+        {
+          "name": "open_ca",
+          "ms": 121.728
+        },
+        {
+          "name": "search_cold",
+          "ms": 70.994
+        },
+        {
+          "name": "search_warm",
+          "ms": 71.841
+        },
+        {
+          "name": "search_fallback",
+          "ms": 69.873
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.837
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 182.619
+        },
+        {
+          "name": "repeated_search",
+          "ms": 74.796,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 74.988,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 38.236
+        }
+      ],
+      "counts": {
+        "iteration": 21,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 22,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 219.216
+        },
+        {
+          "name": "open_ca",
+          "ms": 112.207
+        },
+        {
+          "name": "search_cold",
+          "ms": 93.99
+        },
+        {
+          "name": "search_warm",
+          "ms": 72.134
+        },
+        {
+          "name": "search_fallback",
+          "ms": 70.153
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.786
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 183.261
+        },
+        {
+          "name": "repeated_search",
+          "ms": 72.316,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 75.988,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 38.114
+        }
+      ],
+      "counts": {
+        "iteration": 22,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 23,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 195.202
+        },
+        {
+          "name": "open_ca",
+          "ms": 98.122
+        },
+        {
+          "name": "search_cold",
+          "ms": 78.001
+        },
+        {
+          "name": "search_warm",
+          "ms": 76.436
+        },
+        {
+          "name": "search_fallback",
+          "ms": 74.877
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.823
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 196.369
+        },
+        {
+          "name": "repeated_search",
+          "ms": 76.443,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 76.293,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 37.944
+        }
+      ],
+      "counts": {
+        "iteration": 23,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 24,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 116.113
+        },
+        {
+          "name": "open_ca",
+          "ms": 102.846
+        },
+        {
+          "name": "search_cold",
+          "ms": 77.593
+        },
+        {
+          "name": "search_warm",
+          "ms": 77.361
+        },
+        {
+          "name": "search_fallback",
+          "ms": 74.89
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.819
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.01
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 194.377
+        },
+        {
+          "name": "repeated_search",
+          "ms": 76.041,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 76.468,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 38.204
+        }
+      ],
+      "counts": {
+        "iteration": 24,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 25,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 233.654
+        },
+        {
+          "name": "open_ca",
+          "ms": 75.712
+        },
+        {
+          "name": "search_cold",
+          "ms": 77.814
+        },
+        {
+          "name": "search_warm",
+          "ms": 77.401
+        },
+        {
+          "name": "search_fallback",
+          "ms": 75.35
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.835
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.01
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 194.295
+        },
+        {
+          "name": "repeated_search",
+          "ms": 78.38,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 78.785,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 39.591
+        }
+      ],
+      "counts": {
+        "iteration": 25,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 26,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 120.322
+        },
+        {
+          "name": "open_ca",
+          "ms": 119.817
+        },
+        {
+          "name": "search_cold",
+          "ms": 81
+        },
+        {
+          "name": "search_warm",
+          "ms": 80.957
+        },
+        {
+          "name": "search_fallback",
+          "ms": 77.602
+        },
+        {
+          "name": "detail_cold",
+          "ms": 2.298
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.009
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 201.285
+        },
+        {
+          "name": "repeated_search",
+          "ms": 78.675,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 78.962,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 39.21
+        }
+      ],
+      "counts": {
+        "iteration": 26,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 27,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 194.691
+        },
+        {
+          "name": "open_ca",
+          "ms": 79.793
+        },
+        {
+          "name": "search_cold",
+          "ms": 80.86
+        },
+        {
+          "name": "search_warm",
+          "ms": 79.987
+        },
+        {
+          "name": "search_fallback",
+          "ms": 78.29
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.912
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.01
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 200.719
+        },
+        {
+          "name": "repeated_search",
+          "ms": 79.125,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 83.8,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 41.635
+        }
+      ],
+      "counts": {
+        "iteration": 27,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 28,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 126.857
+        },
+        {
+          "name": "open_ca",
+          "ms": 158.94
+        },
+        {
+          "name": "search_cold",
+          "ms": 87.081
+        },
+        {
+          "name": "search_warm",
+          "ms": 85.537
+        },
+        {
+          "name": "search_fallback",
+          "ms": 83.434
+        },
+        {
+          "name": "detail_cold",
+          "ms": 2.105
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.01
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 213.998
+        },
+        {
+          "name": "repeated_search",
+          "ms": 83.93,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 84.13,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 41.687
+        }
+      ],
+      "counts": {
+        "iteration": 28,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    },
+    {
+      "iteration": 29,
+      "marks": [
+        {
+          "name": "open_us",
+          "ms": 249.907
+        },
+        {
+          "name": "open_ca",
+          "ms": 138.742
+        },
+        {
+          "name": "search_cold",
+          "ms": 104.427
+        },
+        {
+          "name": "search_warm",
+          "ms": 80.296
+        },
+        {
+          "name": "search_fallback",
+          "ms": 78.994
+        },
+        {
+          "name": "detail_cold",
+          "ms": 1.972
+        },
+        {
+          "name": "detail_warm",
+          "ms": 0.01
+        },
+        {
+          "name": "recipe_resolution",
+          "ms": 200.808
+        },
+        {
+          "name": "repeated_search",
+          "ms": 78.533,
+          "iterations": 50,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "market_switch",
+          "ms": 78.746,
+          "iterations": 10,
+          "note": "the mean of the iterations"
+        },
+        {
+          "name": "cache_pass",
+          "ms": 39.251
+        }
+      ],
+      "counts": {
+        "iteration": 29,
+        "architecture": 2,
+        "open_us_records": 8257,
+        "open_ca_records": 5993,
+        "search_results": 20,
+        "fallback_results": 20,
+        "fallback_cross_market": 9,
+        "recipe_keys": 138,
+        "recipe_resolved": 138,
+        "cache_entries": 166,
+        "cache_bytes": 454343,
+        "detail_found_cold": 1,
+        "detail_found_warm": 1
+      }
+    }
+  ],
+  "note": "A physical device run of the M2-3A harness."
+}

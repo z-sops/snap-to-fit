@@ -1,0 +1,63 @@
+{
+  "schema_version": "m2-3a-b30-evidence-1.0",
+  "generated_by": "research/m2-3a/bench/evidence.py",
+  "git_head": "9ade7fb1a54e3c00cc5b84910600f487f9d3c4b2",
+  "generated_at": "2026-10-23T00:00:00Z",
+  "evidence_source": "research/m2-3a/device/app/devserver.log",
+  "evidence_source_checksum_sha256": "76810433380184A1417F19EFFDD600259E27E57C1034691A81F6D02477DF8431",
+  "device": {
+    "platform": "android",
+    "engine": "Hermes",
+    "model": "Pixel 6a",
+    "adb_serial": "19301FDEE003AS"
+  },
+  "task": {
+    "architecture": "B-bundle",
+    "iterations": 30
+  },
+  "iterations": [
+    {"index": 0, "open_us_ms": 1350.492, "open_ca_ms": 1162.423, "search_cold_ms": 72.4, "search_warm_ms": 69.516, "search_fallback_ms": 68.43, "detail_cold_ms": 1.632, "detail_warm_ms": 0.01, "recipe_resolution_ms": 15.599, "repeated_search_ms": 71.9, "market_switch_ms": 74.09, "cache_pass_ms": 2.223},
+    {"index": 1, "open_us_ms": 1493.573, "open_ca_ms": 1092.224, "search_cold_ms": 71.767, "search_warm_ms": 70.389, "search_fallback_ms": 70.163, "detail_cold_ms": 0.102, "detail_warm_ms": 0.007, "recipe_resolution_ms": 11.387, "repeated_search_ms": 71.894, "market_switch_ms": 72.753, "cache_pass_ms": 2.257},
+    {"index": 2, "open_us_ms": 1417.472, "open_ca_ms": 1207.287, "search_cold_ms": 71.649, "search_warm_ms": 72.333, "search_fallback_ms": 70.665, "detail_cold_ms": 0.105, "detail_warm_ms": 0.007, "recipe_resolution_ms": 11.234, "repeated_search_ms": 73.015, "market_switch_ms": 73.084, "cache_pass_ms": 2.083},
+    {"index": 3, "open_us_ms": 1528.414, "open_ca_ms": 1037.502, "search_cold_ms": 74.65, "search_warm_ms": 73.598, "search_fallback_ms": 76.383, "detail_cold_ms": 0.105, "detail_warm_ms": 0.007, "recipe_resolution_ms": 11.257, "repeated_search_ms": 75.487, "market_switch_ms": 76.213, "cache_pass_ms": 2.238},
+    {"index": 4, "open_us_ms": 1412.931, "open_ca_ms": 1122.159, "search_cold_ms": 73.604, "search_warm_ms": 72.961, "search_fallback_ms": 70.853, "detail_cold_ms": 0.103, "detail_warm_ms": 0.007, "recipe_resolution_ms": 11.275, "repeated_search_ms": 73.765, "market_switch_ms": 73.859, "cache_pass_ms": 2.19},
+    {"index": 5, "open_us_ms": 1425.785, "open_ca_ms": 1095.336, "search_cold_ms": 74.712, "search_warm_ms": 73.851, "search_fallback_ms": 71.896, "detail_cold_ms": 0.106, "detail_warm_ms": 0.008, "recipe_resolution_ms": 11.925, "repeated_search_ms": 74.227, "market_switch_ms": 75.106, "cache_pass_ms": 2.056},
+    {"index": 6, "open_us_ms": 1435.564, "open_ca_ms": 1213.493, "search_cold_ms": 81.431, "search_warm_ms": 73.555, "search_fallback_ms": 75.956, "detail_cold_ms": 0.107, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.062, "repeated_search_ms": 76.537, "market_switch_ms": 76.303, "cache_pass_ms": 2.092},
+    {"index": 7, "open_us_ms": 1367.358, "open_ca_ms": 1075.376, "search_cold_ms": 79.013, "search_warm_ms": 76.742, "search_fallback_ms": 75.434, "detail_cold_ms": 0.104, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.002, "repeated_search_ms": 76.224, "market_switch_ms": 76.793, "cache_pass_ms": 2.214},
+    {"index": 8, "open_us_ms": 1388.905, "open_ca_ms": 1134.359, "search_cold_ms": 72.295, "search_warm_ms": 72.092, "search_fallback_ms": 73.302, "detail_cold_ms": 0.116, "detail_warm_ms": 0.008, "recipe_resolution_ms": 11.951, "repeated_search_ms": 74.822, "market_switch_ms": 75.062, "cache_pass_ms": 2.257},
+    {"index": 9, "open_us_ms": 1312.303, "open_ca_ms": 1142.607, "search_cold_ms": 75.253, "search_warm_ms": 79.54, "search_fallback_ms": 77.861, "detail_cold_ms": 0.11, "detail_warm_ms": 0.009, "recipe_resolution_ms": 12.377, "repeated_search_ms": 76.319, "market_switch_ms": 76.565, "cache_pass_ms": 2.319},
+    {"index": 10, "open_us_ms": 1411.134, "open_ca_ms": 1053.149, "search_cold_ms": 78.742, "search_warm_ms": 79.922, "search_fallback_ms": 76.265, "detail_cold_ms": 0.106, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.008, "repeated_search_ms": 76.575, "market_switch_ms": 76.698, "cache_pass_ms": 2.262},
+    {"index": 11, "open_us_ms": 1358.621, "open_ca_ms": 1210.786, "search_cold_ms": 74.987, "search_warm_ms": 72.659, "search_fallback_ms": 75.427, "detail_cold_ms": 0.107, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.022, "repeated_search_ms": 76.491, "market_switch_ms": 76.636, "cache_pass_ms": 2.207},
+    {"index": 12, "open_us_ms": 1414.597, "open_ca_ms": 1151.2, "search_cold_ms": 77.395, "search_warm_ms": 76.867, "search_fallback_ms": 75.434, "detail_cold_ms": 0.108, "detail_warm_ms": 0.008, "recipe_resolution_ms": 11.951, "repeated_search_ms": 76.338, "market_switch_ms": 76.667, "cache_pass_ms": 2.216},
+    {"index": 13, "open_us_ms": 1542.547, "open_ca_ms": 1225.618, "search_cold_ms": 75.471, "search_warm_ms": 73.698, "search_fallback_ms": 73.567, "detail_cold_ms": 0.103, "detail_warm_ms": 0.008, "recipe_resolution_ms": 11.268, "repeated_search_ms": 74.953, "market_switch_ms": 75.685, "cache_pass_ms": 2.256},
+    {"index": 14, "open_us_ms": 1545.859, "open_ca_ms": 1145.393, "search_cold_ms": 77.649, "search_warm_ms": 76.587, "search_fallback_ms": 76.115, "detail_cold_ms": 0.111, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.369, "repeated_search_ms": 76.369, "market_switch_ms": 80.226, "cache_pass_ms": 2.257},
+    {"index": 15, "open_us_ms": 1399.721, "open_ca_ms": 1175.402, "search_cold_ms": 77.424, "search_warm_ms": 77.163, "search_fallback_ms": 75.308, "detail_cold_ms": 0.106, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.014, "repeated_search_ms": 76.896, "market_switch_ms": 77.89, "cache_pass_ms": 2.238},
+    {"index": 16, "open_us_ms": 1446.398, "open_ca_ms": 1317.221, "search_cold_ms": 70.473, "search_warm_ms": 76.702, "search_fallback_ms": 72.87, "detail_cold_ms": 0.11, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.347, "repeated_search_ms": 77.129, "market_switch_ms": 77.359, "cache_pass_ms": 2.249},
+    {"index": 17, "open_us_ms": 1507.508, "open_ca_ms": 1125.563, "search_cold_ms": 75.889, "search_warm_ms": 74.927, "search_fallback_ms": 71.782, "detail_cold_ms": 0.139, "detail_warm_ms": 0.009, "recipe_resolution_ms": 11.991, "repeated_search_ms": 75.338, "market_switch_ms": 75.924, "cache_pass_ms": 2.228},
+    {"index": 18, "open_us_ms": 1523.058, "open_ca_ms": 1122.858, "search_cold_ms": 75.465, "search_warm_ms": 75.477, "search_fallback_ms": 76.018, "detail_cold_ms": 0.104, "detail_warm_ms": 0.008, "recipe_resolution_ms": 11.268, "repeated_search_ms": 75.741, "market_switch_ms": 76.139, "cache_pass_ms": 2.103},
+    {"index": 19, "open_us_ms": 1415.967, "open_ca_ms": 1194.37, "search_cold_ms": 74.287, "search_warm_ms": 74.727, "search_fallback_ms": 76.624, "detail_cold_ms": 0.107, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.025, "repeated_search_ms": 77.936, "market_switch_ms": 76.54, "cache_pass_ms": 2.174},
+    {"index": 20, "open_us_ms": 1435.787, "open_ca_ms": 1144.86, "search_cold_ms": 76.69, "search_warm_ms": 74.08, "search_fallback_ms": 75.204, "detail_cold_ms": 0.1, "detail_warm_ms": 0.008, "recipe_resolution_ms": 11.245, "repeated_search_ms": 75.792, "market_switch_ms": 75.683, "cache_pass_ms": 2.115},
+    {"index": 21, "open_us_ms": 1455.794, "open_ca_ms": 1209.953, "search_cold_ms": 75.943, "search_warm_ms": 76.388, "search_fallback_ms": 75.989, "detail_cold_ms": 0.111, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.367, "repeated_search_ms": 76.088, "market_switch_ms": 76.242, "cache_pass_ms": 2.168},
+    {"index": 22, "open_us_ms": 1481.166, "open_ca_ms": 1152.457, "search_cold_ms": 80.145, "search_warm_ms": 79.364, "search_fallback_ms": 77.964, "detail_cold_ms": 0.111, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.332, "repeated_search_ms": 78.529, "market_switch_ms": 78.706, "cache_pass_ms": 2.241},
+    {"index": 23, "open_us_ms": 1464.575, "open_ca_ms": 1161.229, "search_cold_ms": 85.787, "search_warm_ms": 72.279, "search_fallback_ms": 72.665, "detail_cold_ms": 0.109, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.021, "repeated_search_ms": 75.784, "market_switch_ms": 76.2, "cache_pass_ms": 2.22},
+    {"index": 24, "open_us_ms": 1395.583, "open_ca_ms": 1073.12, "search_cold_ms": 77.611, "search_warm_ms": 77.238, "search_fallback_ms": 75.737, "detail_cold_ms": 0.107, "detail_warm_ms": 0.008, "recipe_resolution_ms": 11.985, "repeated_search_ms": 76.045, "market_switch_ms": 76.497, "cache_pass_ms": 2.223},
+    {"index": 25, "open_us_ms": 1370.004, "open_ca_ms": 1169.316, "search_cold_ms": 77.959, "search_warm_ms": 77.067, "search_fallback_ms": 77.276, "detail_cold_ms": 0.109, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.325, "repeated_search_ms": 78.038, "market_switch_ms": 78.386, "cache_pass_ms": 1.983},
+    {"index": 26, "open_us_ms": 1377.32, "open_ca_ms": 1174.3, "search_cold_ms": 79.685, "search_warm_ms": 77.444, "search_fallback_ms": 77.895, "detail_cold_ms": 0.111, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.235, "repeated_search_ms": 78.361, "market_switch_ms": 78.829, "cache_pass_ms": 2.333},
+    {"index": 27, "open_us_ms": 1369.024, "open_ca_ms": 1039.762, "search_cold_ms": 78.045, "search_warm_ms": 76.947, "search_fallback_ms": 73.506, "detail_cold_ms": 0.11, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.387, "repeated_search_ms": 76.46, "market_switch_ms": 78.124, "cache_pass_ms": 2.189},
+    {"index": 28, "open_us_ms": 1404.895, "open_ca_ms": 1219.715, "search_cold_ms": 72.621, "search_warm_ms": 75.649, "search_fallback_ms": 71.991, "detail_cold_ms": 0.109, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.367, "repeated_search_ms": 78.43, "market_switch_ms": 78.839, "cache_pass_ms": 2.277},
+    {"index": 29, "open_us_ms": 1421.397, "open_ca_ms": 1096.093, "search_cold_ms": 77.356, "search_warm_ms": 79.177, "search_fallback_ms": 77.765, "detail_cold_ms": 0.111, "detail_warm_ms": 0.008, "recipe_resolution_ms": 12.33, "repeated_search_ms": 78.505, "market_switch_ms": 79.57, "cache_pass_ms": 2.238}
+  ],
+  "statistics": {
+    "open_us": {"p50": 1416.72, "p95": 1542.55, "min": 1312.30, "max": 1545.86, "n": 30},
+    "open_ca": {"p50": 1148.30, "p95": 1225.62, "min": 1037.50, "max": 1317.22, "n": 30},
+    "search_cold": {"p50": 75.92, "p95": 81.43, "min": 70.47, "max": 85.79, "n": 30},
+    "search_warm": {"p50": 75.56, "p95": 79.54, "min": 69.52, "max": 79.92, "n": 30},
+    "detail_cold": {"p50": 0.11, "p95": 0.14, "min": 0.10, "max": 1.63, "n": 30},
+    "detail_warm": {"p50": 0.01, "p95": 0.01, "min": 0.01, "max": 0.01, "n": 30}
+  },
+  "method": {
+    "p50": "median of 30 sample values",
+    "p95": "sorted values at index ceil(0.95 * n) - 1 (0-based), i.e. index 29 of 30 sorted values",
+    "extraction": "per-iteration mark arrays parsed from devserver.log lines matching 'LOG  M2-3A iteration N [[name,value,...]]'"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "runId": "m2-3a-C-split-30x-1792837216010-598758a3",
+  "filename": "m2-3a-C-split-30x-1792837216010-598758a3.json",
+  "bytes": 71751,
+  "sha256": "23c648b0459ff5f3d9a9b66504a55f8bf7985658e03a10b9c2f727458b667a6a",
+  "acceptedAt": "2026-10-24T10:38:27.993Z",
+  "contract": {
+    "contractVersion": 1,
+    "runId": "m2-3a-C-split-30x-1792837216010-598758a3",
+    "architecture": "C-split",
+    "iterations": 30,
+    "createdAt": "2026-10-24T10:20:16.010Z",
+    "gitSha": "e7a763770066a10e96d33a7e9470f7d176cb439f",
+    "dirtyWorktree": true,
+    "instrumentationRevision": "M2-3A-C1-R2-VERIFIED-v1",
+    "catalogueManifestSha256": "30c0cbf18d47f6e00bab337fac47b2be6ea8dfe89dfb838eb12d415a3c9f22d6"
+  }
+}
