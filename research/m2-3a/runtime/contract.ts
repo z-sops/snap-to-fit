@@ -329,3 +329,224 @@ export function validateEvidenceReport(data: unknown, contract: BenchmarkTaskCon
 
   return data as BenchmarkEvidenceReport;
 }
+
+/**
+ * Durable baseline acceptance record stored by the Windows collector upon
+ * authoritative validation and acceptance of evidence.
+ *
+ * Provides an independent baseline against which persisted evidence files
+ * can be verified to detect post-acceptance tampering, file truncation,
+ * or modification even if the modified file remains schema-valid.
+ */
+export interface AcceptanceRecord {
+  runId: string;
+  filename: string;
+  bytes: number;
+  sha256: string;
+  acceptedAt: string;
+  contract: BenchmarkTaskContract;
+}
+
+/**
+ * Validates a durable acceptance record against the authoritative contract.
+ */
+export function validateAcceptanceRecord(data: unknown, contract: BenchmarkTaskContract): AcceptanceRecord {
+  if (!data || typeof data !== "object") {
+    throw new Error("Acceptance record must be a non-null object");
+  }
+
+  const obj = data as Record<string, unknown>;
+
+  if (obj.runId !== contract.runId) {
+    throw new Error(`Acceptance record runId mismatch: expected '${contract.runId}', got '${String(obj.runId)}'`);
+  }
+
+  const expectedFilename = `${contract.runId}.json`;
+  if (typeof obj.filename !== "string" || obj.filename !== expectedFilename) {
+    throw new Error(`Acceptance record invalid filename: expected '${expectedFilename}', got '${String(obj.filename)}'`);
+  }
+
+  if (typeof obj.bytes !== "number" || !Number.isInteger(obj.bytes) || obj.bytes <= 0) {
+    throw new Error(`Acceptance record invalid byte count: expected positive integer, got ${String(obj.bytes)}`);
+  }
+
+  if (typeof obj.sha256 !== "string" || !/^[a-fA-F0-9]{64}$/.test(obj.sha256)) {
+    throw new Error(`Acceptance record invalid sha256: expected 64-char hex string, got ${String(obj.sha256)}`);
+  }
+
+  if (typeof obj.acceptedAt !== "string" || isNaN(Date.parse(obj.acceptedAt))) {
+    throw new Error(`Acceptance record invalid acceptedAt: expected ISO timestamp, got ${String(obj.acceptedAt)}`);
+  }
+
+  if (!obj.contract || typeof obj.contract !== "object") {
+    throw new Error("Acceptance record missing contract object");
+  }
+
+  const embeddedContract = validateTaskContract(obj.contract);
+  if (
+    embeddedContract.runId !== contract.runId ||
+    embeddedContract.architecture !== contract.architecture ||
+    embeddedContract.iterations !== contract.iterations ||
+    embeddedContract.gitSha !== contract.gitSha ||
+    embeddedContract.catalogueManifestSha256 !== contract.catalogueManifestSha256
+  ) {
+    throw new Error("Acceptance record contract identity mismatch with authoritative contract");
+  }
+
+  return {
+    runId: obj.runId,
+    filename: obj.filename,
+    bytes: obj.bytes,
+    sha256: obj.sha256.toLowerCase(),
+    acceptedAt: obj.acceptedAt,
+    contract: embeddedContract,
+  };
+}
+
+/**
+ * Validates a collector receipt returned by POST /evidence.
+ * Ensures the response strictly conforms to authoritative contract identity and checksum requirements.
+ */
+export function validateCollectorReceipt(
+  receiptData: unknown,
+  expectedRunId: string,
+): EvidenceReceipt {
+  if (!receiptData || typeof receiptData !== "object") {
+    throw new Error("Invalid collector receipt: response is not an object");
+  }
+
+  const r = receiptData as Record<string, unknown>;
+
+  if (r.status !== "accepted") {
+    throw new Error(`Invalid collector receipt status: expected 'accepted', got '${String(r.status)}'`);
+  }
+
+  if (r.runId !== expectedRunId) {
+    throw new Error(`Collector receipt runId mismatch: expected '${expectedRunId}', got '${String(r.runId)}'`);
+  }
+
+  const expectedFilename = `${expectedRunId}.json`;
+  if (typeof r.filename !== "string" || r.filename !== expectedFilename) {
+    throw new Error(`Collector receipt invalid filename: expected '${expectedFilename}', got '${String(r.filename)}'`);
+  }
+
+  if (typeof r.bytes !== "number" || !Number.isInteger(r.bytes) || r.bytes <= 0) {
+    throw new Error(`Collector receipt invalid byte count: expected positive integer, got ${String(r.bytes)}`);
+  }
+
+  if (typeof r.sha256 !== "string" || !/^[a-fA-F0-9]{64}$/.test(r.sha256)) {
+    throw new Error(`Collector receipt invalid SHA-256 digest: got '${String(r.sha256)}'`);
+  }
+
+  if (typeof r.acceptedAt !== "string" || isNaN(Date.parse(r.acceptedAt))) {
+    throw new Error(`Collector receipt invalid acceptedAt timestamp: got '${String(r.acceptedAt)}'`);
+  }
+
+  return {
+    status: "accepted",
+    runId: r.runId,
+    filename: r.filename,
+    bytes: r.bytes,
+    sha256: (r.sha256 as string).toLowerCase(),
+    acceptedAt: r.acceptedAt,
+  };
+}
+
+/**
+ * Validates the collector status returned by GET /evidence/status?runId=... against the accepted receipt.
+ * Enforces byte count match, SHA-256 match, persistence verification, and non-corruption.
+ */
+export function validateCollectorStatus(
+  statusData: unknown,
+  expectedReceipt: EvidenceReceipt,
+): EvidenceStatus {
+  if (!statusData || typeof statusData !== "object") {
+    throw new Error("Invalid collector status: response is not an object");
+  }
+
+  const s = statusData as Record<string, unknown>;
+
+  if (s.runId !== expectedReceipt.runId) {
+    throw new Error(`Collector status runId mismatch: expected '${expectedReceipt.runId}', got '${String(s.runId)}'`);
+  }
+
+  if (s.persisted !== true) {
+    throw new Error(`Collector status indicates evidence not persisted: persisted=${String(s.persisted)}`);
+  }
+
+  if (s.verified !== true) {
+    throw new Error(`Collector status indicates evidence not verified: verified=${String(s.verified)}`);
+  }
+
+  if (s.corrupt === true) {
+    throw new Error(`Collector status indicates evidence is corrupt: ${String(s.reason ?? "unspecified corruption")}`);
+  }
+
+  if (typeof s.bytes !== "number" || s.bytes !== expectedReceipt.bytes) {
+    throw new Error(`Collector status byte count mismatch: receipt has ${expectedReceipt.bytes}, status has ${String(s.bytes)}`);
+  }
+
+  if (typeof s.sha256 !== "string" || s.sha256.toLowerCase() !== expectedReceipt.sha256.toLowerCase()) {
+    throw new Error(`Collector status SHA-256 mismatch: receipt has ${expectedReceipt.sha256}, status has ${String(s.sha256)}`);
+  }
+
+  if (typeof s.filename === "string" && s.filename !== expectedReceipt.filename) {
+    throw new Error(`Collector status filename mismatch: receipt has ${expectedReceipt.filename}, status has ${s.filename}`);
+  }
+
+  return {
+    runId: s.runId as string,
+    persisted: true,
+    verified: true,
+    corrupt: false,
+    filename: (s.filename as string) ?? expectedReceipt.filename,
+    bytes: s.bytes as number,
+    sha256: (s.sha256 as string).toLowerCase(),
+    acceptedAt: typeof s.acceptedAt === "string" ? s.acceptedAt : expectedReceipt.acceptedAt,
+  };
+}
+
+/**
+ * Adapter interface representing an Expo SDK 57 File instance for device evidence persistence.
+ * Compatible with `new File(...)` from expo-file-system.
+ */
+export interface DeviceReportFileAdapter {
+  exists: boolean;
+  create(options?: { intermediates?: boolean }): void;
+  write(content: string): void;
+  textSync(): string;
+  uri?: string;
+}
+
+/**
+ * Persists benchmark evidence report to device filesystem using strict no-overwrite semantics
+ * and exact read-back verification.
+ *
+ * Refuses to overwrite any pre-existing report file.
+ * Verifies byte-for-byte read-back equality before reporting persistence success.
+ */
+export function persistDeviceReport(
+  reportFile: DeviceReportFileAdapter,
+  report: BenchmarkEvidenceReport,
+): { persisted: boolean; payload: string; bytes: number } {
+  if (reportFile.exists) {
+    throw new Error(`Device evidence already exists for run ${report.runId}; refusing to overwrite existing report`);
+  }
+
+  const payload = JSON.stringify(report, null, 2);
+  reportFile.create();
+  reportFile.write(payload);
+
+  const readBack = reportFile.textSync();
+  if (readBack !== payload) {
+    throw new Error(
+      `Device evidence read-back verification failed: content mismatch with original serialized payload (expected ${payload.length} chars, read ${readBack ? readBack.length : 0} chars)`,
+    );
+  }
+
+  return {
+    persisted: true,
+    payload,
+    bytes: payload.length,
+  };
+}

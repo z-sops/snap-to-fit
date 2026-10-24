@@ -9,8 +9,10 @@ import {
   type BenchmarkTaskContract,
   type EvidenceReceipt,
   type EvidenceStatus,
+  type AcceptanceRecord,
   CONTRACT_VERSION,
   validateEvidenceReport,
+  validateAcceptanceRecord,
 } from "../runtime/contract";
 
 /**
@@ -108,10 +110,10 @@ export function parseCliArgs(argv: string[]): CliConfig {
   }
 
   if (!arch) {
-    throw new Error("Missing required argument: --arch (must be 'B-bundle' or 'C-split')");
+    throw new Error("Missing required argument: --arch=B-bundle|C-split");
   }
-  if (iter === undefined) {
-    throw new Error("Missing required argument: --iter (must be an integer from 1 to 100)");
+  if (!iter) {
+    throw new Error("Missing required argument: --iter=N (integer between 1 and 100)");
   }
 
   return {
@@ -122,29 +124,45 @@ export function parseCliArgs(argv: string[]): CliConfig {
 }
 
 /**
- * Creates the single immutable task contract for the benchmark session.
+ * Obtains current Git commit SHA and dirty state.
+ */
+function getGitInfo(): { gitSha: string; dirtyWorktree: boolean } {
+  try {
+    const gitSha = execFileSync("git", ["rev-parse", "HEAD"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+
+    const status = execFileSync("git", ["status", "--porcelain"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+
+    return {
+      gitSha,
+      dirtyWorktree: status.length > 0,
+    };
+  } catch {
+    return {
+      gitSha: "0000000000000000000000000000000000000000",
+      dirtyWorktree: true,
+    };
+  }
+}
+
+/**
+ * Creates the authoritative, immutable task contract for a benchmark run.
  */
 export function createTaskContract(
   architecture: Architecture,
   iterations: number,
-  manifestDir: string,
-  worktreeDir?: string,
+  folder: string,
 ): BenchmarkTaskContract {
-  const rootDir = worktreeDir ?? process.cwd();
-  let gitSha: string;
-  let dirtyWorktree: boolean;
+  const { gitSha, dirtyWorktree } = getGitInfo();
 
-  try {
-    gitSha = execFileSync("git", ["-C", rootDir, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
-    const status = execFileSync("git", ["-C", rootDir, "status", "--porcelain"], { encoding: "utf8" });
-    dirtyWorktree = status.trim().length > 0;
-  } catch (err) {
-    throw new Error(`Failed to establish Git source identity: ${err instanceof Error ? err.message : String(err)}`);
-  }
-
-  const manifestPath = path.join(manifestDir, "manifest.json");
+  const manifestPath = path.join(folder, "manifest.json");
   if (!fs.existsSync(manifestPath)) {
-    throw new Error(`Catalogue manifest not found at ${manifestPath}`);
+    throw new Error(`Catalogue manifest not found at ${manifestPath}. Run build-assets first.`);
   }
 
   const manifestBytes = fs.readFileSync(manifestPath);
@@ -160,7 +178,7 @@ export function createTaskContract(
     createdAt: new Date().toISOString(),
     gitSha,
     dirtyWorktree,
-    instrumentationRevision: "M2-3A-C1-R1-HARDENED-v2",
+    instrumentationRevision: "M2-3A-C1-R2-VERIFIED-v1",
     catalogueManifestSha256,
   };
 }
@@ -193,14 +211,16 @@ export function createAssetServer(config: ServerConfig): http.Server {
     // ignore
   }
 
-  // Pre-populate accepted run IDs from existing persisted evidence files
+  // Pre-populate accepted run IDs from existing persisted evidence and acceptance files
   const acceptedRunIds = new Set<string>();
   try {
     const entries = fs.readdirSync(evidenceDir);
     for (const entry of entries) {
-      if (entry.endsWith(".json") && !entry.startsWith(".")) {
-        const runId = entry.slice(0, -".json".length);
-        acceptedRunIds.add(runId);
+      if (entry.startsWith(".")) continue;
+      if (entry.endsWith(".acceptance.json")) {
+        acceptedRunIds.add(entry.slice(0, -".acceptance.json".length));
+      } else if (entry.endsWith(".json")) {
+        acceptedRunIds.add(entry.slice(0, -".json".length));
       }
     }
   } catch {
@@ -303,7 +323,8 @@ export function createAssetServer(config: ServerConfig): http.Server {
           return;
         }
 
-        let tempFilePath: string | null = null;
+        let tempEvidenceFilePath: string | null = null;
+        let tempAcceptanceFilePath: string | null = null;
         let runIdToRelease: string | null = null;
 
         try {
@@ -319,21 +340,21 @@ export function createAssetServer(config: ServerConfig): http.Server {
 
           const report = validateEvidenceReport(parsed, contract);
 
-          // Atomic check: reject duplicate or concurrent submissions
-          if (acceptedRunIds.has(report.runId) || inFlightRunIds.has(report.runId)) {
-            response.writeHead(409, { "content-type": "text/plain" }).end(
-              "duplicate evidence: report already accepted or in flight for this run",
-            );
-            return;
-          }
-
           const targetFileName = `${report.runId}.json`;
           const targetFilePath = path.join(evidenceDir, targetFileName);
+          const acceptanceFileName = `${report.runId}.acceptance.json`;
+          const acceptanceFilePath = path.join(evidenceDir, acceptanceFileName);
 
-          if (fs.existsSync(targetFilePath)) {
+          // Atomic check: reject duplicate, in-flight, or existing on-disk submissions
+          if (
+            acceptedRunIds.has(report.runId) ||
+            inFlightRunIds.has(report.runId) ||
+            fs.existsSync(targetFilePath) ||
+            fs.existsSync(acceptanceFilePath)
+          ) {
             acceptedRunIds.add(report.runId);
             response.writeHead(409, { "content-type": "text/plain" }).end(
-              "duplicate evidence: target file already exists",
+              "duplicate evidence: report already accepted, in flight, or exists on disk for this run",
             );
             return;
           }
@@ -342,25 +363,51 @@ export function createAssetServer(config: ServerConfig): http.Server {
           inFlightRunIds.add(report.runId);
           runIdToRelease = report.runId;
 
-          // Exclusive publication on Windows (Correction A):
-          // Write to a temporary file on the same volume with exclusive flag 'wx'
-          const tempFileName = `.tmp-${report.runId}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.tmp`;
-          tempFilePath = path.join(evidenceDir, tempFileName);
+          // Exclusive publication on Windows:
+          // Write to temporary files on the same volume with exclusive flag 'wx'
+          const tempEvidenceFileName = `.tmp-ev-${report.runId}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.tmp`;
+          tempEvidenceFilePath = path.join(evidenceDir, tempEvidenceFileName);
 
-          const serialized = JSON.stringify(report, null, 2);
-          fs.writeFileSync(tempFilePath, serialized, { encoding: "utf8", flag: "wx" });
+          const tempAcceptanceFileName = `.tmp-acc-${report.runId}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.tmp`;
+          tempAcceptanceFilePath = path.join(evidenceDir, tempAcceptanceFileName);
+
+          const serializedEvidence = JSON.stringify(report, null, 2);
+          fs.writeFileSync(tempEvidenceFilePath, serializedEvidence, { encoding: "utf8", flag: "wx" });
 
           // Read back and compute SHA-256 for verification before publication
-          const persistedBytes = fs.readFileSync(tempFilePath);
+          const persistedBytes = fs.readFileSync(tempEvidenceFilePath);
           if (persistedBytes.length === 0) {
             throw new Error("Temporary evidence file verification failed: file is empty");
           }
           const computedSha = crypto.createHash("sha256").update(persistedBytes).digest("hex");
 
-          // Genuine exclusive atomic publication: hard-link temp file to final destination
+          // Prepare independent durable acceptance baseline record
+          const acceptanceRecord: AcceptanceRecord = {
+            runId: report.runId,
+            filename: targetFileName,
+            bytes: persistedBytes.length,
+            sha256: computedSha,
+            acceptedAt: new Date().toISOString(),
+            contract: {
+              contractVersion: contract.contractVersion,
+              runId: contract.runId,
+              architecture: contract.architecture,
+              iterations: contract.iterations,
+              createdAt: contract.createdAt,
+              gitSha: contract.gitSha,
+              dirtyWorktree: contract.dirtyWorktree,
+              instrumentationRevision: contract.instrumentationRevision,
+              catalogueManifestSha256: contract.catalogueManifestSha256,
+            },
+          };
+
+          const serializedAcceptance = JSON.stringify(acceptanceRecord, null, 2);
+          fs.writeFileSync(tempAcceptanceFilePath, serializedAcceptance, { encoding: "utf8", flag: "wx" });
+
+          // Genuine exclusive atomic publication: hard-link temp files to final destinations
           // On Windows NTFS, fs.linkSync throws EEXIST if targetFilePath already exists.
           try {
-            fs.linkSync(tempFilePath, targetFilePath);
+            fs.linkSync(tempEvidenceFilePath, targetFilePath);
           } catch (linkErr: any) {
             if (linkErr.code === "EEXIST") {
               acceptedRunIds.add(report.runId);
@@ -372,10 +419,29 @@ export function createAssetServer(config: ServerConfig): http.Server {
             throw linkErr;
           }
 
-          // Clean up temporary file after successful publication
           try {
-            fs.unlinkSync(tempFilePath);
-            tempFilePath = null;
+            fs.linkSync(tempAcceptanceFilePath, acceptanceFilePath);
+          } catch (linkErr: any) {
+            if (linkErr.code === "EEXIST") {
+              acceptedRunIds.add(report.runId);
+              response.writeHead(409, { "content-type": "text/plain" }).end(
+                "duplicate evidence: acceptance record already exists",
+              );
+              return;
+            }
+            throw linkErr;
+          }
+
+          // Clean up temporary files after successful publication
+          try {
+            fs.unlinkSync(tempEvidenceFilePath);
+            tempEvidenceFilePath = null;
+          } catch {
+            // ignore
+          }
+          try {
+            fs.unlinkSync(tempAcceptanceFilePath);
+            tempAcceptanceFilePath = null;
           } catch {
             // ignore
           }
@@ -391,7 +457,7 @@ export function createAssetServer(config: ServerConfig): http.Server {
             filename: targetFileName,
             bytes: persistedBytes.length,
             sha256: computedSha,
-            acceptedAt: new Date().toISOString(),
+            acceptedAt: acceptanceRecord.acceptedAt,
           };
 
           console.log(
@@ -412,9 +478,16 @@ export function createAssetServer(config: ServerConfig): http.Server {
             response.writeHead(400, { "content-type": "text/plain" }).end(`evidence rejected: ${msg}`);
           }
         } finally {
-          if (tempFilePath && fs.existsSync(tempFilePath)) {
+          if (tempEvidenceFilePath && fs.existsSync(tempEvidenceFilePath)) {
             try {
-              fs.unlinkSync(tempFilePath);
+              fs.unlinkSync(tempEvidenceFilePath);
+            } catch {
+              // ignore
+            }
+          }
+          if (tempAcceptanceFilePath && fs.existsSync(tempAcceptanceFilePath)) {
+            try {
+              fs.unlinkSync(tempAcceptanceFilePath);
             } catch {
               // ignore
             }
@@ -449,8 +522,14 @@ export function createAssetServer(config: ServerConfig): http.Server {
 
       const targetFileName = `${runId}.json`;
       const targetFilePath = path.join(evidenceDir, targetFileName);
+      const acceptanceFileName = `${runId}.acceptance.json`;
+      const acceptanceFilePath = path.join(evidenceDir, acceptanceFileName);
 
-      if (!fs.existsSync(targetFilePath)) {
+      const evidenceExists = fs.existsSync(targetFilePath);
+      const acceptanceExists = fs.existsSync(acceptanceFilePath);
+
+      // Neither exists
+      if (!evidenceExists && !acceptanceExists) {
         const notFoundStatus: EvidenceStatus = {
           runId,
           persisted: false,
@@ -466,6 +545,80 @@ export function createAssetServer(config: ServerConfig): http.Server {
         return;
       }
 
+      // Partial transaction: evidence exists but acceptance record missing
+      if (evidenceExists && !acceptanceExists) {
+        const fileBytes = fs.readFileSync(targetFilePath);
+        const computedSha = crypto.createHash("sha256").update(fileBytes).digest("hex");
+        const partialStatus: EvidenceStatus = {
+          runId,
+          persisted: true,
+          verified: false,
+          corrupt: true,
+          reason: "Missing durable acceptance record (incomplete or unverified transaction)",
+          filename: targetFileName,
+          bytes: fileBytes.length,
+          sha256: computedSha,
+        };
+        const payload = JSON.stringify(partialStatus);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      // Partial transaction: acceptance record exists but evidence file missing
+      if (!evidenceExists && acceptanceExists) {
+        const partialStatus: EvidenceStatus = {
+          runId,
+          persisted: false,
+          verified: false,
+          corrupt: true,
+          reason: "Evidence file missing despite existing durable acceptance record",
+          filename: targetFileName,
+        };
+        const payload = JSON.stringify(partialStatus);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      // Both files exist: inspect acceptance record first
+      let acceptanceRecord: AcceptanceRecord;
+      try {
+        const accBytes = fs.readFileSync(acceptanceFilePath);
+        if (accBytes.length === 0) {
+          throw new Error("Durable acceptance record is empty (0 bytes)");
+        }
+        const accJson = JSON.parse(accBytes.toString("utf8"));
+        acceptanceRecord = validateAcceptanceRecord(accJson, contract);
+      } catch (accErr) {
+        const msg = accErr instanceof Error ? accErr.message : String(accErr);
+        const corruptStatus: EvidenceStatus = {
+          runId,
+          persisted: true,
+          verified: false,
+          corrupt: true,
+          reason: `Corrupted or invalid durable acceptance record: ${msg}`,
+          filename: targetFileName,
+        };
+        const payload = JSON.stringify(corruptStatus);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      // Read evidence file and verify against durable acceptance record
       const fileBytes = fs.readFileSync(targetFilePath);
       const computedSha = crypto.createHash("sha256").update(fileBytes).digest("hex");
 
@@ -490,6 +643,29 @@ export function createAssetServer(config: ServerConfig): http.Server {
         return;
       }
 
+      // Detect post-acceptance alteration or tampering (even if schema-valid!)
+      if (fileBytes.length !== acceptanceRecord.bytes || computedSha.toLowerCase() !== acceptanceRecord.sha256.toLowerCase()) {
+        const tamperedStatus: EvidenceStatus = {
+          runId,
+          persisted: true,
+          verified: false,
+          corrupt: true,
+          reason: `Evidence content modified after acceptance: expected length ${acceptanceRecord.bytes} (SHA ${acceptanceRecord.sha256}), got length ${fileBytes.length} (SHA ${computedSha})`,
+          filename: targetFileName,
+          bytes: fileBytes.length,
+          sha256: computedSha,
+        };
+        const payload = JSON.stringify(tamperedStatus);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "content-length": Buffer.byteLength(payload),
+        });
+        response.end(payload);
+        return;
+      }
+
+      // Validate JSON syntax and evidence report schema
       let parsed: unknown;
       try {
         parsed = JSON.parse(fileBytes.toString("utf8"));
@@ -545,6 +721,7 @@ export function createAssetServer(config: ServerConfig): http.Server {
         filename: targetFileName,
         bytes: fileBytes.length,
         sha256: computedSha,
+        acceptedAt: acceptanceRecord.acceptedAt,
       };
 
       const payload = JSON.stringify(validStatus);

@@ -15,6 +15,9 @@ import {
   type EvidenceReceipt,
   type EvidenceStatus,
   type RunState,
+  persistDeviceReport,
+  validateCollectorReceipt,
+  validateCollectorStatus,
 } from "../../runtime/contract";
 
 /**
@@ -219,7 +222,8 @@ export default function App() {
           note: "A physical device run of the M2-3A harness.",
         };
 
-        // 4. SDK 57-compatible local evidence persistence
+        // 4. SDK 57-compatible local evidence persistence with no-overwrite semantics and exact read-back verification
+        let serializedPayload = "";
         try {
           const researchDir = new Directory(Paths.document, "research");
           if (!researchDir.exists) {
@@ -230,19 +234,11 @@ export default function App() {
             evidenceDir.create({ idempotent: true });
           }
           const reportFile = new File(evidenceDir, `${task.runId}.json`);
-          if (!reportFile.exists) {
-            reportFile.create({ overwrite: true });
-          }
-          reportFile.write(JSON.stringify(full, null, 2));
-
-          // Read back to verify integrity
-          const readBack = reportFile.textSync();
-          if (!readBack || readBack.length === 0) {
-            throw new Error("Local evidence read-back verification failed: empty file");
-          }
+          const persistenceResult = persistDeviceReport(reportFile, full);
+          serializedPayload = persistenceResult.payload;
 
           if (!cancelled) setRunState("DEVICE_EVIDENCE_PERSISTED");
-          console.log(`M2-3A step: evidence persisted locally to ${reportFile.uri} (${readBack.length} bytes)`);
+          console.log(`M2-3A step: evidence persisted locally to ${reportFile.uri} (${serializedPayload.length} bytes)`);
         } catch (persistErr) {
           if (!cancelled) setRunState("FAILED");
           throw new Error(
@@ -251,6 +247,8 @@ export default function App() {
         }
 
         // 5. Windows evidence collector export
+        // Distinguish workload execution success from evidence-export success.
+        // If export fails, preserve local evidence and retain verified local report.
         try {
           const source = process.env.EXPO_PUBLIC_CATALOGUE_SOURCE ?? "http://127.0.0.1:8082";
           const exportResponse = await fetch(`${source}/evidence`, {
@@ -258,7 +256,7 @@ export default function App() {
             headers: {
               "content-type": "application/json",
             },
-            body: JSON.stringify(full),
+            body: serializedPayload,
           });
 
           if (!exportResponse.ok) {
@@ -266,34 +264,23 @@ export default function App() {
             throw new Error(`Windows collector rejected evidence with HTTP ${exportResponse.status}: ${errBody}`);
           }
 
-          const receipt = (await exportResponse.json()) as EvidenceReceipt;
+          const rawReceipt = await exportResponse.json();
+          const receipt = validateCollectorReceipt(rawReceipt, task.runId);
           console.log(`M2-3A step: evidence exported to Windows collector. Receipt: ${JSON.stringify(receipt)}`);
           if (!cancelled) setRunState("WINDOWS_EVIDENCE_EXPORTED");
 
           // Status read-back check with full integrity and checksum verification
           const statusResponse = await fetch(`${source}/evidence/status?runId=${encodeURIComponent(task.runId)}`);
-          if (statusResponse.ok) {
-            const statusData = (await statusResponse.json()) as EvidenceStatus;
-            if (
-              statusData.persisted === true &&
-              statusData.verified === true &&
-              !statusData.corrupt &&
-              statusData.sha256 === receipt.sha256 &&
-              statusData.runId === task.runId
-            ) {
-              console.log(`M2-3A step: evidence verified on Windows collector (SHA: ${statusData.sha256})`);
-              if (!cancelled) setRunState("WINDOWS_EVIDENCE_VERIFIED");
-            } else {
-              console.warn(
-                `M2-3A warning: Windows export verification failed: receipt sha ${receipt.sha256} vs status sha ${statusData.sha256}, corrupt=${String(statusData.corrupt)}`,
-              );
-            }
-          } else {
-            console.warn(`M2-3A warning: Windows collector status check failed with HTTP ${statusResponse.status}`);
+          if (!statusResponse.ok) {
+            throw new Error(`Windows collector status query failed with HTTP ${statusResponse.status}`);
           }
+          const rawStatus = await statusResponse.json();
+          const verifiedStatus = validateCollectorStatus(rawStatus, receipt);
+          console.log(`M2-3A step: evidence verified on Windows collector (SHA: ${verifiedStatus.sha256})`);
+          if (!cancelled) setRunState("WINDOWS_EVIDENCE_VERIFIED");
         } catch (exportErr) {
           const msg = exportErr instanceof Error ? exportErr.message : String(exportErr);
-          console.warn(`M2-3A warning: Windows collector export failed (${msg}); report retained locally`);
+          console.warn(`M2-3A warning: Windows collector export failed (${msg}); locally verified report is retained`);
         }
 
         console.log(`M2-3A_DEVICE_REPORT ${JSON.stringify(full)}`);

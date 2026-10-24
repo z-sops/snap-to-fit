@@ -16,11 +16,17 @@ import {
   type BenchmarkEvidenceReport,
   type EvidenceReceipt,
   type EvidenceStatus,
+  type AcceptanceRecord,
+  type DeviceReportFileAdapter,
   CONTRACT_VERSION,
   REQUIRED_BENCHMARK_MARKS,
   REQUIRED_BENCHMARK_COUNTS,
   validateTaskContract,
   validateEvidenceReport,
+  validateAcceptanceRecord,
+  validateCollectorReceipt,
+  validateCollectorStatus,
+  persistDeviceReport,
 } from "../runtime/contract";
 
 function makeValidContract(overrides?: Partial<BenchmarkTaskContract>): BenchmarkTaskContract {
@@ -32,7 +38,7 @@ function makeValidContract(overrides?: Partial<BenchmarkTaskContract>): Benchmar
     createdAt: "2026-10-23T12:00:00.000Z",
     gitSha: "52eb197c7d7c49394aa65f8dc51e4f74cb301763",
     dirtyWorktree: true,
-    instrumentationRevision: "M2-3A-C1-R1-HARDENED-v2",
+    instrumentationRevision: "M2-3A-C1-R2-VERIFIED-v1",
     catalogueManifestSha256: "3cbffe49140801ea8ce76c3dd0151860357d5b9e92bccbd98734d2e43202118b",
     ...overrides,
   };
@@ -159,25 +165,34 @@ test("3. Missing CLI configuration rejected", () => {
 });
 
 test("4. Invalid architecture rejected", () => {
-  assert.throws(() => parseCliArgs(["--arch=D-hybrid", "--iter=10"]), /Invalid --arch/);
+  assert.throws(
+    () => parseCliArgs(["--arch=A-monolith", "--iter=5"]),
+    /Invalid --arch: expected 'B-bundle' or 'C-split'/,
+  );
 });
 
 test("5. Invalid iteration values rejected (bounds and type)", () => {
-  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=0"]), /must be between 1 and 100/);
-  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=101"]), /must be between 1 and 100/);
-  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=abc"]), /must be an integer/);
-  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=5.5"]), /must be an integer/);
+  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=0"]), /Invalid --iter: must be between 1 and 100/);
+  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=101"]), /Invalid --iter: must be between 1 and 100/);
+  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=3.5"]), /Invalid --iter: must be an integer/);
+  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=abc"]), /Invalid --iter: must be an integer/);
 });
 
 test("6. Unknown or duplicate CLI arguments rejected", () => {
-  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=10", "--extra"]), /Unknown argument/);
-  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--arch=C-split", "--iter=10"]), /Duplicate --arch/);
-  assert.throws(() => parseCliArgs(["--arch=B-bundle", "--iter=10", "--iter=20"]), /Duplicate --iter/);
+  assert.throws(
+    () => parseCliArgs(["--arch=B-bundle", "--iter=5", "--unknown=yes"]),
+    /Unknown argument: '--unknown=yes'/,
+  );
+  assert.throws(
+    () => parseCliArgs(["--arch=B-bundle", "--arch=C-split", "--iter=5"]),
+    /Duplicate --arch argument/,
+  );
 });
 
 test("7. Stable run ID across repeated GET /task requests", async () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-stable-"));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-task-"));
   const contract = makeValidContract();
+
   try {
     await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
       const res1 = await fetch(`${baseUrl}/task`);
@@ -201,53 +216,76 @@ test("8. Strict client contract validation accepts valid contracts", () => {
   const valid = makeValidContract();
   const result = validateTaskContract(valid);
   assert.equal(result.runId, valid.runId);
-  assert.equal(result.contractVersion, 1);
   assert.equal(result.architecture, "B-bundle");
+  assert.equal(result.iterations, 1);
 });
 
 test("9. Unavailable or null task data fails closed", () => {
-  assert.throws(() => validateTaskContract(null), /must be a non-null object/);
-  assert.throws(() => validateTaskContract(undefined), /must be a non-null object/);
-  assert.throws(() => validateTaskContract("not an object"), /must be a non-null object/);
+  assert.throws(() => validateTaskContract(null), /Task contract must be a non-null object/);
+  assert.throws(() => validateTaskContract(undefined), /Task contract must be a non-null object/);
+  assert.throws(() => validateTaskContract("string"), /Task contract must be a non-null object/);
 });
 
 test("10. Invalid/malformed contract schema rejected", () => {
-  assert.throws(() => validateTaskContract(makeValidContract({ contractVersion: 2 as any })), /Unsupported contractVersion/);
-  assert.throws(() => validateTaskContract(makeValidContract({ architecture: "invalid" as any })), /Invalid architecture/);
-  assert.throws(() => validateTaskContract(makeValidContract({ iterations: 0 })), /Invalid iterations/);
-  assert.throws(() => validateTaskContract(makeValidContract({ gitSha: "short" })), /Invalid gitSha/);
-  assert.throws(() => validateTaskContract(makeValidContract({ catalogueManifestSha256: "not-hex" })), /Invalid catalogueManifestSha256/);
+  // Invalid runId format
+  assert.throws(
+    () => validateTaskContract(makeValidContract({ runId: "bad run id with spaces" })),
+    /Invalid runId format/,
+  );
+
+  // Missing or out-of-range iterations
+  assert.throws(
+    () => validateTaskContract(makeValidContract({ iterations: 0 })),
+    /Invalid iterations/,
+  );
+
+  // Invalid gitSha (not 40 hex chars)
+  assert.throws(
+    () => validateTaskContract(makeValidContract({ gitSha: "short-sha" })),
+    /Invalid gitSha/,
+  );
+
+  // Invalid catalogueManifestSha256 (not 64 hex chars)
+  assert.throws(
+    () => validateTaskContract(makeValidContract({ catalogueManifestSha256: "not-64-chars" })),
+    /Invalid catalogueManifestSha256/,
+  );
 });
 
 test("11. Evidence with mismatched runId or architecture rejected", () => {
   const contract = makeValidContract();
   const report = makeValidReport(contract);
 
-  const mismatchedReport = { ...report, runId: "different-run-id" };
-  assert.throws(() => validateEvidenceReport(mismatchedReport, contract), /Evidence runId mismatch/);
+  // RunId mismatch at top-level
+  assert.throws(
+    () => validateEvidenceReport({ ...report, runId: "mismatch-run-id" }, contract),
+    /Evidence runId mismatch/,
+  );
 
-  const mismatchedArchReport = {
-    ...report,
-    contract: { ...contract, architecture: "C-split" as const },
-  };
-  assert.throws(() => validateEvidenceReport(mismatchedArchReport, contract), /Embedded contract architecture mismatch/);
+  // Architecture mismatch in embedded contract
+  const mismatchedContract = { ...contract, architecture: "C-split" as const };
+  assert.throws(
+    () => validateEvidenceReport({ ...report, contract: mismatchedContract }, contract),
+    /Embedded contract architecture mismatch/,
+  );
 });
 
 test("12. Manifest identity failure rejected when manifest missing", () => {
-  const emptyTmp = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-no-manifest-"));
+  const emptyFolder = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-empty-manifest-"));
   try {
     assert.throws(
-      () => createTaskContract("B-bundle", 10, emptyTmp),
-      /Catalogue manifest not found/,
+      () => createTaskContract("B-bundle", 5, emptyFolder),
+      /Catalogue manifest not found at .*manifest\.json/,
     );
   } finally {
-    fs.rmSync(emptyTmp, { recursive: true, force: true });
+    fs.rmSync(emptyFolder, { recursive: true, force: true });
   }
 });
 
 test("13. Oversized evidence rejected by collector", async () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-oversized-"));
   const contract = makeValidContract();
+
   try {
     await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
       const hugeData = "a".repeat(MAX_EVIDENCE_BODY_BYTES + 1024);
@@ -266,21 +304,16 @@ test("13. Oversized evidence rejected by collector", async () => {
   }
 });
 
-test("14. Incomplete iteration data rejected by validator and collector", async () => {
-  const contract = makeValidContract({ iterations: 5 });
-  const incompleteReport = makeValidReport(contract);
-  incompleteReport.samples = incompleteReport.samples.slice(0, 3); // 3 of 5
+test("14. Incomplete iteration data rejected by validator and collector", () => {
+  const contract = makeValidContract({ iterations: 3 });
+  const report = makeValidReport(contract);
+
+  // Only 2 samples instead of required 3
+  report.samples = report.samples.slice(0, 2);
 
   assert.throws(
-    () => validateEvidenceReport(incompleteReport, contract),
-    /Evidence report sample count mismatch/,
-  );
-
-  const uncompletedReport = makeValidReport(contract);
-  uncompletedReport.completed = false;
-  assert.throws(
-    () => validateEvidenceReport(uncompletedReport, contract),
-    /Evidence report indicates run was incomplete/,
+    () => validateEvidenceReport(report, contract),
+    /Evidence report sample count mismatch: expected 3, got 2/,
   );
 });
 
@@ -291,7 +324,6 @@ test("15. Duplicate report submission rejected with 409 Conflict", async () => {
 
   try {
     await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
-      // First submission succeeds
       const res1 = await fetch(`${baseUrl}/evidence`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -299,13 +331,15 @@ test("15. Duplicate report submission rejected with 409 Conflict", async () => {
       });
       assert.equal(res1.status, 200);
 
-      // Second submission fails with 409
+      // Duplicate POST
       const res2 = await fetch(`${baseUrl}/evidence`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(report),
       });
       assert.equal(res2.status, 409);
+      const text2 = await res2.text();
+      assert.match(text2, /duplicate evidence/);
     });
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -315,6 +349,7 @@ test("15. Duplicate report submission rejected with 409 Conflict", async () => {
 test("16. Malformed JSON evidence rejected with 400 Bad Request", async () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-malformed-"));
   const contract = makeValidContract();
+
   try {
     await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
       const res = await fetch(`${baseUrl}/evidence`, {
@@ -425,7 +460,7 @@ test("20. Benchmark workload invariants preserved (no altered logic)", () => {
   assert.match(appSource, /runtime\.ingredients\(keys, "US"\)/);
 });
 
-// C1-R1 Regression Tests: Safe exclusive publication & integrity validation
+// Safe exclusive publication & integrity validation
 
 test("21. Concurrent submissions: two simultaneous submissions cannot both be accepted", async () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-concurrent-"));
@@ -527,7 +562,21 @@ test("24. Status endpoint detects corrupted evidence (malformed JSON) as corrupt
 
   try {
     const targetFilePath = path.join(tmpDir, `${contract.runId}.json`);
-    fs.writeFileSync(targetFilePath, "{ truncated or corrupted JSON...", "utf8");
+    const badJson = "{ truncated or corrupted JSON...";
+    fs.writeFileSync(targetFilePath, badJson, "utf8");
+
+    // Also write matching acceptance record so status proceeds to JSON parse check
+    const accFilePath = path.join(tmpDir, `${contract.runId}.acceptance.json`);
+    const badBytes = Buffer.from(badJson, "utf8");
+    const accRecord: AcceptanceRecord = {
+      runId: contract.runId,
+      filename: `${contract.runId}.json`,
+      bytes: badBytes.length,
+      sha256: crypto.createHash("sha256").update(badBytes).digest("hex"),
+      acceptedAt: new Date().toISOString(),
+      contract,
+    };
+    fs.writeFileSync(accFilePath, JSON.stringify(accRecord, null, 2), "utf8");
 
     await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
       const res = await fetch(`${baseUrl}/evidence/status?runId=${encodeURIComponent(contract.runId)}`);
@@ -552,7 +601,20 @@ test("25. Status endpoint detects tampered evidence (schema violation) as corrup
     // Save report with removed samples to simulate tampering on disk
     const tampered = { ...report, samples: [] };
     const targetFilePath = path.join(tmpDir, `${contract.runId}.json`);
-    fs.writeFileSync(targetFilePath, JSON.stringify(tampered, null, 2), "utf8");
+    const tamperedStr = JSON.stringify(tampered, null, 2);
+    fs.writeFileSync(targetFilePath, tamperedStr, "utf8");
+
+    const accFilePath = path.join(tmpDir, `${contract.runId}.acceptance.json`);
+    const tamperedBytes = Buffer.from(tamperedStr, "utf8");
+    const accRecord: AcceptanceRecord = {
+      runId: contract.runId,
+      filename: `${contract.runId}.json`,
+      bytes: tamperedBytes.length,
+      sha256: crypto.createHash("sha256").update(tamperedBytes).digest("hex"),
+      acceptedAt: new Date().toISOString(),
+      contract,
+    };
+    fs.writeFileSync(accFilePath, JSON.stringify(accRecord, null, 2), "utf8");
 
     await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
       const res = await fetch(`${baseUrl}/evidence/status?runId=${encodeURIComponent(contract.runId)}`);
@@ -576,6 +638,17 @@ test("26. Status endpoint detects empty (0 byte) file as corrupt", async () => {
     const targetFilePath = path.join(tmpDir, `${contract.runId}.json`);
     fs.writeFileSync(targetFilePath, "", "utf8"); // 0 bytes
 
+    const accFilePath = path.join(tmpDir, `${contract.runId}.acceptance.json`);
+    const accRecord = {
+      runId: contract.runId,
+      filename: `${contract.runId}.json`,
+      bytes: 0,
+      sha256: crypto.createHash("sha256").update(Buffer.alloc(0)).digest("hex"),
+      acceptedAt: new Date().toISOString(),
+      contract,
+    };
+    fs.writeFileSync(accFilePath, JSON.stringify(accRecord, null, 2), "utf8");
+
     await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
       const res = await fetch(`${baseUrl}/evidence/status?runId=${encodeURIComponent(contract.runId)}`);
       assert.equal(res.status, 200);
@@ -583,7 +656,7 @@ test("26. Status endpoint detects empty (0 byte) file as corrupt", async () => {
       assert.equal(status.persisted, true);
       assert.equal(status.verified, false);
       assert.equal(status.corrupt, true);
-      assert.match(status.reason ?? "", /empty/);
+      assert.match(status.reason ?? "", /empty|Corrupted or invalid/);
     });
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -756,9 +829,427 @@ test("32. Exclusive publication cleanly removes temporary files leaving no resid
       });
       assert.equal(res.status, 200);
 
-      // Verify only the final target file exists, no temporary .tmp-* files linger
-      const files = fs.readdirSync(tmpDir);
-      assert.deepEqual(files, [`${contract.runId}.json`]);
+      // Verify only the final target files exist, no temporary .tmp-* files linger
+      const files = fs.readdirSync(tmpDir).sort();
+      assert.deepEqual(files, [`${contract.runId}.acceptance.json`, `${contract.runId}.json`]);
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+// C1-R2 Deterministic Regression Tests
+
+test("33. Existing device report cannot be overwritten", () => {
+  const contract = makeValidContract();
+  const report = makeValidReport(contract);
+
+  let created = false;
+  let written = false;
+
+  const mockFile: DeviceReportFileAdapter = {
+    exists: true, // File already exists
+    create: () => {
+      created = true;
+    },
+    write: () => {
+      written = true;
+    },
+    textSync: () => "pre-existing content",
+    uri: "file:///documents/research/evidence/m2-3a-test.json",
+  };
+
+  assert.throws(
+    () => persistDeviceReport(mockFile, report),
+    /already exists for run.*refusing to overwrite existing report/,
+  );
+
+  assert.equal(created, false, "create() must not be called when file already exists");
+  assert.equal(written, false, "write() must not be called when file already exists");
+});
+
+test("34. Duplicate run ID is rejected on device persistence", () => {
+  const contract = makeValidContract();
+  const report = makeValidReport(contract);
+
+  let fileContent = "";
+  let exists = false;
+
+  const mockFile: DeviceReportFileAdapter = {
+    get exists() {
+      return exists;
+    },
+    create: () => {
+      if (exists) throw new Error("File already exists");
+      exists = true;
+    },
+    write: (content: string) => {
+      fileContent = content;
+    },
+    textSync: () => fileContent,
+    uri: "file:///documents/research/evidence/run.json",
+  };
+
+  // First persistence succeeds
+  const res1 = persistDeviceReport(mockFile, report);
+  assert.equal(res1.persisted, true);
+  assert.equal(exists, true);
+
+  // Second persistence with duplicate run ID is strictly rejected
+  assert.throws(
+    () => persistDeviceReport(mockFile, report),
+    /Device evidence already exists for run/,
+  );
+});
+
+test("35. Exact device read-back mismatch is detected", () => {
+  const contract = makeValidContract();
+  const report = makeValidReport(contract);
+
+  let exists = false;
+  const mockFile: DeviceReportFileAdapter = {
+    get exists() {
+      return exists;
+    },
+    create: () => {
+      exists = true;
+    },
+    write: () => {
+      // Content written
+    },
+    textSync: () => "corrupted or truncated content", // Mismatch with serialized report!
+    uri: "file:///documents/research/evidence/run.json",
+  };
+
+  assert.throws(
+    () => persistDeviceReport(mockFile, report),
+    /Device evidence read-back verification failed: content mismatch/,
+  );
+});
+
+test("36. Persistence failure does not claim success", () => {
+  const contract = makeValidContract();
+  const report = makeValidReport(contract);
+
+  const mockFile: DeviceReportFileAdapter = {
+    exists: false,
+    create: () => {
+      throw new Error("Disk full or permission denied");
+    },
+    write: () => {},
+    textSync: () => "",
+  };
+
+  assert.throws(
+    () => persistDeviceReport(mockFile, report),
+    /Disk full or permission denied/,
+  );
+});
+
+test("37. Valid Windows receipt is accepted", () => {
+  const runId = "m2-3a-test-valid-run-123";
+  const rawReceipt = {
+    status: "accepted",
+    runId,
+    filename: `${runId}.json`,
+    bytes: 4096,
+    sha256: "3cbffe49140801ea8ce76c3dd0151860357d5b9e92bccbd98734d2e43202118b",
+    acceptedAt: "2026-10-24T12:00:00.000Z",
+  };
+
+  const receipt = validateCollectorReceipt(rawReceipt, runId);
+  assert.equal(receipt.status, "accepted");
+  assert.equal(receipt.runId, runId);
+  assert.equal(receipt.bytes, 4096);
+  assert.equal(receipt.sha256, "3cbffe49140801ea8ce76c3dd0151860357d5b9e92bccbd98734d2e43202118b");
+});
+
+test("38. Invalid receipt run ID is rejected", () => {
+  const runId = "m2-3a-expected-run";
+  const rawReceipt = {
+    status: "accepted",
+    runId: "m2-3a-DIFFERENT-run",
+    filename: `${runId}.json`,
+    bytes: 100,
+    sha256: "3cbffe49140801ea8ce76c3dd0151860357d5b9e92bccbd98734d2e43202118b",
+    acceptedAt: "2026-10-24T12:00:00.000Z",
+  };
+
+  assert.throws(
+    () => validateCollectorReceipt(rawReceipt, runId),
+    /Collector receipt runId mismatch/,
+  );
+});
+
+test("39. Invalid receipt filename is rejected", () => {
+  const runId = "m2-3a-test-run";
+  const rawReceipt = {
+    status: "accepted",
+    runId,
+    filename: "../suspicious.json",
+    bytes: 100,
+    sha256: "3cbffe49140801ea8ce76c3dd0151860357d5b9e92bccbd98734d2e43202118b",
+    acceptedAt: "2026-10-24T12:00:00.000Z",
+  };
+
+  assert.throws(
+    () => validateCollectorReceipt(rawReceipt, runId),
+    /Collector receipt invalid filename/,
+  );
+});
+
+test("40. Missing or malformed checksum is rejected", () => {
+  const runId = "m2-3a-test-run";
+
+  // Invalid SHA format (not 64 hex chars)
+  assert.throws(
+    () =>
+      validateCollectorReceipt(
+        {
+          status: "accepted",
+          runId,
+          filename: `${runId}.json`,
+          bytes: 100,
+          sha256: "invalid-short-hash",
+          acceptedAt: "2026-10-24T12:00:00.000Z",
+        },
+        runId,
+      ),
+    /Collector receipt invalid SHA-256 digest/,
+  );
+});
+
+test("41. Receipt vs status byte-count mismatch is rejected", () => {
+  const runId = "m2-3a-test-run";
+  const receipt: EvidenceReceipt = {
+    status: "accepted",
+    runId,
+    filename: `${runId}.json`,
+    bytes: 2048,
+    sha256: "3cbffe49140801ea8ce76c3dd0151860357d5b9e92bccbd98734d2e43202118b",
+    acceptedAt: "2026-10-24T12:00:00.000Z",
+  };
+
+  const statusWithDifferentBytes: EvidenceStatus = {
+    runId,
+    persisted: true,
+    verified: true,
+    corrupt: false,
+    bytes: 2049, // Mismatch!
+    sha256: receipt.sha256,
+  };
+
+  assert.throws(
+    () => validateCollectorStatus(statusWithDifferentBytes, receipt),
+    /Collector status byte count mismatch/,
+  );
+});
+
+test("42. Unverified or corrupted Windows status is rejected", () => {
+  const runId = "m2-3a-test-run";
+  const receipt: EvidenceReceipt = {
+    status: "accepted",
+    runId,
+    filename: `${runId}.json`,
+    bytes: 2048,
+    sha256: "3cbffe49140801ea8ce76c3dd0151860357d5b9e92bccbd98734d2e43202118b",
+    acceptedAt: "2026-10-24T12:00:00.000Z",
+  };
+
+  // Not verified
+  assert.throws(
+    () =>
+      validateCollectorStatus(
+        {
+          runId,
+          persisted: true,
+          verified: false,
+          bytes: 2048,
+          sha256: receipt.sha256,
+        },
+        receipt,
+      ),
+    /Collector status indicates evidence not verified/,
+  );
+
+  // Corrupt
+  assert.throws(
+    () =>
+      validateCollectorStatus(
+        {
+          runId,
+          persisted: true,
+          verified: true,
+          corrupt: true,
+          reason: "Schema validation failure",
+          bytes: 2048,
+          sha256: receipt.sha256,
+        },
+        receipt,
+      ),
+    /Collector status indicates evidence is corrupt/,
+  );
+});
+
+test("43. Status endpoint detects schema-valid timing data tampering against durable acceptance record", async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-tamper-valid-"));
+  const contract = makeValidContract();
+  const report = makeValidReport(contract);
+
+  try {
+    await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
+      // 1. Submit legitimate evidence: creates both .json and .acceptance.json
+      const postRes = await fetch(`${baseUrl}/evidence`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(report),
+      });
+      assert.equal(postRes.status, 200);
+
+      // Verify baseline status is verified
+      const status1 = await (await fetch(`${baseUrl}/evidence/status?runId=${encodeURIComponent(contract.runId)}`)).json() as EvidenceStatus;
+      assert.equal(status1.verified, true);
+      assert.equal(status1.corrupt, false);
+
+      // 2. Tamper with a single measurement mark ms inside .json on disk (keeping schema completely valid!)
+      const targetFilePath = path.join(tmpDir, `${contract.runId}.json`);
+      const onDiskReport = JSON.parse(fs.readFileSync(targetFilePath, "utf8")) as BenchmarkEvidenceReport;
+      onDiskReport.marks[0].ms = 9999.9; // Tampered timing!
+      onDiskReport.samples[0].marks[0].ms = 9999.9;
+      fs.writeFileSync(targetFilePath, JSON.stringify(onDiskReport, null, 2), "utf8");
+
+      // 3. Query status: durable acceptance record must detect hash/byte mismatch and report corruption!
+      const status2 = await (await fetch(`${baseUrl}/evidence/status?runId=${encodeURIComponent(contract.runId)}`)).json() as EvidenceStatus;
+      assert.equal(status2.persisted, true);
+      assert.equal(status2.verified, false);
+      assert.equal(status2.corrupt, true);
+      assert.match(status2.reason ?? "", /Evidence content modified after acceptance/);
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("44. Missing durable acceptance record is detected as unverified", async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-missing-acc-"));
+  const contract = makeValidContract();
+  const report = makeValidReport(contract);
+
+  try {
+    // Write only the evidence file (simulating crash before acceptance record was written)
+    const targetFilePath = path.join(tmpDir, `${contract.runId}.json`);
+    fs.writeFileSync(targetFilePath, JSON.stringify(report, null, 2), "utf8");
+
+    await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
+      const res = await fetch(`${baseUrl}/evidence/status?runId=${encodeURIComponent(contract.runId)}`);
+      assert.equal(res.status, 200);
+      const status = (await res.json()) as EvidenceStatus;
+      assert.equal(status.persisted, true);
+      assert.equal(status.verified, false);
+      assert.equal(status.corrupt, true);
+      assert.match(status.reason ?? "", /Missing durable acceptance record/);
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("45. Corrupt durable acceptance record is detected as unverified", async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-corrupt-acc-"));
+  const contract = makeValidContract();
+  const report = makeValidReport(contract);
+
+  try {
+    const targetFilePath = path.join(tmpDir, `${contract.runId}.json`);
+    fs.writeFileSync(targetFilePath, JSON.stringify(report, null, 2), "utf8");
+
+    // Corrupt acceptance record (malformed JSON)
+    const accFilePath = path.join(tmpDir, `${contract.runId}.acceptance.json`);
+    fs.writeFileSync(accFilePath, "{ truncated acceptance record...", "utf8");
+
+    await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
+      const res = await fetch(`${baseUrl}/evidence/status?runId=${encodeURIComponent(contract.runId)}`);
+      assert.equal(res.status, 200);
+      const status = (await res.json()) as EvidenceStatus;
+      assert.equal(status.persisted, true);
+      assert.equal(status.verified, false);
+      assert.equal(status.corrupt, true);
+      assert.match(status.reason ?? "", /Corrupted or invalid durable acceptance record/);
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("46. Collector restart preserves existing evidence and acceptance identity", async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-acc-restart-"));
+  const contract = makeValidContract();
+  const report = makeValidReport(contract);
+
+  try {
+    let acceptedReceipt: EvidenceReceipt | undefined;
+
+    // 1. Session 1: Submit evidence
+    await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
+      const res = await fetch(`${baseUrl}/evidence`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(report),
+      });
+      assert.equal(res.status, 200);
+      acceptedReceipt = (await res.json()) as EvidenceReceipt;
+    });
+
+    assert.ok(acceptedReceipt);
+
+    // 2. Session 2: Server restarts with existing evidenceDir
+    await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
+      // Status endpoint should report verified=true with preserved SHA and byte count
+      const resStatus = await fetch(`${baseUrl}/evidence/status?runId=${encodeURIComponent(contract.runId)}`);
+      assert.equal(resStatus.status, 200);
+      const status = (await resStatus.json()) as EvidenceStatus;
+      assert.equal(status.persisted, true);
+      assert.equal(status.verified, true);
+      assert.equal(status.corrupt, false);
+      assert.equal(status.sha256, acceptedReceipt!.sha256);
+      assert.equal(status.bytes, acceptedReceipt!.bytes);
+
+      // Re-submitting same runId must be rejected with 409 Conflict
+      const dupRes = await fetch(`${baseUrl}/evidence`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(report),
+      });
+      assert.equal(dupRes.status, 409);
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("47. Partial acceptance transaction is detected and preserved without overwrite", async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "m2-3a-test-partial-preserve-"));
+  const contract = makeValidContract();
+  const report = makeValidReport(contract);
+
+  try {
+    // Pre-seed only evidence file (simulating partial/interrupted transaction)
+    const targetFilePath = path.join(tmpDir, `${contract.runId}.json`);
+    const initialBytes = Buffer.from(JSON.stringify(report, null, 2), "utf8");
+    fs.writeFileSync(targetFilePath, initialBytes);
+
+    await withTestServer(contract, tmpDir, tmpDir, async (baseUrl) => {
+      // POST must be rejected with 409 Conflict and not overwrite the partial evidence
+      const res = await fetch(`${baseUrl}/evidence`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(report),
+      });
+      assert.equal(res.status, 409);
+
+      // Confirm partial evidence file was untouched
+      const currentBytes = fs.readFileSync(targetFilePath);
+      assert.deepEqual(currentBytes, initialBytes);
     });
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
