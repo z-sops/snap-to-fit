@@ -23,6 +23,7 @@ export const MEMORY_CHECKPOINT_PHASES = [
 ] as const;
 
 export type MemoryCheckpointPhase = (typeof MEMORY_CHECKPOINT_PHASES)[number];
+export type Architecture = "B-bundle" | "C-split";
 
 export interface ProcessAttributionResult {
   valid: boolean;
@@ -90,12 +91,7 @@ export interface MemorySessionState {
   currentCheckpointIndex: number;
   completedPhases: Set<MemoryCheckpointPhase>;
   baselineMeminfo?: ParsedMeminfo;
-  checkpoints: Map<MemoryCheckpointPhase, {
-    event: MemoryCheckpointEvent;
-    meminfo: ParsedMeminfo;
-    differential?: DifferentialMetrics;
-    hostTimestampMs: number;
-  }>;
+  checkpoints: Map<MemoryCheckpointPhase, MemoryCheckpointData>;
 }
 
 /**
@@ -406,4 +402,275 @@ export function generateMemoryEvidenceManifest(files: { path: string; content: s
     lines.push(`${hash}  ${f.path}`);
   }
   return lines.join("\n") + "\n";
+}
+
+
+export interface MemoryCheckpointData {
+  phase: MemoryCheckpointPhase;
+  checkpointIndex: number;
+  pid: number;
+  deviceTimestampMs: number;
+  hostTimestampMs: number;
+  observedDeltaMs: number;
+  receiptId: string;
+  rawMetrics: ParsedMeminfo;
+  differential: DifferentialMetrics;
+  rawDumpFile: string;
+  rawDumpSha256: string;
+  event?: MemoryCheckpointEvent;
+  meminfo?: ParsedMeminfo;
+}
+
+export interface ArchitectureRun {
+  runId: string;
+  architecture: "B-bundle" | "C-split";
+  pid: number;
+  checkpoints: MemoryCheckpointData[];
+}
+
+export interface SessionData {
+  sessionIndex: number;
+  order: "B_THEN_C" | "C_THEN_B";
+  thermal?: {
+    startBatteryTempC: number;
+    endBatteryTempC: number;
+  };
+  runs: {
+    "B-bundle": ArchitectureRun;
+    "C-split": ArchitectureRun;
+  };
+}
+
+export interface ArchitectureSummary {
+  peakIngestionDeltaMeanKb: number;
+  peakIngestionDeltaStdKb: number;
+  sustainedWorkloadDeltaMeanKb: number;
+  sustainedWorkloadDeltaStdKb: number;
+  leakRateKbPerIteration: number;
+}
+
+export interface ComparisonSummary {
+  peakIngestionDeltaReductionPct: number;
+  sustainedWorkloadDeltaReductionPct: number;
+  welchTStatistic: number;
+  cohensD: number;
+}
+
+export interface ProvisionalEvaluation {
+  peakIngestionReductionGe25Pct: boolean;
+  sustainedExpansionLe15Pct: boolean;
+  leakRateLe100KbPerIter: boolean;
+  provisionalVerdict:
+    | "PROVISIONAL_CONFIRMED_C_ADVANTAGE"
+    | "PROVISIONAL_NEUTRAL_LATENCY_PRIMARY"
+    | "PROVISIONAL_REJECTED_MEMORY_REGRESSION";
+  notes: string;
+}
+
+export interface MemoryEvidenceReport {
+  schemaVersion: "m2-3a-memory-evidence-1.0";
+  directive: "MVE-001B" | "MVP-001" | "MVE-001A-R1";
+  date: string;
+  isSynthetic?: boolean;
+  syntheticDisclaimer?: string;
+  device: {
+    model: string;
+    product: string;
+    serial: string;
+    androidVersion: string;
+    apiLevel: number;
+    engine: "Hermes";
+    expoGoVersion: string;
+  };
+  contract: {
+    sessionsCount: number;
+    iterationsPerRun: number;
+    catalogueManifestSha256: string;
+    cacheBudgetBytes: number;
+  };
+  sessions: SessionData[];
+  statisticalSummary: {
+    "B-bundle": ArchitectureSummary;
+    "C-split": ArchitectureSummary;
+    comparison: ComparisonSummary;
+  };
+  provisionalEvaluation: ProvisionalEvaluation;
+}
+
+/**
+ * Calculates statistical summary across sessions for both architectures.
+ */
+export function calculateStatisticalSummary(sessions: SessionData[]): {
+  "B-bundle": ArchitectureSummary;
+  "C-split": ArchitectureSummary;
+  comparison: ComparisonSummary;
+} {
+  const getDeltas = (arch: "B-bundle" | "C-split", phase: MemoryCheckpointPhase) => {
+    return sessions.map((s) => {
+      const run = s.runs[arch];
+      const cp = run.checkpoints.find((c) => c.phase === phase);
+      return cp ? cp.differential.deltaPssKb : 0;
+    });
+  };
+
+  const mean = (arr: number[]) => (arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length);
+  const std = (arr: number[], m: number) => {
+    if (arr.length <= 1) return 0;
+    const variance = arr.reduce((acc, v) => acc + (v - m) ** 2, 0) / (arr.length - 1);
+    return Math.sqrt(variance);
+  };
+
+  const bPeakDeltas = getDeltas("B-bundle", "M2_POST_OPEN_CA");
+  const cPeakDeltas = getDeltas("C-split", "M2_POST_OPEN_CA");
+
+  const bSustainedDeltas = getDeltas("B-bundle", "M6_POST_CACHE");
+  const cSustainedDeltas = getDeltas("C-split", "M6_POST_CACHE");
+
+  const bPeakMean = mean(bPeakDeltas);
+  const bPeakStd = std(bPeakDeltas, bPeakMean);
+  const cPeakMean = mean(cPeakDeltas);
+  const cPeakStd = std(cPeakDeltas, cPeakMean);
+
+  const bSustainedMean = mean(bSustainedDeltas);
+  const bSustainedStd = std(bSustainedDeltas, bSustainedMean);
+  const cSustainedMean = mean(cSustainedDeltas);
+  const cSustainedStd = std(cSustainedDeltas, cSustainedMean);
+
+  const peakReductionPct = bPeakMean > 0 ? ((bPeakMean - cPeakMean) / bPeakMean) * 100 : 0;
+  const sustainedReductionPct = bSustainedMean > 0 ? ((bSustainedMean - cSustainedMean) / bSustainedMean) * 100 : 0;
+
+  // Welch's t-test between bPeakDeltas and cPeakDeltas
+  const n1 = bPeakDeltas.length;
+  const n2 = cPeakDeltas.length;
+  const s1_sq = bPeakStd ** 2;
+  const s2_sq = cPeakStd ** 2;
+  const standardError = Math.sqrt(s1_sq / n1 + s2_sq / n2);
+  const welchT = standardError > 0 ? (bPeakMean - cPeakMean) / standardError : 0;
+
+  // Pooled standard deviation for Cohen's d
+  const pooledStd = Math.sqrt(((n1 - 1) * s1_sq + (n2 - 1) * s2_sq) / Math.max(1, n1 + n2 - 2));
+  const cohensD = pooledStd > 0 ? (bPeakMean - cPeakMean) / pooledStd : 0;
+
+  return {
+    "B-bundle": {
+      peakIngestionDeltaMeanKb: Math.round(bPeakMean),
+      peakIngestionDeltaStdKb: Math.round(bPeakStd),
+      sustainedWorkloadDeltaMeanKb: Math.round(bSustainedMean),
+      sustainedWorkloadDeltaStdKb: Math.round(bSustainedStd),
+      leakRateKbPerIteration: 0,
+    },
+    "C-split": {
+      peakIngestionDeltaMeanKb: Math.round(cPeakMean),
+      peakIngestionDeltaStdKb: Math.round(cPeakStd),
+      sustainedWorkloadDeltaMeanKb: Math.round(cSustainedMean),
+      sustainedWorkloadDeltaStdKb: Math.round(cSustainedStd),
+      leakRateKbPerIteration: 0,
+    },
+    comparison: {
+      peakIngestionDeltaReductionPct: Math.round(peakReductionPct * 100) / 100,
+      sustainedWorkloadDeltaReductionPct: Math.round(sustainedReductionPct * 100) / 100,
+      welchTStatistic: Math.round(welchT * 100) / 100,
+      cohensD: Math.round(cohensD * 100) / 100,
+    },
+  };
+}
+
+/**
+ * Evaluates provisional decision criteria based on MVP-001 / MVE-001A.
+ */
+export function evaluateProvisionalCriteria(summary: {
+  "B-bundle": ArchitectureSummary;
+  "C-split": ArchitectureSummary;
+  comparison: ComparisonSummary;
+}): ProvisionalEvaluation {
+  const peakReductionGe25 = summary.comparison.peakIngestionDeltaReductionPct >= 25.0;
+  const sustainedExpansionLe15 = summary.comparison.sustainedWorkloadDeltaReductionPct >= -15.0;
+  const leakRateLe100 = summary["C-split"].leakRateKbPerIteration <= 100;
+
+  let verdict: ProvisionalEvaluation["provisionalVerdict"] = "PROVISIONAL_REJECTED_MEMORY_REGRESSION";
+  let notes = "";
+
+  if (peakReductionGe25 && sustainedExpansionLe15 && leakRateLe100) {
+    verdict = "PROVISIONAL_CONFIRMED_C_ADVANTAGE";
+    notes = "Architecture C confirmed memory advantage: >=25% peak PSS reduction with bounded sustained footprint.";
+  } else if (summary.comparison.peakIngestionDeltaReductionPct >= 0 && sustainedExpansionLe15) {
+    verdict = "PROVISIONAL_NEUTRAL_LATENCY_PRIMARY";
+    notes = "Architecture C memory neutral relative to B; latency advantage serves as primary criterion.";
+  } else {
+    verdict = "PROVISIONAL_REJECTED_MEMORY_REGRESSION";
+    notes = "Architecture C exhibited memory regression exceeding provisional tolerance thresholds.";
+  }
+
+  return {
+    peakIngestionReductionGe25Pct: peakReductionGe25,
+    sustainedExpansionLe15Pct: sustainedExpansionLe15,
+    leakRateLe100KbPerIter: leakRateLe100,
+    provisionalVerdict: verdict,
+    notes,
+  };
+}
+
+/**
+ * Validates a MemoryEvidenceReport against the structural schema.
+ */
+export function validateMemoryEvidenceReport(data: unknown): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (!data || typeof data !== "object") {
+    return { valid: false, errors: ["Report must be a non-null object"] };
+  }
+  const report = data as Record<string, unknown>;
+
+  if (report.schemaVersion !== "m2-3a-memory-evidence-1.0") {
+    errors.push(`Invalid schemaVersion: expected 'm2-3a-memory-evidence-1.0', got '${String(report.schemaVersion)}'`);
+  }
+  if (!["MVE-001B", "MVP-001", "MVE-001A-R1"].includes(report.directive as string)) {
+    errors.push(`Invalid directive: got '${String(report.directive)}'`);
+  }
+  if (typeof report.date !== "string") {
+    errors.push("Missing or invalid 'date' string");
+  }
+  if (!report.device || typeof report.device !== "object") {
+    errors.push("Missing or invalid 'device' object");
+  }
+  if (!report.contract || typeof report.contract !== "object") {
+    errors.push("Missing or invalid 'contract' object");
+  }
+  if (!Array.isArray(report.sessions) || report.sessions.length !== 4) {
+    errors.push(`Expected exactly 4 sessions, got ${Array.isArray(report.sessions) ? report.sessions.length : "non-array"}`);
+  } else {
+    report.sessions.forEach((session, sIdx) => {
+      if (!session || typeof session !== "object") {
+        errors.push(`Session ${sIdx} is invalid`);
+        return;
+      }
+      const s = session as Record<string, unknown>;
+      if (!["B_THEN_C", "C_THEN_B"].includes(s.order as string)) {
+        errors.push(`Session ${sIdx}: invalid order '${String(s.order)}'`);
+      }
+      if (!s.runs || typeof s.runs !== "object") {
+        errors.push(`Session ${sIdx}: missing runs`);
+        return;
+      }
+      const runs = s.runs as Record<string, unknown>;
+      for (const arch of ["B-bundle", "C-split"] as const) {
+        const run = runs[arch] as Record<string, unknown>;
+        if (!run) {
+          errors.push(`Session ${sIdx}: missing run for '${arch}'`);
+          continue;
+        }
+        if (!Array.isArray(run.checkpoints) || run.checkpoints.length !== 8) {
+          errors.push(`Session ${sIdx} run '${arch}': expected exactly 8 checkpoints, got ${Array.isArray(run.checkpoints) ? run.checkpoints.length : "invalid"}`);
+        }
+      }
+    });
+  }
+
+  if (!report.statisticalSummary || typeof report.statisticalSummary !== "object") {
+    errors.push("Missing statisticalSummary");
+  }
+  if (!report.provisionalEvaluation || typeof report.provisionalEvaluation !== "object") {
+    errors.push("Missing provisionalEvaluation");
+  }
+
+  return { valid: errors.length === 0, errors };
 }
